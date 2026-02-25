@@ -18,6 +18,7 @@ def _build_document_references(case_id: str) -> List[DocumentReference]:
         DocumentReference(
             id=doc.id,
             title=doc.title,
+            type=doc.type,
             include_full_text=True,
             content=doc.content,
             date=doc.date,
@@ -34,6 +35,7 @@ def _build_cached_document_references(case_id: str) -> List[DocumentReference]:
         DocumentReference(
             id=doc.id,
             title=doc.title,
+            type=doc.type,
             include_full_text=True,
             content=doc.content,
             date=doc.date,

@@ -8,3 +8,4 @@ rapidfuzz==3.6.1
 pyyaml==6.0.1
 nltk==3.8.1
 SQLAlchemy==2.0.30
+python-multipart==0.0.9

@@ -1,19 +1,21 @@
-import asyncio
-from typing import Dict, Optional
+from typing import Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from pydantic import ValidationError
 
 from app.eventing import get_event_producer
-from app.schemas.documents import DocumentListResponse, DocumentReference
+from app.schemas.documents import (
+    DocumentListResponse,
+    DocumentReference,
+    UploadDocumentsManifest,
+    UploadDocumentsResponse,
+)
 from app.schemas.checklists import EvidenceCollection
-from app.services.checklists import extract_document_checklists, get_document_checklists_if_cached
-from app.services.documents import list_documents
+from app.services.checklists import get_document_checklists_if_cached
+from app.services.documents import list_documents, upload_text_documents
 
 router = APIRouter(prefix="/cases", tags=["cases"])
 producer = get_event_producer(__name__)
-
-_PREFETCH_TASKS: Dict[str, asyncio.Task] = {}
-_PREFETCH_LOCK = asyncio.Lock()
 
 
 @router.get("/{case_id}/documents", response_model=DocumentListResponse)
@@ -23,6 +25,7 @@ async def get_case_documents(case_id: str) -> DocumentListResponse:
         DocumentReference(
             id=doc.id,
             title=doc.title,
+            type=doc.type,
             include_full_text=True,
             content=doc.content,
             ecf_number=doc.ecf_number,
@@ -45,8 +48,6 @@ async def get_case_documents(case_id: str) -> DocumentListResponse:
         if cached is not None:
             document_checklists = cached
             checklist_status = "cached"
-        else:
-            await _schedule_prefetch(case_id, document_refs)
 
     return DocumentListResponse(
         case_id=case_id,
@@ -56,22 +57,20 @@ async def get_case_documents(case_id: str) -> DocumentListResponse:
     )
 
 
-async def _schedule_prefetch(case_id: str, references: list[DocumentReference]) -> None:
-    async with _PREFETCH_LOCK:
-        task = _PREFETCH_TASKS.get(case_id)
-        if task is not None and not task.done():
-            return
-        cloned = [ref.model_copy(deep=True) for ref in references]
-        _PREFETCH_TASKS[case_id] = asyncio.create_task(_prefetch_document_checklists(case_id, cloned))
-
-
-async def _prefetch_document_checklists(case_id: str, references: list[DocumentReference]) -> None:
+@router.post("/upload-documents", response_model=UploadDocumentsResponse)
+async def upload_case_documents(
+    manifest: str = Form(...),
+    files: list[UploadFile] = File(...),
+) -> UploadDocumentsResponse:
     try:
-        await extract_document_checklists(case_id, references)
-    except Exception:  # pylint: disable=broad-except
-        producer.error("Checklist prefetch failed", {"case_id": case_id})
-    finally:
-        async with _PREFETCH_LOCK:
-            tracked = _PREFETCH_TASKS.get(case_id)
-            if tracked is asyncio.current_task() or tracked is None:
-                _PREFETCH_TASKS.pop(case_id, None)
+        manifest_payload = UploadDocumentsManifest.model_validate_json(manifest)
+    except ValidationError as exc:
+        raise HTTPException(status_code=422, detail="Invalid upload manifest payload.") from exc
+
+    result = await upload_text_documents(manifest_payload, files)
+    return UploadDocumentsResponse(
+        case_id=result.case_id,
+        reused=result.reused,
+        document_count=result.document_count,
+        signature=result.signature,
+    )

@@ -19,9 +19,8 @@ const useDocumentsStore = ({ caseId } = {}) => {
             const error = new Error('Case ID is required to load documents.');
             setLastError(error);
             setRemoteDocuments([]);
-            setDocumentChecklists(null);
             setDocumentChecklistStatus('error');
-            return;
+            throw error;
         }
         setIsLoadingDocuments(true);
         setLastError(null);
@@ -29,14 +28,21 @@ const useDocumentsStore = ({ caseId } = {}) => {
 
         try {
             const { documents: loadedDocs, checklistStatus } = await loadCaseDocuments(resolvedCaseId);
+            const resolvedChecklistStatus = checklistStatus ?? (loadedDocs.length > 0 ? 'ready' : 'empty');
             setRemoteDocuments(loadedDocs);
             setCurrentCaseId(resolvedCaseId);
-            setDocumentChecklistStatus(checklistStatus ?? (loadedDocs.length > 0 ? 'ready' : 'empty'));
+            setDocumentChecklistStatus(resolvedChecklistStatus);
+            return {
+                caseId: resolvedCaseId,
+                documents: loadedDocs,
+                checklistStatus: resolvedChecklistStatus
+            };
         } catch (error) {
             console.error('Failed to load documents from backend.', error);
             setRemoteDocuments([]);
             setLastError(error);
             setDocumentChecklistStatus('error');
+            throw error;
         } finally {
             setIsLoadingDocuments(false);
         }
@@ -48,7 +54,7 @@ const useDocumentsStore = ({ caseId } = {}) => {
     }, [caseId]);
 
     useEffect(() => {
-        void loadDocuments(currentCaseId);
+        loadDocuments(currentCaseId).catch(() => {});
     }, [currentCaseId, loadDocuments]);
 
     useEffect(() => {

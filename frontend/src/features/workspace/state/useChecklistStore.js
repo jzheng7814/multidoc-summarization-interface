@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fetchChecklist } from '../../../services/apiClient';
 
 const normaliseCaseId = (value) => String(value ?? '').trim();
@@ -84,6 +84,7 @@ const useChecklistStore = ({ caseId } = {}) => {
     const [items, setItems] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const suppressNextHydrationRef = useRef(false);
 
     const resolvedCaseId = useMemo(() => normaliseCaseId(caseId), [caseId]);
 
@@ -108,6 +109,10 @@ const useChecklistStore = ({ caseId } = {}) => {
         try {
             const targetCaseId = requireCaseId(resolvedCaseId);
             const response = await fetchChecklist(targetCaseId);
+            if (suppressNextHydrationRef.current) {
+                suppressNextHydrationRef.current = false;
+                return response;
+            }
             hydrateResponse(response);
             return response;
         } catch (err) {
@@ -149,6 +154,10 @@ const useChecklistStore = ({ caseId } = {}) => {
 
     const replaceItems = useCallback((nextItems) => {
         setItems(Array.isArray(nextItems) ? nextItems : []);
+    }, []);
+
+    const suppressNextServerHydration = useCallback(() => {
+        suppressNextHydrationRef.current = true;
     }, []);
 
     useEffect(() => {
@@ -199,6 +208,7 @@ const useChecklistStore = ({ caseId } = {}) => {
         addItem,
         deleteItem,
         replaceItems,
+        suppressNextServerHydration,
         highlightsByDocument
     };
 };

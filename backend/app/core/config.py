@@ -67,6 +67,31 @@ class Settings(BaseSettings):
     database_url: str
     openai_api_key: Optional[str] = None
     clearinghouse_api_key: Optional[str] = None
+    checklist_extraction_mode: Literal["local", "cluster"] = "local"
+    # Deprecated compatibility fields retained so older local .env files still load.
+    cluster_simulate: bool = False
+    cluster_remote_gavel_dir: str = ""
+    cluster_remote_agent_subdir: str = ""
+    cluster_remote_input_subdir: str = ""
+    cluster_remote_prepared_data_subdir: str = ""
+    cluster_remote_output_subdir: str = ""
+    cluster_ssh_host: str = "sky1"
+    cluster_remote_repo_dir: str = "/coc/pskynet6/$USER/gavel"
+    cluster_remote_python_path: str = "/coc/pskynet6/$USER/miniconda3/envs/gavel-dev/bin/python"
+    cluster_remote_controller_script: str = (
+        "src/extract_checklist_from_documents/gavel_agent/controller/run_controller.py"
+    )
+    cluster_poll_seconds: int = 2
+    cluster_max_wait_seconds: int = 21600
+    cluster_model_name: str = "unsloth/gpt-oss-20b-BF16"
+    cluster_checklist_config: str = "config/checklist_configs/all/all_26_items.yaml"
+    cluster_max_steps: int = 300
+    cluster_resume: bool = False
+    cluster_debug: bool = False
+    cluster_output_base_dir: str = "output_controller"
+    cluster_dataset_prefix: str = "controller"
+    cluster_slurm_partition: str = "nlprx-lab"
+    cluster_slurm_qos: str = "short"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", env_prefix="LEGAL_CASE_")
 

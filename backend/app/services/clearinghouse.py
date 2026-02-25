@@ -137,6 +137,13 @@ class ClearinghouseClient:
             raise ClearinghouseError(f"No documents were returned for case {case_id}.")
         return documents, case_title
 
+    def fetch_case_detail(self, case_id: str) -> Dict[str, Any]:
+        """Return raw case detail metadata from Clearinghouse for a single case id."""
+        case_detail = self._fetch_case(case_id)
+        if not case_detail:
+            raise ClearinghouseNotFound(f"Case not found on Clearinghouse for case_id={case_id}")
+        return case_detail
+
     def _headers(self) -> Dict[str, str]:
         return {
         'User-Agent': 'Chrome v22.2 Linux Ubuntu',

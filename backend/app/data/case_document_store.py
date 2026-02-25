@@ -15,6 +15,7 @@ class StoredCaseDocuments:
     documents: List[Dict[str, Any]]
     case_title: str
     stored_at: Optional[str] = None
+    signature: Optional[str] = None
 
 
 class CaseDocumentStore(Protocol):
@@ -23,11 +24,24 @@ class CaseDocumentStore(Protocol):
     def get(self, case_id: str) -> Optional[StoredCaseDocuments]:
         """Return the stored documents for a case."""
 
-    def set(self, case_id: str, documents: List[Dict[str, Any]], case_title: str) -> None:
+    def set(
+        self,
+        case_id: str,
+        documents: List[Dict[str, Any]],
+        case_title: str,
+        *,
+        signature: Optional[str] = None,
+    ) -> None:
         """Persist the supplied documents for a case."""
 
     def clear(self, case_id: str) -> None:
         """Remove the cached documents for a case."""
+
+    def find_case_id_by_signature(self, signature: str) -> Optional[str]:
+        """Return an existing case_id for the given document signature."""
+
+    def next_negative_case_id(self) -> str:
+        """Return the next available negative case identifier."""
 
 
 class SqlCaseDocumentStore(CaseDocumentStore):
@@ -78,11 +92,19 @@ class SqlCaseDocumentStore(CaseDocumentStore):
                 documents=documents,
                 case_title=case.case_title,
                 stored_at=case.stored_at,
+                signature=case.signature,
             )
         finally:
             session.close()
 
-    def set(self, case_id: str, documents: List[Dict[str, Any]], case_title: str) -> None:
+    def set(
+        self,
+        case_id: str,
+        documents: List[Dict[str, Any]],
+        case_title: str,
+        *,
+        signature: Optional[str] = None,
+    ) -> None:
         if not isinstance(case_title, str) or not case_title.strip():
             raise ValueError("case_title is required when caching case documents.")
         key = _normalize_case_id(case_id)
@@ -95,6 +117,7 @@ class SqlCaseDocumentStore(CaseDocumentStore):
                 case_id=key,
                 case_title=case_title.strip(),
                 stored_at=datetime.now(timezone.utc).isoformat(),
+                signature=signature,
             )
             session.add(record)
 
@@ -129,6 +152,38 @@ class SqlCaseDocumentStore(CaseDocumentStore):
         except Exception:
             session.rollback()
             raise
+        finally:
+            session.close()
+
+    def find_case_id_by_signature(self, signature: str) -> Optional[str]:
+        if not signature:
+            return None
+        session = self._session_factory()
+        try:
+            record = (
+                session.query(CaseRecord.case_id)
+                .filter(CaseRecord.signature == signature)
+                .one_or_none()
+            )
+            if record is None:
+                return None
+            return _normalize_case_id(record[0])
+        finally:
+            session.close()
+
+    def next_negative_case_id(self) -> str:
+        session = self._session_factory()
+        try:
+            case_ids = session.query(CaseRecord.case_id).all()
+            minimum = 0
+            for row in case_ids:
+                try:
+                    value = int(str(row[0]).strip())
+                except (TypeError, ValueError):
+                    continue
+                if value < minimum:
+                    minimum = value
+            return str(minimum - 1)
         finally:
             session.close()
 

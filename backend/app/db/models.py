@@ -14,6 +14,7 @@ class CaseRecord(Base):
     case_id: Mapped[str] = mapped_column(String, primary_key=True)
     case_title: Mapped[str] = mapped_column(String, nullable=False)
     stored_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    signature: Mapped[str | None] = mapped_column(String, nullable=True, unique=True)
 
     documents: Mapped[list["CaseDocument"]] = relationship(
         back_populates="case",

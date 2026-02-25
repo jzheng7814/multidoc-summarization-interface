@@ -23,6 +23,7 @@ from app.schemas.checklists import (
     EvidencePointer,
 )
 from app.schemas.documents import DocumentReference
+from app.services.checklist_engines import get_checklist_extraction_engine
 from app.services.documents import get_document
 
 producer = get_event_producer(__name__)
@@ -72,6 +73,7 @@ class ExtractionRunManager:
     def __init__(self, store: DocumentChecklistStore) -> None:
         self._store = store
         self._lock = asyncio.Lock()
+        self._global_lock = asyncio.Lock()
         self._in_flight: Dict[str, asyncio.Task[EvidenceCollection]] = {}
 
     async def get_cached(self, case_id: str, documents: List[DocumentReference]) -> EvidenceCollection | None:
@@ -139,19 +141,24 @@ class ExtractionRunManager:
         sorted_docs = sorted(documents, key=_document_sort_key)
         text_lookup = _build_text_lookup_from_references(case_id, sorted_docs)
 
-        stored = self._store.get(case_id)
-        if stored is not None:
-            sanitized_items = _strip_sentence_ids_from_collection(stored.items, text_lookup)
-            if sanitized_items != stored.items:
-                self._store.set(
-                    case_id,
-                    items=sanitized_items,
-                    version=stored.version,
-                )
-            return _copy_collection(sanitized_items)
+        if self._global_lock.locked():
+            producer.info("Checklist extraction queued behind active run", {"case_id": case_id})
 
-        result = await _run_extraction(case_id, sorted_docs, text_lookup)
-        return _copy_collection(result)
+        async with self._global_lock:
+            producer.info("Checklist extraction acquired global run lock", {"case_id": case_id})
+            stored = self._store.get(case_id)
+            if stored is not None:
+                sanitized_items = _strip_sentence_ids_from_collection(stored.items, text_lookup)
+                if sanitized_items != stored.items:
+                    self._store.set(
+                        case_id,
+                        items=sanitized_items,
+                        version=stored.version,
+                    )
+                return _copy_collection(sanitized_items)
+
+            result = await _run_extraction(case_id, sorted_docs, text_lookup)
+            return _copy_collection(result)
 
 
 _EXTRACTION_RUN_MANAGER = ExtractionRunManager(_DOCUMENT_CHECKLIST_STORE)
@@ -334,22 +341,21 @@ async def extract_document_checklists(case_id: str, documents: List[DocumentRefe
 async def _run_extraction(
     case_id: str, documents: List[DocumentReference], text_lookup: Dict[int, str]
 ) -> EvidenceCollection:
-    # Use the Agentic Worker for extraction
-    from app.services.agent.driver import run_extraction_agent
-
     token = bind_event_case_id(case_id)
     try:
-        # Run the agent
-        # Note: The agent will access documents via the documents service using case_id
-        # We don't pass tokenized_docs explicitly as the agent handles its own reading strategy
-        result = await run_extraction_agent(case_id)
+        engine = get_checklist_extraction_engine()
+        producer.info(
+            "Checklist extraction engine selected",
+            {"case_id": case_id, "engine": engine.name},
+        )
+        result = await engine.run(case_id, documents)
 
         sanitized_items = _strip_sentence_ids_from_collection(result, text_lookup)
         _DOCUMENT_CHECKLIST_STORE.set(case_id, items=sanitized_items, version=_CHECKLIST_VERSION)
         return _copy_collection(sanitized_items)
 
     except Exception as exc:
-        producer.error("Agent extraction failed", {"case_id": case_id, "error": str(exc)})
+        producer.error("Checklist extraction failed", {"case_id": case_id, "error": str(exc)})
         raise
     finally:
         reset_event_case_id(token)
