@@ -11,9 +11,7 @@ import ThemeToggle from '../../theme/ThemeToggle';
 import { useChecklist, useDocuments, useHighlight, usePrompt, useSummary } from './state/WorkspaceProvider';
 import {
     buildCaseStatePayload,
-    buildDocumentLookup,
-    normaliseImportedCaseState,
-    normaliseImportedItems
+    normaliseImportedCaseState
 } from './caseState';
 
 const PANE_ORDER = ['checklist', 'summary', 'documents'];
@@ -26,15 +24,12 @@ const SummaryWorkspaceView = ({ onExit, initialCaseState }) => {
         lastError,
         caseId,
         documents: loadedDocuments,
-        isLoadingDocuments,
-        loadDocuments
+        activateImportedSnapshot: activateImportedDocumentSnapshot
     } = documents;
     const {
         categories,
         items,
-        isLoading: isChecklistLoading,
-        replaceItems,
-        suppressNextServerHydration
+        activateImportedSnapshot: activateImportedChecklistSnapshot
     } = useChecklist();
     const { summaryText, setSummaryText } = useSummary();
     const { prompt, commitPrompt } = usePrompt();
@@ -86,19 +81,16 @@ const SummaryWorkspaceView = ({ onExit, initialCaseState }) => {
         if (!initialCaseState || intakeStateAppliedRef.current) {
             return;
         }
-        if (isLoadingDocuments || isChecklistLoading) {
-            return;
-        }
-        if (!Array.isArray(categories) || categories.length === 0) {
-            return;
-        }
 
         try {
-            const documentLookup = buildDocumentLookup(loadedDocuments || []);
-            const allowedCategories = new Set(categories.map((category) => category.id));
-            const importedItems = normaliseImportedItems(initialCaseState.items, allowedCategories, documentLookup);
-            suppressNextServerHydration();
-            replaceItems(importedItems);
+            activateImportedDocumentSnapshot({
+                caseId: initialCaseState.caseId,
+                documents: initialCaseState.documents
+            });
+            activateImportedChecklistSnapshot({
+                categories: initialCaseState.checklistCategories,
+                items: initialCaseState.items
+            });
             setSummaryText(initialCaseState.summaryText ?? '');
             commitPrompt(initialCaseState.prompt ?? '');
             intakeStateAppliedRef.current = true;
@@ -107,16 +99,12 @@ const SummaryWorkspaceView = ({ onExit, initialCaseState }) => {
             onExit?.(error instanceof Error ? error : new Error('Failed to hydrate imported case state.'));
         }
     }, [
-        categories,
         commitPrompt,
+        activateImportedChecklistSnapshot,
+        activateImportedDocumentSnapshot,
         initialCaseState,
-        isChecklistLoading,
-        isLoadingDocuments,
-        loadedDocuments,
         onExit,
-        replaceItems,
-        setSummaryText,
-        suppressNextServerHydration
+        setSummaryText
     ]);
 
     const handleImportCaseStateClick = useCallback(() => {
@@ -131,7 +119,9 @@ const SummaryWorkspaceView = ({ onExit, initialCaseState }) => {
                 caseId,
                 summaryText,
                 prompt,
-                items
+                items,
+                categories,
+                documents: loadedDocuments
             });
             const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -145,7 +135,7 @@ const SummaryWorkspaceView = ({ onExit, initialCaseState }) => {
         } catch (error) {
             setCaseStateActionError(error.message || 'Failed to export case state.');
         }
-    }, [caseId, items, prompt, summaryText]);
+    }, [caseId, items, prompt, summaryText, categories, loadedDocuments]);
 
     const handleImportCaseStateFile = useCallback(async (event) => {
         const file = event.target.files?.[0];
@@ -157,15 +147,14 @@ const SummaryWorkspaceView = ({ onExit, initialCaseState }) => {
             const text = await file.text();
             const payload = JSON.parse(text);
             const parsed = normaliseImportedCaseState(payload);
-            if (!Array.isArray(categories) || categories.length === 0) {
-                throw new Error('Checklist categories are not ready yet. Try again in a moment.');
-            }
-            suppressNextServerHydration();
-            const loadResult = await loadDocuments(parsed.caseId);
-            const documentLookup = buildDocumentLookup(loadResult?.documents ?? []);
-            const allowedCategories = new Set(categories.map((category) => category.id));
-            const importedItems = normaliseImportedItems(parsed.items, allowedCategories, documentLookup);
-            replaceItems(importedItems);
+            activateImportedDocumentSnapshot({
+                caseId: parsed.caseId,
+                documents: parsed.documents
+            });
+            activateImportedChecklistSnapshot({
+                categories: parsed.checklistCategories,
+                items: parsed.items
+            });
             setSummaryText(parsed.summaryText ?? '');
             commitPrompt(parsed.prompt ?? '');
         } catch (error) {
@@ -173,7 +162,7 @@ const SummaryWorkspaceView = ({ onExit, initialCaseState }) => {
         } finally {
             event.target.value = '';
         }
-    }, [categories, commitPrompt, loadDocuments, replaceItems, setSummaryText, suppressNextServerHydration]);
+    }, [activateImportedChecklistSnapshot, activateImportedDocumentSnapshot, commitPrompt, setSummaryText]);
 
     const clampSplit = useCallback((value) => Math.min(MAX_SPLIT, Math.max(MIN_SPLIT, value)), []);
 
@@ -333,7 +322,12 @@ const SummaryWorkspaceView = ({ onExit, initialCaseState }) => {
             <div className="bg-[var(--color-surface-panel)] border-b border-[var(--color-border)] px-6 py-4 shadow-sm">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                     <div>
-                        <h1 className="text-xl font-semibold text-[var(--color-text-primary)]">Gavel-Tool: Case Workspace</h1>
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-xl font-semibold text-[var(--color-text-primary)]">Gavel-Tool: Case Workspace</h1>
+                            <span className="rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-panel-alt)] px-2.5 py-1 text-xs font-medium text-[var(--color-text-secondary)]">
+                                Case ID: {caseId}
+                            </span>
+                        </div>
                         <p className="text-sm text-[var(--color-text-muted)]">Toggle the views you need; checklist drives summary generation.</p>
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">
@@ -440,7 +434,7 @@ const SummaryWorkspaceView = ({ onExit, initialCaseState }) => {
 };
 
 const SummaryWorkspace = ({ onExit, caseId, initialCaseState }) => (
-    <WorkspaceStateProvider caseId={caseId}>
+    <WorkspaceStateProvider caseId={caseId} initialCaseState={initialCaseState}>
         <SummaryWorkspaceView onExit={onExit} initialCaseState={initialCaseState} />
     </WorkspaceStateProvider>
 );

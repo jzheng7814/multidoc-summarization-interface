@@ -188,6 +188,36 @@ class ChecklistStatusResponse(BaseModel):
         serialization_alias="checklistStatus",
         validation_alias=AliasChoices("checklistStatus", "checklist_status"),
     )
+    status_message: Optional[str] = Field(
+        default=None,
+        serialization_alias="statusMessage",
+        validation_alias=AliasChoices("statusMessage", "status_message"),
+    )
+    phase: Optional[str] = Field(
+        default=None,
+        serialization_alias="phase",
+        validation_alias=AliasChoices("phase",),
+    )
+    slurm_state: Optional[str] = Field(
+        default=None,
+        serialization_alias="slurmState",
+        validation_alias=AliasChoices("slurmState", "slurm_state"),
+    )
+    current_step: Optional[int] = Field(
+        default=None,
+        serialization_alias="currentStep",
+        validation_alias=AliasChoices("currentStep", "current_step"),
+    )
+    max_steps: Optional[int] = Field(
+        default=None,
+        serialization_alias="maxSteps",
+        validation_alias=AliasChoices("maxSteps", "max_steps"),
+    )
+    error: Optional[str] = Field(
+        default=None,
+        serialization_alias="error",
+        validation_alias=AliasChoices("error",),
+    )
     document_checklists: Optional[EvidenceCollection] = Field(
         default=None,
         serialization_alias="documentChecklists",

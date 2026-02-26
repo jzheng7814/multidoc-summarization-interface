@@ -138,7 +138,7 @@ const HomeScreen = ({
                                     : 'border-[var(--color-border)] text-[var(--color-text-muted)]'
                             }`}
                         >
-                            Clearinghouse Case ID
+                            Case ID
                         </button>
                         <button
                             type="button"
@@ -149,7 +149,7 @@ const HomeScreen = ({
                                     : 'border-[var(--color-border)] text-[var(--color-text-muted)]'
                             }`}
                         >
-                            Upload .txt Documents
+                            Manual Upload
                         </button>
                         <button
                             type="button"
@@ -195,7 +195,7 @@ const HomeScreen = ({
                                 <div className="mb-2 text-sm font-medium text-[var(--color-text-secondary)]">Documents</div>
 
                                 {uploadedDocuments.length === 0 ? (
-                                    <div className="mb-3 rounded border border-dashed border-[var(--color-border)] px-3 py-6 text-center text-sm text-[var(--color-text-muted)]">
+                                    <div className="mb-3 rounded border-2 border-dashed border-[var(--color-border-strong)] bg-[var(--color-surface-panel)] px-3 py-6 text-center text-sm text-[var(--color-text-muted)]">
                                         No documents added yet.
                                     </div>
                                 ) : (
@@ -227,131 +227,14 @@ const HomeScreen = ({
                                     </div>
                                 )}
 
-                                {!isAddingDocument ? (
-                                    <button
-                                        type="button"
-                                        onClick={handleStartAddDocument}
-                                        className="w-full flex items-center justify-center gap-2 rounded border border-dashed border-[var(--color-border)] px-3 py-2 text-sm text-[var(--color-text-secondary)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                        Add Document
-                                    </button>
-                                ) : (
-                                    <div className="rounded border border-[var(--color-border)] bg-[var(--color-surface-panel)] p-3">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <div className="text-sm font-semibold text-[var(--color-text-primary)]">Add Document</div>
-                                            <button
-                                                type="button"
-                                                onClick={handleCancelAddDocument}
-                                                className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
-                                                aria-label="Close add document form"
-                                            >
-                                                <X className="h-4 w-4" />
-                                            </button>
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            <div>
-                                                <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Upload file (.txt)</label>
-                                                <input
-                                                    type="file"
-                                                    accept=".txt,text/plain"
-                                                    onChange={(event) => {
-                                                        const file = event.target.files?.[0] || null;
-                                                        setDraftDocument((current) => ({ ...current, file }));
-                                                        setDraftError('');
-                                                    }}
-                                                    className="w-full px-3 py-2 border border-[var(--color-input-border)] rounded-md bg-[var(--color-input-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] text-[var(--color-text-primary)]"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Document name</label>
-                                                <input
-                                                    type="text"
-                                                    value={draftDocument.name}
-                                                    onChange={(event) => {
-                                                        setDraftDocument((current) => ({ ...current, name: event.target.value }));
-                                                        setDraftError('');
-                                                    }}
-                                                    className="w-full px-3 py-2 border border-[var(--color-input-border)] rounded-md bg-[var(--color-input-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] text-[var(--color-text-primary)]"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Document date</label>
-                                                <input
-                                                    type="date"
-                                                    value={draftDocument.date}
-                                                    onChange={(event) => {
-                                                        setDraftDocument((current) => ({ ...current, date: event.target.value }));
-                                                        setDraftError('');
-                                                    }}
-                                                    className="w-full px-3 py-2 border border-[var(--color-input-border)] rounded-md bg-[var(--color-input-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] text-[var(--color-text-primary)]"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Document type</label>
-                                                <select
-                                                    value={draftDocument.type}
-                                                    onChange={(event) => {
-                                                        setDraftDocument((current) => ({
-                                                            ...current,
-                                                            type: event.target.value,
-                                                            typeOther: event.target.value === 'Other' ? current.typeOther : ''
-                                                        }));
-                                                        setDraftError('');
-                                                    }}
-                                                    className="w-full px-3 py-2 border border-[var(--color-input-border)] rounded-md bg-[var(--color-input-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] text-[var(--color-text-primary)]"
-                                                >
-                                                    {DOCUMENT_TYPE_OPTIONS.map((option) => (
-                                                        <option key={option} value={option}>{option}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Custom type (for Other)</label>
-                                                <input
-                                                    type="text"
-                                                    value={draftDocument.typeOther}
-                                                    disabled={draftDocument.type !== 'Other'}
-                                                    onChange={(event) => {
-                                                        setDraftDocument((current) => ({ ...current, typeOther: event.target.value }));
-                                                        setDraftError('');
-                                                    }}
-                                                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] text-[var(--color-text-primary)] ${
-                                                        draftDocument.type === 'Other'
-                                                            ? 'border-[var(--color-input-border)] bg-[var(--color-input-bg)]'
-                                                            : 'border-[var(--color-border)] bg-[var(--color-surface-muted)] text-[var(--color-text-muted)]'
-                                                    }`}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {draftError && (
-                                            <p className="mt-3 text-xs text-[var(--color-text-danger)]">{draftError}</p>
-                                        )}
-
-                                        <div className="mt-3 flex items-center justify-end gap-2">
-                                            <button
-                                                type="button"
-                                                onClick={handleCancelAddDocument}
-                                                className="px-3 py-1.5 text-sm rounded border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-strong)]"
-                                            >
-                                                Cancel
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={handleAddDocument}
-                                                className="px-3 py-1.5 text-sm rounded bg-[var(--color-accent)] text-[var(--color-text-inverse)] hover:bg-[var(--color-accent-hover)]"
-                                            >
-                                                Add Document
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
+                                <button
+                                    type="button"
+                                    onClick={handleStartAddDocument}
+                                    className="w-full flex items-center justify-center gap-2 rounded border-2 border-[var(--color-accent-soft)] bg-[var(--color-surface-panel)] px-3 py-2 text-sm font-medium text-[var(--color-accent)] hover:border-[var(--color-accent)]"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    Add Document
+                                </button>
                             </div>
                         </>
                     ) : (
@@ -384,9 +267,133 @@ const HomeScreen = ({
                     disabled={!canProceed}
                     className="w-full bg-[var(--color-accent)] text-[var(--color-text-inverse)] py-3 px-4 rounded-md font-medium hover:bg-[var(--color-accent-hover)] disabled:bg-[var(--color-surface-muted)] disabled:text-[var(--color-input-disabled-text)] disabled:cursor-not-allowed transition-colors"
                 >
-                    {isUploading ? 'Uploading…' : isImportingState ? 'Importing State…' : 'Proceed to Summary Editor'}
+                    {isUploading ? 'Uploading…' : isImportingState ? 'Importing State…' : 'Continue'}
                 </button>
             </div>
+
+            {isAddingDocument && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+                    <div
+                        className="absolute inset-0 bg-[var(--color-overlay-scrim)] backdrop-blur-sm"
+                        onClick={handleCancelAddDocument}
+                        aria-hidden="true"
+                    />
+                    <div className="relative w-full max-w-xl rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-panel)] shadow-2xl p-4">
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="text-sm font-semibold text-[var(--color-text-primary)]">Add Document</div>
+                            <button
+                                type="button"
+                                onClick={handleCancelAddDocument}
+                                className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+                                aria-label="Close add document form"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-3">
+                            <div>
+                                <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Upload file (.txt)</label>
+                                <input
+                                    type="file"
+                                    accept=".txt,text/plain"
+                                    onChange={(event) => {
+                                        const file = event.target.files?.[0] || null;
+                                        setDraftDocument((current) => ({ ...current, file }));
+                                        setDraftError('');
+                                    }}
+                                    className="w-full px-3 py-2 border border-[var(--color-input-border)] rounded-md bg-[var(--color-input-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] text-[var(--color-text-primary)]"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Document name</label>
+                                <input
+                                    type="text"
+                                    value={draftDocument.name}
+                                    onChange={(event) => {
+                                        setDraftDocument((current) => ({ ...current, name: event.target.value }));
+                                        setDraftError('');
+                                    }}
+                                    className="w-full px-3 py-2 border border-[var(--color-input-border)] rounded-md bg-[var(--color-input-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] text-[var(--color-text-primary)]"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Document date</label>
+                                <input
+                                    type="date"
+                                    value={draftDocument.date}
+                                    onChange={(event) => {
+                                        setDraftDocument((current) => ({ ...current, date: event.target.value }));
+                                        setDraftError('');
+                                    }}
+                                    className="w-full px-3 py-2 border border-[var(--color-input-border)] rounded-md bg-[var(--color-input-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] text-[var(--color-text-primary)]"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Document type</label>
+                                <select
+                                    value={draftDocument.type}
+                                    onChange={(event) => {
+                                        setDraftDocument((current) => ({
+                                            ...current,
+                                            type: event.target.value,
+                                            typeOther: event.target.value === 'Other' ? current.typeOther : ''
+                                        }));
+                                        setDraftError('');
+                                    }}
+                                    className="w-full px-3 py-2 border border-[var(--color-input-border)] rounded-md bg-[var(--color-input-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] text-[var(--color-text-primary)]"
+                                >
+                                    {DOCUMENT_TYPE_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>{option}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Custom type (for Other)</label>
+                                <input
+                                    type="text"
+                                    value={draftDocument.typeOther}
+                                    disabled={draftDocument.type !== 'Other'}
+                                    onChange={(event) => {
+                                        setDraftDocument((current) => ({ ...current, typeOther: event.target.value }));
+                                        setDraftError('');
+                                    }}
+                                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] text-[var(--color-text-primary)] ${
+                                        draftDocument.type === 'Other'
+                                            ? 'border-[var(--color-input-border)] bg-[var(--color-input-bg)]'
+                                            : 'border-[var(--color-border)] bg-[var(--color-surface-muted)] text-[var(--color-text-muted)]'
+                                    }`}
+                                />
+                            </div>
+                        </div>
+
+                        {draftError && (
+                            <p className="mt-3 text-xs text-[var(--color-text-danger)]">{draftError}</p>
+                        )}
+
+                        <div className="mt-3 flex items-center justify-end gap-2">
+                            <button
+                                type="button"
+                                onClick={handleCancelAddDocument}
+                                className="px-3 py-1.5 text-sm rounded border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-strong)]"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleAddDocument}
+                                className="px-3 py-1.5 text-sm rounded bg-[var(--color-accent)] text-[var(--color-text-inverse)] hover:bg-[var(--color-accent-hover)]"
+                            >
+                                Add Document
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

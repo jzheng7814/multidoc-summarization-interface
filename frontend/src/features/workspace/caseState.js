@@ -1,5 +1,15 @@
 export const CASE_STATE_KIND = 'legal-case-workspace-state';
-export const CASE_STATE_SCHEMA_VERSION = 1;
+export const CASE_STATE_SCHEMA_VERSION = 2;
+
+const FALLBACK_CATEGORY_COLORS = [
+    '#2D6A4F',
+    '#1D4ED8',
+    '#B45309',
+    '#7C3AED',
+    '#BE123C',
+    '#0F766E',
+    '#4B5563'
+];
 
 const parseDocumentId = (value) => {
     if (value == null) {
@@ -17,6 +27,10 @@ const parseOffset = (value) => {
     return Number.isNaN(parsed) ? null : parsed;
 };
 
+const resolveFallbackCategoryColor = (index) => (
+    FALLBACK_CATEGORY_COLORS[index % FALLBACK_CATEGORY_COLORS.length]
+);
+
 export const buildDocumentLookup = (documents = []) => {
     const lookup = {};
     documents.forEach((document) => {
@@ -25,6 +39,100 @@ export const buildDocumentLookup = (documents = []) => {
         }
     });
     return lookup;
+};
+
+export const normaliseImportedDocuments = (rawDocuments) => {
+    if (!Array.isArray(rawDocuments)) {
+        throw new Error('Case state import must include a documents array.');
+    }
+
+    const documents = [];
+    const seenDocumentIds = new Set();
+
+    rawDocuments.forEach((entry) => {
+        if (!entry || typeof entry !== 'object') {
+            throw new Error('Each imported document must be an object.');
+        }
+
+        const documentId = parseDocumentId(entry.id ?? entry.documentId ?? entry.document_id);
+        if (documentId == null) {
+            throw new Error('Each imported document must include a numeric id.');
+        }
+        if (seenDocumentIds.has(documentId)) {
+            throw new Error(`Imported documents contain duplicate id "${documentId}".`);
+        }
+        seenDocumentIds.add(documentId);
+
+        const content = entry.content ?? entry.text ?? entry.body;
+        if (typeof content !== 'string') {
+            throw new Error(`Imported document "${documentId}" must include content as a string.`);
+        }
+
+        const titleCandidate = entry.title ?? entry.name;
+        const title = typeof titleCandidate === 'string' && titleCandidate.trim().length
+            ? titleCandidate.trim()
+            : `Document ${documentId}`;
+
+        const type = typeof entry.type === 'string' ? entry.type : '';
+        const date = typeof entry.date === 'string' ? entry.date : '';
+
+        documents.push({
+            id: documentId,
+            title,
+            content,
+            ...(type ? { type } : {}),
+            ...(date ? { date } : {})
+        });
+    });
+
+    return documents;
+};
+
+export const normaliseImportedCategoryMeta = (rawCategories, rawItems = []) => {
+    const categoryMap = new Map();
+
+    if (Array.isArray(rawCategories)) {
+        rawCategories.forEach((entry) => {
+            if (!entry || typeof entry !== 'object') {
+                throw new Error('Each checklist category must be an object.');
+            }
+            const id = (entry.id ?? entry.categoryId ?? entry.category_id ?? '').toString().trim();
+            if (!id) {
+                throw new Error('Checklist categories must include an id.');
+            }
+            if (categoryMap.has(id)) {
+                throw new Error(`Checklist categories contain duplicate id "${id}".`);
+            }
+            const labelCandidate = entry.label ?? entry.name;
+            const colorCandidate = entry.color;
+            categoryMap.set(id, {
+                id,
+                label: typeof labelCandidate === 'string' && labelCandidate.trim().length ? labelCandidate.trim() : id,
+                color: typeof colorCandidate === 'string' && colorCandidate.trim().length
+                    ? colorCandidate.trim()
+                    : resolveFallbackCategoryColor(categoryMap.size)
+            });
+        });
+    }
+
+    if (Array.isArray(rawItems)) {
+        rawItems.forEach((entry) => {
+            if (!entry || typeof entry !== 'object') {
+                return;
+            }
+            const categoryId = (entry.categoryId ?? entry.category_id ?? entry.binId ?? entry.bin_id ?? '').toString().trim();
+            if (!categoryId || categoryMap.has(categoryId)) {
+                return;
+            }
+            categoryMap.set(categoryId, {
+                id: categoryId,
+                label: categoryId,
+                color: resolveFallbackCategoryColor(categoryMap.size)
+            });
+        });
+    }
+
+    return Array.from(categoryMap.values());
 };
 
 export const normaliseImportedCaseState = (payload) => {
@@ -57,11 +165,23 @@ export const normaliseImportedCaseState = (payload) => {
         throw new Error('Case state import must include prompt as a string.');
     }
 
+    const rawItems = payload.checklist?.items ?? payload.items;
+    const documents = normaliseImportedDocuments(payload.documents ?? payload.caseDocuments ?? payload.case_documents);
+    const checklistCategories = normaliseImportedCategoryMeta(
+        payload.checklist?.categories ?? payload.categories,
+        rawItems
+    );
+    const documentLookup = buildDocumentLookup(documents);
+    const allowedCategoryIds = new Set(checklistCategories.map((category) => category.id));
+    const items = normaliseImportedItems(rawItems, allowedCategoryIds, documentLookup);
+
     return {
         caseId,
         summaryText,
         prompt,
-        items: payload.checklist?.items ?? payload.items
+        documents,
+        checklistCategories,
+        items
     };
 };
 
@@ -133,7 +253,7 @@ export const normaliseImportedItems = (rawItems, allowedCategoryIds, documentLoo
     return items;
 };
 
-export const buildCaseStatePayload = ({ caseId, summaryText, prompt, items }) => {
+export const buildCaseStatePayload = ({ caseId, summaryText, prompt, items, categories, documents }) => {
     const normalizedCaseId = String(caseId ?? '').trim();
     if (!normalizedCaseId) {
         throw new Error('Cannot export case state without a case ID.');
@@ -146,7 +266,19 @@ export const buildCaseStatePayload = ({ caseId, summaryText, prompt, items }) =>
         caseId: normalizedCaseId,
         summaryText: typeof summaryText === 'string' ? summaryText : '',
         prompt: typeof prompt === 'string' ? prompt : '',
+        documents: Array.isArray(documents) ? documents.map((document) => ({
+            id: document.id,
+            title: document.title ?? document.name ?? `Document ${document.id}`,
+            content: typeof document.content === 'string' ? document.content : '',
+            ...(typeof document.type === 'string' && document.type ? { type: document.type } : {}),
+            ...(typeof document.date === 'string' && document.date ? { date: document.date } : {})
+        })) : [],
         checklist: {
+            categories: Array.isArray(categories) ? categories.map((category, index) => ({
+                id: category.id,
+                label: category.label ?? category.id,
+                color: category.color ?? resolveFallbackCategoryColor(index)
+            })) : [],
             items: Array.isArray(items) ? items : []
         }
     };

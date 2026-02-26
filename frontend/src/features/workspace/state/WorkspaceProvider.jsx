@@ -8,12 +8,24 @@ import usePromptStore from './usePromptStore';
 
 const WorkspaceStateContext = createContext(null);
 
-export const WorkspaceStateProvider = ({ children, caseId }) => {
-    const documents = useDocumentsStore({ caseId });
+export const WorkspaceStateProvider = ({ children, caseId, initialCaseState = null }) => {
+    const importedDocumentSnapshot = initialCaseState
+        ? {
+            caseId: initialCaseState.caseId,
+            documents: initialCaseState.documents
+        }
+        : null;
+    const documents = useDocumentsStore({ caseId, importedSnapshot: importedDocumentSnapshot });
     const summary = useSummaryStore({ caseId: documents.caseId });
     const highlight = useHighlightStore({ summary, documents });
     const chat = useChatStore({ summary, documents, highlight });
-    const checklist = useChecklistStore({ caseId: documents.caseId });
+    const importedChecklistSnapshot = initialCaseState
+        ? {
+            categories: initialCaseState.checklistCategories,
+            items: initialCaseState.items
+        }
+        : null;
+    const checklist = useChecklistStore({ caseId: documents.caseId, importedSnapshot: importedChecklistSnapshot });
     const prompt = usePromptStore();
 
     const value = useMemo(

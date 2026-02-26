@@ -3,6 +3,8 @@ import { Trash2 } from 'lucide-react';
 import { useChecklist, useDocuments, useHighlight } from '../state/WorkspaceProvider';
 import { buildDocumentLookup } from '../caseState';
 
+const ACTIVE_CHECKLIST_STATUSES = new Set(['pending', 'queued', 'preprocessing', 'waiting_resources', 'running', 'finalizing']);
+
 const ChecklistPanel = ({ isActive }) => {
     const { categories, isLoading, addItem, deleteItem } = useChecklist();
     const documents = useDocuments();
@@ -185,7 +187,7 @@ const ChecklistPanel = ({ isActive }) => {
 
     const sortedCategories = useMemo(() => categories, [categories]);
     const checklistStatus = documents.documentChecklistStatus;
-    const isPendingFromDocs = checklistStatus === 'pending';
+    const isPendingFromDocs = ACTIVE_CHECKLIST_STATUSES.has(checklistStatus);
     const effectiveLoading = isLoading || isPendingFromDocs;
     const isChecklistReady = !effectiveLoading && sortedCategories.length > 0;
 

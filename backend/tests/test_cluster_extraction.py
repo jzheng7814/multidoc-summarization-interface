@@ -61,8 +61,8 @@ class ClusterChecklistRunnerTests(unittest.TestCase):
                 "state": "COMPLETED",
                 "output_dir": "/tmp/out",
                 "document_map": {
-                    "by_source_document": {
-                        "Docket": 77,
+                    "by_source_document_id": {
+                        "77": "77",
                     }
                 },
                 "checklist": {
@@ -72,9 +72,9 @@ class ClusterChecklistRunnerTests(unittest.TestCase):
                                 "value": "Appeal filed",
                                 "evidence": [
                                     {
-                                        "source_document": "Docket",
-                                        "location": "Page 1",
-                                        "text": "Appeal filed in circuit court.",
+                                        "source_document_id": "77",
+                                        "start_offset": 0,
+                                        "end_offset": 6,
                                     }
                                 ],
                             }
@@ -144,6 +144,8 @@ class ClusterChecklistRunnerTests(unittest.TestCase):
         self.assertEqual(collection.items[0].bin_id, "Appeal")
         self.assertEqual(collection.items[0].value, "Appeal filed")
         self.assertEqual(collection.items[0].evidence.document_id, 77)
+        self.assertEqual(collection.items[0].evidence.start_offset, 0)
+        self.assertEqual(collection.items[0].evidence.end_offset, 6)
 
         stdin_payload = json.loads(fake_process.stdin.buffer.decode("utf-8"))
         self.assertEqual(stdin_payload["case"]["case_id"], "46210")
@@ -206,14 +208,20 @@ class ClusterChecklistRunnerTests(unittest.TestCase):
                 "extracted": [
                     {
                         "value": "Plaintiff: Injunction",
-                        "evidence": [{"source_document": "Complaint", "location": "Page 1", "text": "injunction"}],
+                        "evidence": [
+                            {
+                                "source_document_id": "21",
+                                "start_offset": 2,
+                                "end_offset": 8,
+                            }
+                        ],
                     }
                 ]
             }
         }
         artifact_document_map = {
-            "by_source_document": {"Complaint": 21},
-            "documents": [],
+            "by_source_document_id": {"21": "21"},
+            "documents": [{"doc_id": "21"}],
         }
 
         with (
@@ -230,6 +238,7 @@ class ClusterChecklistRunnerTests(unittest.TestCase):
         self.assertEqual(len(collection.items), 1)
         self.assertEqual(collection.items[0].bin_id, "Remedy_Sought")
         self.assertEqual(collection.items[0].evidence.document_id, 21)
+        self.assertEqual(collection.items[0].evidence.start_offset, 2)
 
     def test_run_raises_on_failed_terminal_event(self):
         stdout_lines = [

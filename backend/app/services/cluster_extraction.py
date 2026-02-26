@@ -8,7 +8,7 @@ import tempfile
 import uuid
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from app.core.config import get_settings
 from app.eventing import get_event_producer
@@ -17,6 +17,7 @@ from app.schemas.documents import DocumentReference
 from app.services.documents import get_document
 
 producer = get_event_producer(__name__)
+ProgressCallback = Callable[[str, Dict[str, Any]], None]
 
 
 @dataclass(frozen=True)
@@ -32,7 +33,12 @@ class ClusterChecklistRunner:
     def __init__(self) -> None:
         self._settings = get_settings()
 
-    async def run(self, case_id: str, documents: List[DocumentReference]) -> EvidenceCollection:
+    async def run(
+        self,
+        case_id: str,
+        documents: List[DocumentReference],
+        progress_callback: Optional[ProgressCallback] = None,
+    ) -> EvidenceCollection:
         if not documents:
             return EvidenceCollection(items=[])
 
@@ -81,11 +87,20 @@ class ClusterChecklistRunner:
                     continue
 
                 event_type = parsed["event_type"]
+                event_data = parsed["data"]
                 self._emit_controller_event(case_id, request_id, parsed)
+                if progress_callback is not None:
+                    try:
+                        progress_callback(event_type, dict(event_data))
+                    except Exception as exc:  # pylint: disable=broad-except
+                        producer.warning(
+                            "Cluster progress callback failed",
+                            {"case_id": case_id, "request_id": request_id, "error": str(exc)},
+                        )
 
                 if event_type in {"completed", "failed"}:
                     terminal_event_type = event_type
-                    terminal_data = parsed["data"]
+                    terminal_data = event_data
 
             return_code = await process.wait()
             await stderr_task
@@ -520,7 +535,7 @@ class ClusterChecklistRunner:
         if not isinstance(document_map_payload, dict):
             return result
 
-        by_source = document_map_payload.get("by_source_document")
+        by_source = document_map_payload.get("by_source_document_id")
         if isinstance(by_source, dict):
             for raw_key, raw_doc_id in by_source.items():
                 parsed_doc_id = self._coerce_int(raw_doc_id)
@@ -533,10 +548,12 @@ class ClusterChecklistRunner:
             for record in documents:
                 if not isinstance(record, dict):
                     continue
-                parsed_doc_id = self._coerce_int(record.get("doc_id"))
+                raw_doc_id = record.get("doc_id")
+                parsed_doc_id = self._coerce_int(raw_doc_id)
                 if parsed_doc_id is None:
                     continue
-                self._set_document_aliases(result, record.get("source_document"), parsed_doc_id)
+                self._set_document_aliases(result, raw_doc_id, parsed_doc_id)
+                self._set_document_aliases(result, record.get("source_document_id"), parsed_doc_id)
 
         return result
 
@@ -583,32 +600,38 @@ class ClusterChecklistRunner:
 
         verified_raw = selected_entry.get("verified")
         verified = True if verified_raw is None else bool(verified_raw)
+        start_offset_raw = selected_entry.get("start_offset")
+        if start_offset_raw is None:
+            start_offset_raw = selected_entry.get("startOffset")
+        end_offset_raw = selected_entry.get("end_offset")
+        if end_offset_raw is None:
+            end_offset_raw = selected_entry.get("endOffset")
 
         return EvidencePointer(
             document_id=selected_document_id,
             location=self._coerce_string(selected_entry.get("location")),
-            start_offset=self._coerce_int(selected_entry.get("start_offset") or selected_entry.get("startOffset")),
-            end_offset=self._coerce_int(selected_entry.get("end_offset") or selected_entry.get("endOffset")),
+            start_offset=self._coerce_int(start_offset_raw),
+            end_offset=self._coerce_int(end_offset_raw),
             text=self._coerce_string(selected_entry.get("text")),
             verified=verified,
         )
 
     def _resolve_document_id(self, evidence: Dict[str, Any], source_document_map: Dict[str, int]) -> Optional[int]:
-        for key in ("document_id", "documentId", "doc_id", "docId"):
+        for key in ("source_document_id", "sourceDocumentId", "document_id", "documentId", "doc_id", "docId"):
             parsed = self._coerce_int(evidence.get(key))
             if parsed is not None:
                 return parsed
 
-        source_document = evidence.get("source_document")
-        if source_document is None:
-            source_document = evidence.get("sourceDocument")
-        if source_document is None:
+        source_document_id = evidence.get("source_document_id")
+        if source_document_id is None:
+            source_document_id = evidence.get("sourceDocumentId")
+        if source_document_id is None:
             return None
 
-        if isinstance(source_document, int):
-            return source_document
+        if isinstance(source_document_id, int):
+            return source_document_id
 
-        source_text = str(source_document).strip()
+        source_text = str(source_document_id).strip()
         if not source_text:
             return None
 
@@ -653,5 +676,9 @@ class ClusterChecklistRunner:
 _RUNNER = ClusterChecklistRunner()
 
 
-async def run_cluster_extraction(case_id: str, documents: List[DocumentReference]) -> EvidenceCollection:
-    return await _RUNNER.run(case_id, documents)
+async def run_cluster_extraction(
+    case_id: str,
+    documents: List[DocumentReference],
+    progress_callback: Optional[ProgressCallback] = None,
+) -> EvidenceCollection:
+    return await _RUNNER.run(case_id, documents, progress_callback=progress_callback)

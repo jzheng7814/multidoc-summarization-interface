@@ -3,14 +3,58 @@ import { loadDocuments as loadCaseDocuments } from '../../../services/documentSe
 import { fetchChecklistStatus } from '../../../services/apiClient';
 
 const normaliseCaseId = (value) => String(value ?? '').trim();
+const ACTIVE_CHECKLIST_STATUSES = new Set(['pending', 'queued', 'preprocessing', 'waiting_resources', 'running', 'finalizing']);
 
-const useDocumentsStore = ({ caseId } = {}) => {
-    const [currentCaseId, setCurrentCaseId] = useState(normaliseCaseId(caseId));
-    const [remoteDocuments, setRemoteDocuments] = useState([]);
+const coerceDocumentId = (value) => {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return value;
+    }
+    if (typeof value === 'string') {
+        const parsed = Number.parseInt(value, 10);
+        if (!Number.isNaN(parsed)) {
+            return parsed;
+        }
+    }
+    return null;
+};
+
+const normaliseDocumentRecord = (document) => {
+    const id = coerceDocumentId(document?.id);
+    if (id == null) {
+        return null;
+    }
+    return {
+        ...document,
+        id,
+        title: document?.title ?? document?.name ?? `Document ${id}`,
+        content: typeof document?.content === 'string' ? document.content : ''
+    };
+};
+
+const normaliseImportedDocuments = (documents = []) => (
+    (Array.isArray(documents) ? documents : [])
+        .map((entry) => normaliseDocumentRecord(entry))
+        .filter(Boolean)
+);
+
+const useDocumentsStore = ({ caseId, importedSnapshot = null } = {}) => {
+    const hasImportedSnapshot = Boolean(importedSnapshot);
+    const initialImportedDocuments = hasImportedSnapshot
+        ? normaliseImportedDocuments(importedSnapshot.documents)
+        : [];
+    const initialCaseId = hasImportedSnapshot
+        ? normaliseCaseId(importedSnapshot.caseId)
+        : normaliseCaseId(caseId);
+
+    const [currentCaseId, setCurrentCaseId] = useState(initialCaseId);
+    const [remoteDocuments, setRemoteDocuments] = useState(initialImportedDocuments);
     const [selectedDocument, setSelectedDocument] = useState(null);
     const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
     const [lastError, setLastError] = useState(null);
-    const [documentChecklistStatus, setDocumentChecklistStatus] = useState('idle');
+    const [documentChecklistStatus, setDocumentChecklistStatus] = useState(
+        hasImportedSnapshot ? (initialImportedDocuments.length > 0 ? 'ready' : 'empty') : 'idle'
+    );
+    const [usingImportedSnapshot, setUsingImportedSnapshot] = useState(hasImportedSnapshot);
     const documentRef = useRef(null);
 
     const loadDocuments = useCallback(async (requestedCaseId = currentCaseId) => {
@@ -25,6 +69,7 @@ const useDocumentsStore = ({ caseId } = {}) => {
         setIsLoadingDocuments(true);
         setLastError(null);
         setDocumentChecklistStatus('pending');
+        setUsingImportedSnapshot(false);
 
         try {
             const { documents: loadedDocs, checklistStatus } = await loadCaseDocuments(resolvedCaseId);
@@ -48,17 +93,43 @@ const useDocumentsStore = ({ caseId } = {}) => {
         }
     }, [currentCaseId]);
 
+    const activateImportedSnapshot = useCallback(({ caseId: snapshotCaseId, documents }) => {
+        const nextCaseId = normaliseCaseId(snapshotCaseId);
+        const nextDocuments = normaliseImportedDocuments(documents);
+        setCurrentCaseId(nextCaseId);
+        setRemoteDocuments(nextDocuments);
+        setDocumentChecklistStatus(nextDocuments.length > 0 ? 'ready' : 'empty');
+        setLastError(null);
+        setIsLoadingDocuments(false);
+        setUsingImportedSnapshot(true);
+        setSelectedDocument((current) => {
+            if (current != null && nextDocuments.some((doc) => doc.id === current)) {
+                return current;
+            }
+            return nextDocuments.length > 0 ? nextDocuments[0].id : null;
+        });
+    }, []);
+
     useEffect(() => {
+        if (usingImportedSnapshot) {
+            return;
+        }
         const resolved = normaliseCaseId(caseId);
         setCurrentCaseId(resolved);
-    }, [caseId]);
+    }, [caseId, usingImportedSnapshot]);
 
     useEffect(() => {
+        if (usingImportedSnapshot) {
+            return;
+        }
         loadDocuments(currentCaseId).catch(() => {});
-    }, [currentCaseId, loadDocuments]);
+    }, [currentCaseId, loadDocuments, usingImportedSnapshot]);
 
     useEffect(() => {
-        if (documentChecklistStatus !== 'pending') {
+        if (usingImportedSnapshot) {
+            return undefined;
+        }
+        if (!ACTIVE_CHECKLIST_STATUSES.has(documentChecklistStatus)) {
             return undefined;
         }
 
@@ -68,16 +139,15 @@ const useDocumentsStore = ({ caseId } = {}) => {
 
         const pollForChecklistStatus = async () => {
             try {
-            const response = await fetchChecklistStatus(currentCaseId);
-            if (cancelled) {
-                return;
-            }
-            const status = response?.checklistStatus ?? response?.checklist_status ?? 'pending';
-
-            if (status && status !== 'pending') {
-                setDocumentChecklistStatus(status);
-                return;
-            }
+                const response = await fetchChecklistStatus(currentCaseId);
+                if (cancelled) {
+                    return;
+                }
+                const status = response?.checklistStatus ?? response?.checklist_status ?? 'pending';
+                setDocumentChecklistStatus(status || 'pending');
+                if (!ACTIVE_CHECKLIST_STATUSES.has(status || 'pending')) {
+                    return;
+                }
             } catch (error) {
                 if (!cancelled) {
                     console.error('Checklist status polling failed', error);
@@ -97,7 +167,7 @@ const useDocumentsStore = ({ caseId } = {}) => {
                 window.clearTimeout(pollTimeoutId);
             }
         };
-    }, [currentCaseId, documentChecklistStatus]);
+    }, [currentCaseId, documentChecklistStatus, usingImportedSnapshot]);
 
     useEffect(() => {
         setSelectedDocument((current) => {
@@ -134,7 +204,8 @@ const useDocumentsStore = ({ caseId } = {}) => {
         documentRef,
         getCurrentDocument,
         lastError,
-        documentChecklistStatus
+        documentChecklistStatus,
+        activateImportedSnapshot
     }), [
         currentCaseId,
         getCurrentDocument,
@@ -143,7 +214,8 @@ const useDocumentsStore = ({ caseId } = {}) => {
         remoteDocuments,
         selectedDocument,
         lastError,
-        documentChecklistStatus
+        documentChecklistStatus,
+        activateImportedSnapshot
     ]);
 
     return value;

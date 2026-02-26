@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import HomeScreen from './features/home/HomeScreen';
+import ChecklistPreparationPage from './features/workspace/ChecklistPreparationPage';
 import SummaryWorkspace from './features/workspace/SummaryWorkspace';
 import { uploadDocuments } from './services/apiClient';
 import { normaliseImportedCaseState } from './features/workspace/caseState';
@@ -61,11 +62,10 @@ const App = () => {
                 if (!assignedCaseId) {
                     throw new Error('Upload succeeded but no case ID was returned.');
                 }
-                window.alert(`Assigned case ID: ${assignedCaseId}`);
                 setInitialCaseState(null);
                 setCaseId(assignedCaseId);
                 setActiveCaseId(assignedCaseId);
-                setCurrentPage('summary');
+                setCurrentPage('waiting');
             } catch (error) {
                 setCaseIdError(error.message || 'Failed to upload documents.');
             } finally {
@@ -82,7 +82,7 @@ const App = () => {
         setCaseIdError('');
         setInitialCaseState(null);
         setActiveCaseId(normalisedCaseId);
-        setCurrentPage('summary');
+        setCurrentPage('waiting');
     }, [caseId, intakeMode, stateFile, uploadCaseName, uploadedDocuments]);
 
     const handleExitWorkspace = useCallback((error) => {
@@ -146,6 +146,20 @@ const App = () => {
                 isImportingState={isImportingState}
                 onProceed={handleProceed}
                 canProceed={canProceed}
+            />
+        );
+    }
+
+    if (currentPage === 'waiting') {
+        return (
+            <ChecklistPreparationPage
+                caseId={activeCaseId}
+                onReady={() => {
+                    setCurrentPage('summary');
+                }}
+                onBack={() => {
+                    setCurrentPage('home');
+                }}
             />
         );
     }

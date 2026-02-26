@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from app.eventing import get_event_producer
 from app.schemas.checklists import EvidenceCategoryCollection, ChecklistStatusResponse
@@ -48,24 +48,38 @@ def _build_cached_document_references(case_id: str) -> List[DocumentReference]:
 
 @router.get("/{case_id}/checklist", response_model=EvidenceCategoryCollection)
 async def get_case_checklist(case_id: str) -> EvidenceCategoryCollection:
+    document_refs = _build_cached_document_references(case_id)
+    if not document_refs:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Checklist is not ready for case '{case_id}'. Start extraction first.",
+        )
+
+    cached = await checklist_service.get_document_checklists_if_cached(case_id, document_refs)
+    if cached is None:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Checklist is not ready for case '{case_id}'.",
+        )
+    return checklist_service.build_category_collection_from_collection(cached)
+
+
+@router.post("/{case_id}/checklist/start", response_model=ChecklistStatusResponse)
+async def start_case_checklist(case_id: str) -> ChecklistStatusResponse:
     document_refs = _build_document_references(case_id)
-    record = await checklist_service.ensure_document_checklist_record(case_id, document_refs)
-    return checklist_service.build_category_collection(record)
+    return await checklist_service.start_document_checklist_extraction(case_id, document_refs)
 
 
 @router.get("/{case_id}/checklist/status", response_model=ChecklistStatusResponse)
 async def get_checklist_status(case_id: str) -> ChecklistStatusResponse:
     document_refs = _build_cached_document_references(case_id)
-    if not document_refs:
-        return ChecklistStatusResponse(checklist_status="pending", document_checklists=None)
-
     try:
-        cached = await checklist_service.get_document_checklists_if_cached(case_id, document_refs)
+        return await checklist_service.get_document_checklist_status(case_id, document_refs)
     except Exception:  # pylint: disable=broad-except
         producer.error("Failed to check checklist status", {"case_id": case_id})
-        return ChecklistStatusResponse(checklist_status="error", document_checklists=None)
-
-    if cached is not None:
-        return ChecklistStatusResponse(checklist_status="ready", document_checklists=cached)
-
-    return ChecklistStatusResponse(checklist_status="pending", document_checklists=None)
+        return ChecklistStatusResponse(
+            checklist_status="error",
+            status_message="Failed to fetch checklist status.",
+            error="status_query_failed",
+            document_checklists=None,
+        )
