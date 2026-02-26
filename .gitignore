@@ -36,3 +36,5 @@ logs/
 flat_db/
 scratch/
 scratch/*
+
+*.db
