@@ -9,6 +9,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 from fastapi import HTTPException
 
+from app.core.config import get_settings
 from app.eventing import bind_event_case_id, get_event_producer, reset_event_case_id
 from app.data.checklist_store import (
     DocumentChecklistStore,
@@ -67,6 +68,7 @@ for category in _CATEGORY_METADATA:
 _CATEGORY_ORDER = [category["id"] for category in _CATEGORY_METADATA if isinstance(category.get("id"), str)]
 
 _DOCUMENT_CHECKLIST_STORE: DocumentChecklistStore = SqlDocumentChecklistStore()
+_SETTINGS = get_settings()
 _UNSET = object()
 
 
@@ -169,6 +171,16 @@ class ExtractionRunManager:
             if task is not None and task.done():
                 self._in_flight.pop(case_key, None)
                 task = None
+
+            if task is None and not _SETTINGS.checklist_start_enabled:
+                self._update_status(
+                    case_key,
+                    checklist_status="failed",
+                    phase="disabled",
+                    status_message="Checklist extraction starts are disabled by configuration.",
+                    error="checklist_start_disabled",
+                )
+                return self._status_response(self._status_by_case[case_key])
 
             if task is None:
                 if self._global_lock.locked():

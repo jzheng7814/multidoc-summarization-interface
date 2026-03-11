@@ -68,6 +68,7 @@ class Settings(BaseSettings):
     openai_api_key: Optional[str] = None
     clearinghouse_api_key: Optional[str] = None
     checklist_extraction_mode: Literal["local", "cluster"] = "local"
+    checklist_start_enabled: bool = True
     # Deprecated compatibility fields retained so older local .env files still load.
     cluster_simulate: bool = False
     cluster_remote_gavel_dir: str = ""
