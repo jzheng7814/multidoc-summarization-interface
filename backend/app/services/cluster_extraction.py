@@ -14,6 +14,8 @@ from app.core.config import get_settings
 from app.eventing import get_event_producer
 from app.schemas.checklists import SUMMARY_DOCUMENT_ID, EvidenceCollection, EvidenceItem, EvidencePointer
 from app.schemas.documents import DocumentReference
+from app.services.cluster_checklist_spec import load_cluster_checklist_spec
+from app.services.cluster_focus_context import load_cluster_focus_context
 from app.services.documents import get_document
 
 producer = get_event_producer(__name__)
@@ -237,7 +239,15 @@ class ClusterChecklistRunner:
                 "state": data.get("state"),
                 "error": data.get("error") or data.get("message"),
             }
-        keys_of_interest = ("case_id", "document_count", "dataset_name", "model", "checklist_config", "max_steps")
+        keys_of_interest = (
+            "case_id",
+            "document_count",
+            "dataset_name",
+            "model",
+            "checklist_strategy",
+            "checklist_items_count",
+            "max_steps",
+        )
         return {key: data.get(key) for key in keys_of_interest if key in data}
 
     def _failure_detail(self, data: Dict[str, Any]) -> str:
@@ -259,6 +269,12 @@ class ClusterChecklistRunner:
         documents: List[DocumentReference],
     ) -> Dict[str, Any]:
         resolved_docs = self._resolve_documents(case_id, documents)
+        checklist_strategy = self._settings.cluster_checklist_strategy
+        checklist_spec = load_cluster_checklist_spec(
+            self._settings.cluster_checklist_spec_path,
+            strategy=checklist_strategy,
+        )
+        focus_context = load_cluster_focus_context()
         request: Dict[str, Any] = {
             "request_id": request_id,
             "case": {
@@ -270,11 +286,15 @@ class ClusterChecklistRunner:
                 "case_documents_date": [doc.date for doc in resolved_docs],
             },
             "model": self._settings.cluster_model_name,
-            "checklist_config": self._settings.cluster_checklist_config,
-            "max_steps": int(self._settings.cluster_max_steps),
+            "checklist_strategy": checklist_strategy,
+            "checklist_spec": checklist_spec,
+            "focus_context": focus_context,
             "resume": bool(self._settings.cluster_resume),
             "debug": bool(self._settings.cluster_debug),
         }
+
+        if checklist_strategy == "all":
+            request["max_steps"] = int(self._settings.cluster_max_steps)
 
         slurm: Dict[str, Any] = {}
         partition = self._settings.cluster_slurm_partition.strip()
@@ -321,7 +341,7 @@ class ClusterChecklistRunner:
             f"cd {self._double_quote(self._settings.cluster_remote_repo_dir)} && "
             f"{self._double_quote(self._settings.cluster_remote_python_path)} "
             f"{self._double_quote(self._settings.cluster_remote_controller_script)} "
-            "--mode slurm_extract "
+            "--mode slurm_extract_strategy "
             f"--poll-seconds {int(self._settings.cluster_poll_seconds)} "
             f"--max-wait-seconds {int(self._settings.cluster_max_wait_seconds)}"
         )

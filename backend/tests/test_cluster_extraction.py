@@ -150,6 +150,24 @@ class ClusterChecklistRunnerTests(unittest.TestCase):
         stdin_payload = json.loads(fake_process.stdin.buffer.decode("utf-8"))
         self.assertEqual(stdin_payload["case"]["case_id"], "46210")
         self.assertEqual(stdin_payload["case"]["case_documents_id"], ["77"])
+        self.assertEqual(stdin_payload["checklist_strategy"], "individual")
+        self.assertIn("checklist_spec", stdin_payload)
+        self.assertIn("focus_context", stdin_payload)
+        self.assertIsInstance(stdin_payload["focus_context"], str)
+        self.assertTrue(stdin_payload["focus_context"].strip())
+        self.assertNotIn("checklist_config", stdin_payload)
+        self.assertNotIn("max_steps", stdin_payload)
+        self.assertNotIn("reasoning_effort", stdin_payload)
+        checklist_items = stdin_payload["checklist_spec"]["checklist_items"]
+        self.assertIsInstance(checklist_items, list)
+        self.assertGreater(len(checklist_items), 0)
+        first_item = checklist_items[0]
+        self.assertIn("key", first_item)
+        self.assertIn("description", first_item)
+        self.assertIn("user_instruction", first_item)
+        self.assertIn("constraints", first_item)
+        self.assertIn("max_steps", first_item)
+        self.assertIn("reasoning_effort", first_item)
 
     def test_run_loads_artifacts_when_completed_event_omits_inline_checklist(self):
         completed_event = {

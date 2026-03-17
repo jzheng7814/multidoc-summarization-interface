@@ -1,0 +1,47 @@
+focus_context: |
+  This run supports legal case summarization and human review over a multi-document corpus centered on one target case.
+
+  Purpose
+  - Build a checklist that is accurate enough for downstream summary generation and easy for a human reviewer to verify from the cited evidence.
+  - Optimize for strong, self-contained values and canonical supporting evidence.
+  - The human reviewer should mostly need to delete, trim, or correct unsupported content, not reopen documents to discover major facts the extraction missed.
+
+  Scope discipline
+  - Extract facts about the target case itself unless a checklist item explicitly asks for relationships, citations, or external matters.
+  - Other cases, quoted precedent, string citations, background authorities, and parallel litigation are external references, not target-case facts.
+  - Treat another case as related only when the local text explicitly states the relationship to the target case.
+  - Treat an appeal as part of the target case only when the record explicitly ties the appellate event to this case.
+  - Do not infer judges, rulings, decrees, class status, or procedural posture for the target case from other cases.
+
+  Source priority
+  - Prefer the most authoritative local source for each item.
+  - Use complaint and operative pleading captions, party sections, prayers for relief, signature blocks, and amended pleadings for parties, class status, representation structure, remedies, factual allegations, and claim or party changes.
+  - Use the actual order, opinion, notice of appeal, appellate disposition, decree, trial record, or docket text for this case for rulings, appeals, decrees, trials, settlements, monitoring, and current procedural posture.
+  - For current procedural posture, later supported materials control earlier ones.
+  - When the underlying pleading or order is available, prefer it over short docket text for substantive claim or party changes.
+
+  Value quality
+  - Write each value as a concise, self-contained synthesis that remains useful without the evidence text.
+  - Do not output bare labels, bare citations, or thin docket paraphrases when a more informative supported value is possible.
+  - Prefer fewer, stronger, summary-usable values over many weak fragments.
+  - When new evidence enriches, narrows, or corrects an existing entity, event, or proposition, consolidate and update instead of appending duplicates.
+
+  Evidence quality
+  - Cite evidence that directly supports every material clause of the value.
+  - Prefer canonical spans that let a reviewer confirm the value quickly.
+  - If one span does not support the full value, use multiple spans or split the value into smaller supported values.
+  - Do not rely on a span that supports only a case number, title fragment, or generic legal standard when the value makes a broader claim.
+
+  Pitfalls to avoid
+  - Do not confuse the target case with cited precedent or adjacent litigation involving similar parties, agencies, policies, or dates.
+  - Do not use quoted language from another case to classify this case.
+  - Do not confuse filing dates with entered dates or later procedural dates.
+  - Do not infer substantive claim changes, party changes, or requested relief solely from a short docket description when the underlying filing or order is available.
+  - Do not treat motion hearings, scheduling notices, or telephonic access instructions as trial events.
+  - Do not encode uncertainty as Not Applicable or N/A unless the record affirmatively establishes non-applicability and the checklist item explicitly calls for that outcome.
+
+  Completeness standard
+  - Before stopping on an important item, check the canonical sources most likely to contain the answer.
+  - Prefer capturing the major summary-significant developments of the target case over enumerating minor procedural noise.
+  - If a later pleading, ruling, or docket event materially changes parties, claims, requested relief, or posture, capture that change explicitly.
+  - When a bucket is relation-heavy or easy to contaminate, leave it empty rather than filling it with unsupported inferences from external cases.

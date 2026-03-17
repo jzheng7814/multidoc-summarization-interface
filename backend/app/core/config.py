@@ -85,6 +85,9 @@ class Settings(BaseSettings):
     cluster_poll_seconds: int = 2
     cluster_max_wait_seconds: int = 21600
     cluster_model_name: str = "unsloth/gpt-oss-20b-BF16"
+    cluster_checklist_strategy: Literal["all", "individual"] = "individual"
+    cluster_checklist_spec_path: str = "app/resources/checklists/remote_checklist_spec.individual.json"
+    # Deprecated path-based config input, retained for local backward compatibility only.
     cluster_checklist_config: str = "config/checklist_configs/all/all_26_items.yaml"
     cluster_max_steps: int = 300
     cluster_resume: bool = False

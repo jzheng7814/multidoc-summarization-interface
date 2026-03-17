@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import colorsys
 from dataclasses import dataclass
 from datetime import datetime
 import json
@@ -26,6 +27,7 @@ from app.schemas.checklists import (
     EvidencePointer,
 )
 from app.schemas.documents import DocumentReference
+from app.services.cluster_checklist_spec import load_cluster_checklist_spec
 from app.services.checklist_engines import get_checklist_extraction_engine
 from app.services.documents import get_document
 
@@ -33,17 +35,64 @@ producer = get_event_producer(__name__)
 
 _ASSET_DIR = Path(__file__).resolve().parents[1] / "resources" / "checklists"
 _ITEM_DESCRIPTIONS_PATH = _ASSET_DIR / "item_specific_info_improved.json"
-_CATEGORY_METADATA_PATH = _ASSET_DIR / "v2" / "category_metadata.json"
 
 _CHECKLIST_VERSION = "evidence-items-v1"
 
 if not _ITEM_DESCRIPTIONS_PATH.exists():
     raise RuntimeError(f"Checklist item descriptions not found at {_ITEM_DESCRIPTIONS_PATH}")
-if not _CATEGORY_METADATA_PATH.exists():
-    raise RuntimeError(f"Checklist category metadata not found at {_CATEGORY_METADATA_PATH}")
 
 _CHECKLIST_ITEM_DESCRIPTIONS: Dict[str, str] = json.loads(_ITEM_DESCRIPTIONS_PATH.read_text(encoding="utf-8"))
-_CATEGORY_METADATA: List[Dict[str, object]] = json.loads(_CATEGORY_METADATA_PATH.read_text(encoding="utf-8"))
+_SETTINGS = get_settings()
+_DOCUMENT_CHECKLIST_STORE: DocumentChecklistStore = SqlDocumentChecklistStore()
+_UNSET = object()
+
+
+def _rgb_to_hex(red: float, green: float, blue: float) -> str:
+    return f"#{round(red * 255):02X}{round(green * 255):02X}{round(blue * 255):02X}"
+
+
+def _build_distinct_color(index: int) -> str:
+    # Golden-angle hue spacing keeps adjacent categories visually separated.
+    hue = ((index * 137.508) % 360) / 360.0
+    red, green, blue = colorsys.hls_to_rgb(hue, 0.50, 0.62)
+    return _rgb_to_hex(red, green, blue)
+
+
+def _build_item_category_metadata() -> List[Dict[str, object]]:
+    try:
+        spec = load_cluster_checklist_spec(
+            _SETTINGS.cluster_checklist_spec_path,
+            strategy=_SETTINGS.cluster_checklist_strategy,
+        )
+    except Exception as exc:  # pylint: disable=broad-except
+        raise RuntimeError(
+            "Unable to load checklist spec for checklist category ordering. "
+            f"path={_SETTINGS.cluster_checklist_spec_path!r}, "
+            f"strategy={_SETTINGS.cluster_checklist_strategy!r}, error={exc}"
+        ) from exc
+
+    raw_items = spec.get("checklist_items")
+    if not isinstance(raw_items, list) or not raw_items:
+        raise RuntimeError("Checklist spec did not contain a non-empty checklist_items array.")
+
+    metadata: List[Dict[str, object]] = []
+    for idx, item in enumerate(raw_items):
+        key = item.get("key") if isinstance(item, dict) else None
+        if not isinstance(key, str) or not key.strip():
+            raise RuntimeError(f"Checklist item at index {idx} is missing a valid key.")
+        cleaned_key = key.strip()
+        metadata.append(
+            {
+                "id": cleaned_key,
+                "label": cleaned_key,
+                "color": _build_distinct_color(idx),
+                "members": [cleaned_key],
+            }
+        )
+    return metadata
+
+
+_CATEGORY_METADATA: List[Dict[str, object]] = _build_item_category_metadata()
 
 _CATEGORY_LOOKUP: Dict[str, Dict[str, object]] = {}
 _CATEGORY_BY_ITEM: Dict[str, str] = {}
@@ -66,10 +115,6 @@ for category in _CATEGORY_METADATA:
         _CATEGORY_BY_ITEM[member] = category_id
 
 _CATEGORY_ORDER = [category["id"] for category in _CATEGORY_METADATA if isinstance(category.get("id"), str)]
-
-_DOCUMENT_CHECKLIST_STORE: DocumentChecklistStore = SqlDocumentChecklistStore()
-_SETTINGS = get_settings()
-_UNSET = object()
 
 
 @dataclass(frozen=True)

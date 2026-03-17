@@ -1,0 +1,307 @@
+{
+  "checklist_items": [
+    {
+      "key": "Filing_Date",
+      "description": "The single calendar date on which this lawsuit was first commenced in court. This is the case filing date, not the filing date of later motions, amended pleadings, notices, or appellate papers.",
+      "user_instruction": "Extract the case filing date from the legal documents.",
+      "constraints": [
+        "Extract at most one value for this item.",
+        "Only extract the date the case itself was first filed or initiated; do not extract filing dates for individual documents or later procedural events.",
+        "Prefer the complaint, operative complaint caption, or the docket entry for the initial complaint over later narrative references.",
+        "Write the value as a self-contained statement that identifies the filing date and the court when available.",
+        "Do not infer the court from unrelated captions, cited cases, or other litigation mentioned in the record.",
+        "If multiple dates appear, choose the earliest date that clearly refers to commencement of this case and support it with evidence.",
+        "Leave this item empty if the case filing date is not stated with sufficient confidence."
+      ],
+      "max_steps": 15,
+      "reasoning_effort": "low"
+    },
+    {
+      "key": "Who_are_the_Parties",
+      "description": "The parties in the case, stated as self-contained values that identify each party or party group, its litigation role, and the relevant capacity or office. Values should be summary-usable and focus on the litigants, not mailing-address detail.",
+      "user_instruction": "Extract the parties involved and state each party's role in the case.",
+      "constraints": [
+        "Create one value per distinct party or party group, not one value per document mention.",
+        "Each value must state the party's litigation role, name, and any relevant capacity, office, or organizational description that matters to the case.",
+        "Prefer the complaint or operative complaint caption and party sections over scattered later mentions.",
+        "If an amended or operative complaint materially changes the party set, check it before stopping and capture the materially important litigants shown there.",
+        "Deduplicate repeated mentions, abbreviations, and caption variants that refer to the same party.",
+        "Do not omit the plaintiff or defendant designation when it is available.",
+        "Do not spend value space on mailing addresses unless the address itself is materially relevant.",
+        "Leave this item empty rather than generating a placeholder value when party identity is unclear."
+      ],
+      "max_steps": 160,
+      "reasoning_effort": "medium"
+    },
+    {
+      "key": "Class_Action_or_Individual_Plaintiffs",
+      "description": "The single case-level designation of whether plaintiffs proceed as a class action or as individual plaintiffs. The value should briefly identify the plaintiff group and, when relevant, whether the case is brought as a putative class, certified class, or individual action.",
+      "user_instruction": "Extract whether the case proceeds as a class action or as individual plaintiffs.",
+      "constraints": [
+        "Extract at most one synthesized case-level value for this item.",
+        "Prefer the complaint, operative complaint, class allegations, or class-certification briefing over quoted precedent or generic legal discussion.",
+        "Do not rely on quoted language from another case to classify this case.",
+        "Do not create separate values for repeated mentions in different documents or procedural stages unless the case clearly changed posture; if it did, describe the change within one value.",
+        "State whether the action is individual, putative class, certified class, or another class posture supported by the documents.",
+        "If the case is individual, briefly identify the named plaintiff or plaintiff group when available.",
+        "Leave this item empty if the class-versus-individual status cannot be determined confidently."
+      ],
+      "max_steps": 20,
+      "reasoning_effort": "low"
+    },
+    {
+      "key": "Representation_Structure",
+      "description": "The representation structure for the litigants, stated as short, self-contained values that identify which side or party group was represented by what type of counsel and, when available, by which organization, office, law firm, or counsel group. Focus on summary-usable representation categories such as private counsel, union general counsel, government counsel, public-interest counsel, or pro se.",
+      "user_instruction": "Extract the representation structure for the parties, identifying which side or party group had what type of counsel and any specific organization or office when available.",
+      "constraints": [
+        "Create one value per distinct representation arrangement, not one value per attorney title or signature-block line.",
+        "Each value must identify the represented side or party group, the counsel type, and the relevant organization, office, or firm when available.",
+        "Prefer caption appearance blocks, signature blocks, counsel listings, and operative pleadings over stray references to counsel.",
+        "Do not output bare job titles such as General Counsel, Associate General Counsel, or Assistant Counsel without identifying which party they represented and what representation structure they indicate.",
+        "If both in-house or union counsel and outside counsel appear for the same side, synthesize that arrangement in one value when possible.",
+        "Leave this item empty if the representation structure cannot be determined confidently."
+      ],
+      "max_steps": 60,
+      "reasoning_effort": "medium"
+    },
+    {
+      "key": "Arguments_and_Reasoning",
+      "description": "The major legal theories and reasoning advanced in the case. Each value should capture one major theory cluster actually used in this case, such as a plaintiff-side theory, a defense-side theory, a court-treatment value explaining how the court resolved a theory, or an amendment-added theory introduced by a later operative pleading. Values should identify who advanced the theory, what the core proposition was, what main support was used, and how the court treated it when that treatment is available.",
+      "user_instruction": "Extract the major theories and reasoning from the legal documents. Use one value per major plaintiff theory, defense theory, court treatment of a theory, or amendment-added theory, identifying who advanced it, what the theory was, what support it relied on, and how the court treated it when available.",
+      "constraints": [
+        "Create one value per major theory cluster, not one value per citation, quote, or minor subargument.",
+        "Each value must clearly identify its type by beginning with one of these labels: Plaintiff theory:, Defense theory:, Court treatment:, or Amendment-added theory:.",
+        "Each value must identify who advanced the theory or reasoning when available, such as plaintiffs, defendants, district court, appellate majority, concurrence, or dissent.",
+        "Each value must state the substance of the theory and the main support used for it, such as facts, statutes, constitutional provisions, precedent, policy logic, or doctrinal tests.",
+        "For Court treatment values, identify which party theory the court addressed and whether the court adopted, rejected, distinguished, or discussed it.",
+        "Prefer the complaint, operative complaint, major merits or jurisdiction briefs, and the actual ruling text over quoted precedent or passing mentions in unrelated filings.",
+        "Before stopping, check whether the record supports at least one plaintiff-side theory, one defense-side theory, and one court-treatment value; if any supported category is missing, keep searching canonical sources for that category.",
+        "If an amended or operative complaint adds or materially changes theories, create an Amendment-added theory value for the new theory cluster when the record supports it.",
+        "Emit supported theory categories incrementally; do not wait to find every category before extracting the ones already supported.",
+        "Do not create a separate value solely for a cited case, statute, constitutional provision, or cause-of-action label; incorporate authorities into the argument they support.",
+        "Do not extract arguments described only in quoted precedent, related cases, or parallel litigation unless the text is explicitly applying that argument to the current case.",
+        "Use multiple evidence spans when needed so that every material clause of the value is actually supported; if the value would still be too broad, split it into smaller supported values.",
+        "Deduplicate repeated descriptions of the same argument across filings, opinions, and procedural stages; if an argument materially evolves, reflect that evolution within one value or as a later distinct value only if the proposition changed.",
+        "Keep purely procedural metadata, related-case metadata, and bare factual background out of this item unless they are used as support for a specific argument."
+      ],
+      "max_steps": 220,
+      "reasoning_effort": "high"
+    },
+    {
+      "key": "Remedy_Sought",
+      "description": "The material remedies each party asks the court to grant, stated as self-contained values that identify who sought the relief, what relief was requested, and at what stage when relevant. Focus on the actual relief package sought, not generic legal standards.",
+      "user_instruction": "Extract the remedies sought from the legal documents.",
+      "constraints": [
+        "Create one value per materially distinct requested remedy or relief package, not one value per repeated mention of a remedy label.",
+        "Each value must identify who sought the relief and what relief the party asked the court to grant.",
+        "Prefer prayers for relief, requested-relief sections of motions, and proposed orders over generic legal-standard discussions.",
+        "Do not extract a remedy from a sentence that only states the standard for obtaining relief without showing that the party actually requested it in this case.",
+        "When several related forms of relief are requested together, synthesize them into one concise value if that is more summary-usable than listing isolated labels.",
+        "Leave this item empty if the record does not clearly show that the relief was requested."
+      ],
+      "max_steps": 70,
+      "reasoning_effort": "medium"
+    },
+    {
+      "key": "First_and_Last_name_of_Judge",
+      "description": "The judge or justice who materially presided over or issued a ruling in this case, stated as self-contained values that identify the person's name and court. For appellate or Supreme Court decisions in this case, include whether the judge or justice authored or joined the majority, concurrence, or dissent when the documents make that clear.",
+      "user_instruction": "Extract the judges or justices involved in this case, including their court and decision role when applicable.",
+      "constraints": [
+        "Create one value per distinct judge or justice materially involved in this case.",
+        "Each value must identify the person's name and the court in which they acted.",
+        "Prefer case-assignment entries, actual orders, and opinions in this case over discussion of other decisions.",
+        "Do not include judges named only in cited precedent, quoted opinions, related cases, or unrelated authorities.",
+        "Do not include purely administrative assignment entries unless the judge materially presided over or ruled in this case.",
+        "For appellate or Supreme Court decisions in this case, include whether the judge or justice is associated with the majority, concurrence, or dissent when the documents make that clear.",
+        "If only part of the name is available, use the available portion and still identify the court."
+      ],
+      "max_steps": 100,
+      "reasoning_effort": "medium"
+    },
+    {
+      "key": "Consolidated_Cases_Noted",
+      "description": "Any indication that the case has been consolidated with other case(s), including the related case identifier and the consolidation relationship.",
+      "user_instruction": "Extract any consolidation information from the legal documents.",
+      "constraints": [
+        "Create one value per distinct consolidation event or consolidated case relationship.",
+        "Each value must identify the other case or cases and how the consolidation is described when that information is available.",
+        "Prefer docket entries, caption changes, consolidation orders, and operative pleadings over passing references.",
+        "Leave this item empty if the documents do not affirmatively show consolidation.",
+        "Do not output Not Applicable, N/A, or placeholder values."
+      ],
+      "max_steps": 15,
+      "reasoning_effort": "low"
+    },
+    {
+      "key": "Related_Cases_Listed_by_Their_Case_Code_Number",
+      "description": "Any distinct related matter identified by case number or docket code, stated as a self-contained value that gives the related case number and briefly explains how that matter is related to this case.",
+      "user_instruction": "Extract related cases and explain the relationship to this case.",
+      "constraints": [
+        "Create one value per distinct related case.",
+        "Each value must include the related case number or docket code and a short explanation of the relationship, such as companion case, earlier or later challenge to the same policy, consolidation partner, appeal, enforcement action, or other concrete linkage.",
+        "Prefer docket entries, caption references, relation notices, consolidation materials, or explicit narrative statements of relationship over bare citations.",
+        "Do not include the current case itself, even if the documents repeat this case's own case number.",
+        "Do not include cases appearing only as precedent or background authority unless the record explicitly identifies them as related to this case.",
+        "Deduplicate repeated references to the same related case across documents.",
+        "Leave this item empty if the relationship cannot be explained from the record."
+      ],
+      "max_steps": 25,
+      "reasoning_effort": "low"
+    },
+    {
+      "key": "Note_Important_Filings",
+      "description": "The most important filings or motions in the case, summarized as short, self-contained narrative values. Focus on major procedural filings that materially changed the requested relief, claims, parties, jurisdiction, merits, or case posture. For each filing, state who filed it, what it sought or did, why it mattered, and the relevant date(s) if available.",
+      "user_instruction": "Extract the important filings from the legal documents.",
+      "constraints": [
+        "Create one value per distinct important filing event, not one value per docket entry variant or repeated title.",
+        "Each value must identify who filed the document, what it sought or did, and why it materially mattered to the case.",
+        "Prefer the complaint, operative complaints, emergency-relief motions, amendment motions, dispositive motions, oppositions, and other filings that changed claims, parties, requested relief, or posture.",
+        "Do not include purely clerical, corrected, excess-pages, scheduling, or administrative filings unless they materially changed the litigation.",
+        "Deduplicate repeated references to the same filing across the docket and later descriptions.",
+        "When a filing led to a major change, briefly identify that change rather than just naming the filing title."
+      ],
+      "max_steps": 260,
+      "reasoning_effort": "medium"
+    },
+    {
+      "key": "Amendments_and_Claim_or_Party_Changes",
+      "description": "Any true amendment event or operative-pleading change that materially altered the claims, parties, or requested relief. Each value should synthesize the amendment date or voluntary dismissal date, what changed in the pleading, and why that change mattered.",
+      "user_instruction": "Extract true pleading-delta events and summarize how an amended complaint, motion to amend, amendment order, or voluntary dismissal changed the claims, parties, or requested relief.",
+      "constraints": [
+        "Create one value per distinct pleading-delta event.",
+        "Each value must identify the relevant date, what changed in the pleading, and why the change mattered to the case.",
+        "Prefer motions to amend, proposed amended complaints, amended complaints, voluntary dismissals that changed the party set, and orders granting or denying leave over passing references.",
+        "Use this item only for actual pleading or party-set changes. Motions to dismiss, oppositions, briefing schedules, and other non-amendment procedural events do not belong here unless the value is specifically about a resulting pleading change.",
+        "When parties were added, dropped, substituted, or voluntarily dismissed, say so explicitly when the record supports it.",
+        "When claims or legal theories were added, narrowed, substituted, or changed, summarize those changes concisely and identify the affected side when clear.",
+        "Do not create a placeholder value that merely says a revised pleading was filed; identify the actual party, claim, or requested-relief delta when the record supports it.",
+        "Leave this item empty if the record does not show a material amendment or operative-pleading change."
+      ],
+      "max_steps": 140,
+      "reasoning_effort": "medium"
+    },
+    {
+      "key": "Court_Rulings",
+      "description": "The key rulings or orders in the case, stated as self-contained event summaries that identify which court ruled, what motion or issue it decided, how it ruled, and the practical effect when stated.",
+      "user_instruction": "Extract the court rulings and identify which court made each ruling.",
+      "constraints": [
+        "Create one value per distinct ruling event, not one value per order title or repeated docket reference.",
+        "Each value must identify the issuing court, the motion or issue decided, how the court ruled, and the relevant date if available.",
+        "Include the movant or requesting party when clear from the documents.",
+        "Prefer the actual order, opinion, or docket text for this case over descriptions of rulings in other cases.",
+        "Do not include scheduling orders, teleconference instructions, corrected notices, or other administrative orders unless they materially changed the litigation.",
+        "Do not include rulings from cited precedent, related cases, or parallel litigation unless the ruling is itself part of this case's appellate history.",
+        "For appellate rulings, state whether the lower-court decision was affirmed, reversed, vacated, remanded, modified, or dismissed.",
+        "Include a reporter citation or Westlaw citation when the ruling itself provides one or the record clearly identifies one.",
+        "Deduplicate repeated descriptions of the same ruling across documents."
+      ],
+      "max_steps": 220,
+      "reasoning_effort": "high"
+    },
+    {
+      "key": "Trials",
+      "description": "Information about any actual trial proceedings, trial scheduling, trial outcomes, or materially related trial rulings.",
+      "user_instruction": "Extract the trial information from the legal documents.",
+      "constraints": [
+        "Create one value per distinct trial event.",
+        "Only include actual trial proceedings, trial scheduling, trial outcomes, or rulings specifically tied to trial.",
+        "Do not include motion hearings, oral argument on motions, status conferences, or telephonic access instructions as trial events.",
+        "Leave this item empty if the case materials do not show a trial-related event."
+      ],
+      "max_steps": 20,
+      "reasoning_effort": "low"
+    },
+    {
+      "key": "Appeal",
+      "description": "Any appeal or petition for appellate review in the case, stated as a self-contained event summary. Each value should identify who sought review, what order or judgment was challenged, from which court, to which appellate court, and the disposition or current status if stated.",
+      "user_instruction": "Extract appeals and describe each appellate event with the originating court, appellate court, challenged ruling, and disposition or status.",
+      "constraints": [
+        "Create one value per distinct appeal event or appellate phase in this case.",
+        "Prefer notices of appeal, appellate captions, appellate orders, appellate opinions, or explicit docket references tying the appellate event to this case.",
+        "Do not create an entry merely because an appellate caption or notice appears in cited precedent, a related case, or parallel litigation.",
+        "Each value must identify the appellant or petitioner, the originating court or ruling being reviewed, the appellate court, and the date if available.",
+        "For appellate decisions, state whether the matter was affirmed, reversed, vacated, remanded, dismissed, denied, or remains pending.",
+        "Deduplicate repeated references to the same appeal across documents.",
+        "Leave this item empty if the record does not show an actual appeal or petition for review in this case."
+      ],
+      "max_steps": 120,
+      "reasoning_effort": "medium"
+    },
+    {
+      "key": "Current_Procedural_Posture",
+      "description": "The current procedural status of the case as of the latest supported point in the record. The value should state whether the case is ongoing, dismissed, stayed, settled, closed, on appeal, or in another supported posture, and should identify the most important pending motion, operative complaint, or recent ruling when that context is needed.",
+      "user_instruction": "Extract the current procedural posture of the case from the latest supported materials.",
+      "constraints": [
+        "Extract at most one synthesized case-level value for this item.",
+        "Prefer the latest material docket entries, latest operative pleading status, latest dispositive-motion briefing, and latest material order over stale earlier descriptions.",
+        "Later supported materials control earlier posture statements when they conflict or provide a more current view of the case.",
+        "State the current posture directly and include the latest material event or pending matter needed to understand why that posture is current.",
+        "Do not anchor the posture to an outdated deadline or earlier event if later filings or orders provide a more current posture snapshot.",
+        "Do not infer that the case is over or ongoing from silence alone when the record is genuinely ambiguous.",
+        "Leave this item empty if the current posture cannot be determined with reasonable confidence from the available record."
+      ],
+      "max_steps": 30,
+      "reasoning_effort": "low"
+    },
+    {
+      "key": "Decrees",
+      "description": "Any decree-like court order that imposes ongoing obligations, such as an injunction, consent decree, or stipulated judgment or injunction. Each value should synthesize the issuing court, decree type, entry date, major substantive obligations, duration or termination terms, and major later modifications or termination events if stated.",
+      "user_instruction": "Extract decrees and summarize each decree's date, major terms, duration, and later modification or termination status when available.",
+      "constraints": [
+        "Create one value per distinct decree, injunction, consent decree, or stipulated judgment or injunction.",
+        "Each value must identify the issuing court, the decree type, the entry date when available, the major obligations imposed, and how long the decree lasts or how it ends when stated.",
+        "Prefer the actual order, injunction, decree, or stipulated judgment over commentary about it.",
+        "If the same decree was later modified, stayed, partially terminated, or vacated, incorporate those developments into the same value when they concern that decree.",
+        "Do not include purely private settlement terms unless those terms were expressly incorporated into a court order.",
+        "Leave this item empty if no decree-like court order imposing ongoing obligations exists."
+      ],
+      "max_steps": 100,
+      "reasoning_effort": "medium"
+    },
+    {
+      "key": "Settlements",
+      "description": "Any settlement agreement that is not entered as a court order. Each value should synthesize the settlement date or approval status, major substantive terms, duration, whether the court retained jurisdiction to enforce it, and any material enforcement dispute or later settlement-status development if stated.",
+      "user_instruction": "Extract settlements and summarize each settlement's date, major terms, duration, court-enforcement status, and any later enforcement dispute when available.",
+      "constraints": [
+        "Create one value per distinct settlement agreement.",
+        "Each value must identify the execution date, approval status, or other key settlement date when available, the major terms, the duration if stated, and whether the court retained enforcement jurisdiction when stated.",
+        "Prefer the settlement document, approval order, or clear docket description over commentary about settlement possibilities.",
+        "If there was later litigation over settlement enforcement, briefly incorporate the dispute and outcome or pending status into the same value when it concerns that settlement.",
+        "Do not include settlement terms or dates once the settlement, in whole or in part, is entered as a court order; those belong under Decrees.",
+        "Leave this item empty if no non-decree settlement agreement exists."
+      ],
+      "max_steps": 20,
+      "reasoning_effort": "low"
+    },
+    {
+      "key": "Monitoring",
+      "description": "Any court-appointed or agreed monitoring arrangement related to compliance with a decree, injunction, or settlement. Each value should identify the monitor if known, the source of authority or subject being monitored, the relevant date, and the key report finding or compliance status if stated.",
+      "user_instruction": "Extract monitoring developments, including monitor appointments and significant report findings or compliance updates.",
+      "constraints": [
+        "Create one value per distinct monitoring development, such as appointment of a monitor or a material report or update.",
+        "Each value must identify the monitor name if known, what authority or obligation is being monitored, the relevant date when available, and the key compliance finding or reporting status.",
+        "Prefer the appointment order, monitoring report, or clear compliance update over hypothetical discussion of monitoring.",
+        "When a report addresses compliance with specific decree or settlement terms, summarize the most important findings rather than copying report titles.",
+        "Do not create a value for a monitor mentioned only hypothetically or in cited precedent.",
+        "Leave this item empty if no monitoring arrangement or monitor report exists."
+      ],
+      "max_steps": 20,
+      "reasoning_effort": "low"
+    },
+    {
+      "key": "Factual_Basis_of_Case",
+      "description": "The core factual basis of the case, stated as self-contained values that summarize the central factual events, policies, conduct, and affected parties on which the case is built. Focus on summary-central factual episodes rather than every micro-fact or legal conclusion.",
+      "user_instruction": "Extract the factual basis from the legal documents.",
+      "constraints": [
+        "Create one value per distinct factual episode, policy, or event cluster that is central to the case.",
+        "Each value must identify what happened, who was involved, and when or in what period it occurred when that information is available.",
+        "Prefer the complaint, operative complaint, material declarations, and factual sections of rulings over procedural argument sections.",
+        "Do not create separate values for every tiny sub-fact when several details belong to one larger factual episode.",
+        "Do not use this item for legal reasoning, merits conclusions, jurisdictional holdings, or procedural events unless those facts are themselves part of the underlying factual dispute.",
+        "Keep the set of values oriented toward the facts a summary writer would need to describe the dispute."
+      ],
+      "max_steps": 100,
+      "reasoning_effort": "medium"
+    }
+  ]
+}

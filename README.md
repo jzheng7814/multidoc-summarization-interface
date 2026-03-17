@@ -25,6 +25,7 @@ Full-stack prototype for an attorney-facing case summary editor. The React/Vite 
 - Evidence extraction runs over the authoritative documents (`app/services/checklists.py`), using prompt templates and metadata from `app/resources/checklists/`.
 - Extraction is cached per case in SQLite (path set by `LEGAL_CASE_DATABASE_URL`) so repeated loads avoid redundant extraction.
 - Checklist collections feed the checklist UI and can be pushed into chat context so the assistant can close gaps.
+- Remote SLURM controller contract + operator runbook lives at `scratch/handoff/HANDOFF.md` (includes SSH invocation mode, NDJSON event semantics, and artifact rsync flow).
 
 ### Conversational assistant & patch pipeline
 - Chat sessions (`/chat/session`) persist in-process; every `send_message` call includes the current summary, lightweight document metadata, and the structured context items gathered from highlights or checklist rows.

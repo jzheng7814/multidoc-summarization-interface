@@ -54,7 +54,7 @@ def _document_sort_key(document: Document) -> tuple:
     date_value = _parse_date(document.date)
     if date_value is None:
         return (1, 1, 0, document.id)
-    return (1, 0, -date_value.timestamp(), document.id)
+    return (1, 0, date_value, document.id)
 
 
 def _normalize_case_url(case_detail: Dict[str, Any], case_id: str) -> str:
