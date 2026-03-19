@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import shlex
+import shutil
 import subprocess
 import tempfile
 import uuid
@@ -16,7 +17,8 @@ from app.schemas.checklists import SUMMARY_DOCUMENT_ID, EvidenceCollection, Evid
 from app.schemas.documents import DocumentReference
 from app.services.cluster_checklist_spec import load_cluster_checklist_spec
 from app.services.cluster_focus_context import load_cluster_focus_context
-from app.services.documents import get_document
+from app.services.documents import get_case_title, get_document
+from app.services.spoof_replay import validate_spoof_fixture_dir
 
 producer = get_event_producer(__name__)
 ProgressCallback = Callable[[str, Dict[str, Any]], None]
@@ -274,7 +276,8 @@ class ClusterChecklistRunner:
             self._settings.cluster_checklist_spec_path,
             strategy=checklist_strategy,
         )
-        focus_context = load_cluster_focus_context()
+        case_title = get_case_title(case_id)
+        focus_context = load_cluster_focus_context(case_title)
         request: Dict[str, Any] = {
             "request_id": request_id,
             "case": {
@@ -694,6 +697,44 @@ class ClusterChecklistRunner:
 
 
 _RUNNER = ClusterChecklistRunner()
+
+
+def validate_cluster_runtime_prerequisites() -> None:
+    settings = get_settings()
+    if settings.cluster_run_mode == "spoof":
+        validate_spoof_fixture_dir(
+            settings.cluster_spoof_extraction_fixture_dir,
+            label="Spoof extraction",
+            required_files=(
+                "events.ndjson",
+                "request.json",
+                "manifest.json",
+                "result_payload.json",
+                "checklist.json",
+                "document_map.json",
+            ),
+        )
+        return
+
+    config_errors: List[str] = []
+
+    required_text_fields = {
+        "LEGAL_CASE_CLUSTER_SSH_HOST": settings.cluster_ssh_host,
+        "LEGAL_CASE_CLUSTER_REMOTE_REPO_DIR": settings.cluster_remote_repo_dir,
+        "LEGAL_CASE_CLUSTER_REMOTE_PYTHON_PATH": settings.cluster_remote_python_path,
+        "LEGAL_CASE_CLUSTER_REMOTE_CONTROLLER_SCRIPT": settings.cluster_remote_controller_script,
+    }
+    for env_name, value in required_text_fields.items():
+        if not isinstance(value, str) or not value.strip():
+            config_errors.append(f"{env_name} must be set.")
+
+    missing_binaries = [name for name in ("ssh", "rsync") if shutil.which(name) is None]
+    for binary in missing_binaries:
+        config_errors.append(f"Required local binary '{binary}' was not found on PATH.")
+
+    if config_errors:
+        joined = " ".join(config_errors)
+        raise RuntimeError(f"Cluster extraction prerequisites are not satisfied. {joined}")
 
 
 async def run_cluster_extraction(

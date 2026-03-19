@@ -3,17 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, Protocol
 
-from app.eventing import get_event_producer
 from app.db.models import ChecklistItem as ChecklistItemRow
 from app.db.models import ChecklistRecord
 from app.db.session import get_session
 from app.schemas.checklists import EvidenceCollection, EvidenceItem, EvidencePointer
 
-producer = get_event_producer(__name__)
-
 DocumentChecklistPayload = EvidenceCollection
-
-_CHECKLIST_STORE_VERSION = "evidence-items-v1"
+_LEGACY_DB_VERSION_VALUE = ""
 
 
 @dataclass(frozen=True)
@@ -21,7 +17,6 @@ class StoredDocumentChecklist:
     """Container for a stored checklist record."""
 
     items: DocumentChecklistPayload
-    version: str = _CHECKLIST_STORE_VERSION
 
 
 class DocumentChecklistStore(Protocol):
@@ -35,7 +30,6 @@ class DocumentChecklistStore(Protocol):
         case_id: str,
         *,
         items: DocumentChecklistPayload,
-        version: str,
     ) -> None:
         """Persist a checklist for a case."""
 
@@ -55,12 +49,6 @@ class SqlDocumentChecklistStore(DocumentChecklistStore):
         try:
             record = session.get(ChecklistRecord, key)
             if record is None:
-                return None
-            if record.version != _CHECKLIST_STORE_VERSION:
-                producer.debug(
-                    "Checklist store entry has mismatched version",
-                    {"case_id": key, "found": record.version, "expected": _CHECKLIST_STORE_VERSION},
-                )
                 return None
             rows = (
                 session.query(ChecklistItemRow)
@@ -83,7 +71,7 @@ class SqlDocumentChecklistStore(DocumentChecklistStore):
                 )
                 for row in rows
             ]
-            return StoredDocumentChecklist(items=EvidenceCollection(items=items), version=record.version)
+            return StoredDocumentChecklist(items=EvidenceCollection(items=items))
         finally:
             session.close()
 
@@ -92,7 +80,6 @@ class SqlDocumentChecklistStore(DocumentChecklistStore):
         case_id: str,
         *,
         items: DocumentChecklistPayload,
-        version: str,
     ) -> None:
         key = _normalize_case_id(case_id)
         session = self._session_factory()
@@ -100,7 +87,8 @@ class SqlDocumentChecklistStore(DocumentChecklistStore):
             session.query(ChecklistItemRow).filter(ChecklistItemRow.case_id == key).delete()
             session.query(ChecklistRecord).filter(ChecklistRecord.case_id == key).delete()
 
-            session.add(ChecklistRecord(case_id=key, version=version))
+            # Legacy DB column retained for schema compatibility only.
+            session.add(ChecklistRecord(case_id=key, version=_LEGACY_DB_VERSION_VALUE))
             for index, item in enumerate(items.items):
                 session.add(
                     ChecklistItemRow(

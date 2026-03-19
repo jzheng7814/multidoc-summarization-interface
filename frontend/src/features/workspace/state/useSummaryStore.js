@@ -2,26 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { diffWordsWithSpace } from 'diff';
 import { getSummaryJob, startSummaryJob } from '../../../services/apiClient';
 
-const POLL_INTERVAL_MS = 1500;
-const POLL_TIMEOUT_MS = 600000;
-
 const normaliseCaseId = (value) => String(value ?? '').trim();
-
-const requireCaseId = (value) => {
-    const trimmed = normaliseCaseId(value);
-    if (!trimmed) {
-        throw new Error('Case ID is required for summary operations.');
-    }
-    return trimmed;
-};
-
-const buildDocumentPayload = (documents = []) =>
-    documents.map((doc) => ({
-        id: doc.id,
-        title: doc.title || doc.name || doc.id,
-        include_full_text: true,
-        content: doc.content
-    }));
+const sleep = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 const toPositiveInteger = (value, defaultValue = 0) => {
     const parsed = typeof value === 'number' ? value : Number.parseInt(value, 10);
@@ -379,61 +361,61 @@ const useSummaryStore = ({ caseId } = {}) => {
         }
     }, [activePatchId, patchAction]);
 
-    const pollSummaryJob = useCallback(async (caseIdentifier, jobId) => {
-        const startedAt = Date.now();
-        let currentJob;
-        const normalisedCaseId = requireCaseId(caseIdentifier);
-
-        while (Date.now() - startedAt < POLL_TIMEOUT_MS) {
-            currentJob = await getSummaryJob(normalisedCaseId, jobId).then((response) => response.job);
-            if (currentJob.status === 'succeeded' || currentJob.status === 'failed') {
-                return currentJob;
-            }
-            await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+    const generateAISummary = useCallback(async () => {
+        const targetCaseId = normaliseCaseId(resolvedCaseId);
+        if (!targetCaseId) {
+            const error = new Error('Case ID is required before generating a summary.');
+            setLastSummaryError(error);
+            throw error;
         }
 
-        throw new Error('Timed out waiting for summary generation to complete.');
-    }, []);
-
-    const generateAISummary = useCallback(async (
-        { caseId: overrideCaseId, documents = [], instructions, checklist, prompt } = {}
-    ) => {
-        if (!documents.length) {
-            throw new Error('At least one document is required to generate a summary.');
-        }
-        if (!checklist || !Array.isArray(checklist.categories) || checklist.categories.length === 0) {
-            throw new Error('Checklist data is required to generate a summary.');
-        }
-
-        const targetCaseId = requireCaseId(overrideCaseId ?? resolvedCaseId);
         setIsGeneratingSummary(true);
         setLastSummaryError(null);
 
         try {
-            const requestBody = {
-                documents: buildDocumentPayload(documents),
-                checklist,
-                ...(instructions ? { instructions } : {}),
-                ...(prompt !== undefined ? { prompt } : {})
-            };
-            const { job } = await startSummaryJob(targetCaseId, requestBody);
-            setSummaryJobId(job.id);
-
-            const finalJob = await pollSummaryJob(targetCaseId, job.id);
-            if (finalJob.status !== 'succeeded') {
-                throw new Error(finalJob.error || 'Summary generation failed.');
+            const startPayload = await startSummaryJob(targetCaseId, {});
+            const startedJob = startPayload?.job ?? null;
+            const startedJobId = startedJob?.id;
+            if (!startedJobId) {
+                throw new Error('Summary job did not return a job ID.');
             }
-            setSummaryText(finalJob.summary_text || '');
-            return finalJob.summary_text || '';
+            setSummaryJobId(startedJobId);
+
+            const startedAt = Date.now();
+            const maxWaitMs = 60 * 60 * 1000;
+            while (true) {
+                if (Date.now() - startedAt > maxWaitMs) {
+                    throw new Error('Timed out waiting for summary generation.');
+                }
+
+                const statusPayload = await getSummaryJob(targetCaseId, startedJobId);
+                const job = statusPayload?.job ?? null;
+                const status = job?.status;
+
+                if (status === 'succeeded') {
+                    const nextSummary = typeof job?.summaryText === 'string'
+                        ? job.summaryText
+                        : typeof job?.summary_text === 'string'
+                            ? job.summary_text
+                            : '';
+                    applyAiSummaryUpdate(nextSummary);
+                    return job;
+                }
+
+                if (status === 'failed') {
+                    const message = job?.error || 'Summary generation failed.';
+                    throw new Error(message);
+                }
+
+                await sleep(2000);
+            }
         } catch (error) {
-            console.error('Failed to generate summary', error);
             setLastSummaryError(error);
-            setSummaryText((previous) => previous || 'Failed to generate AI summary. Please try again.');
             throw error;
         } finally {
             setIsGeneratingSummary(false);
         }
-    }, [pollSummaryJob, resolvedCaseId, setSummaryText]);
+    }, [applyAiSummaryUpdate, resolvedCaseId]);
 
     const value = useMemo(() => ({
         summaryText,

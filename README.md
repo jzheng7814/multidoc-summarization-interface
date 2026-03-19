@@ -1,6 +1,6 @@
 # Legal Case Summary Workspace
 
-Full-stack prototype for an attorney-facing case summary editor. The React/Vite frontend gives writers a document-rich workspace, while the FastAPI backend handles document retrieval, checklist extraction, summary generation, and a tool-enabled chat loop that can commit edits back into the draft.
+Full-stack prototype for an attorney-facing case summary editor. The React/Vite frontend gives writers a document-rich workspace, while the FastAPI backend handles document retrieval plus remote cluster-backed checklist extraction and summary generation.
 
 ## Repository Layout
 - `frontend/` – React 19 + Vite workspace
@@ -16,39 +16,37 @@ Full-stack prototype for an attorney-facing case summary editor. The React/Vite 
 - Remote pulls are cached on disk in SQLite (location set by `LEGAL_CASE_DATABASE_URL`) so repeated loads are instant and survive process restarts.
 - The same endpoint prefetches LLM-derived checklists in the background and returns `checklist_status` (`pending`, `cached`, `empty`) so the UI can reflect readiness.
 
-### Summary generation pipeline
-- `POST /cases/{case_id}/summary` spins up an async job (`app/services/summary.py`) that merges selected documents, applies instructions, and calls the configured LLM provider through `LLMService`.
-- Providers are configured in `backend/config/app.config.json` (OpenAI, Ollama, or deterministic mock) and loaded via `LEGAL_CASE_CONFIG_PATH`. Temperature/output limits live in the config defaults, not the code.
-- Jobs track `pending → running → succeeded/failed`; the frontend polls `GET /cases/{case_id}/summary/{job_id}` until the body text is ready and then snapshots the version history locally.
+### Summary generation status
+- Summary editing/versioning remains available in the UI.
+- `POST /cases/{case_id}/summary` starts a remote cluster summary job.
+- `GET /cases/{case_id}/summary/{job_id}` returns summary job status and the generated summary text on success.
+- `GET /cases/summary/prompt` remains available for prompt-template workflow.
 
 ### Checklist extraction pipeline
-- Evidence extraction runs over the authoritative documents (`app/services/checklists.py`), using prompt templates and metadata from `app/resources/checklists/`.
+- Evidence extraction runs over the authoritative documents (`app/services/checklists.py`) and executes only via the remote cluster controller.
 - Extraction is cached per case in SQLite (path set by `LEGAL_CASE_DATABASE_URL`) so repeated loads avoid redundant extraction.
-- Checklist collections feed the checklist UI and can be pushed into chat context so the assistant can close gaps.
-- Remote SLURM controller contract + operator runbook lives at `scratch/handoff/HANDOFF.md` (includes SSH invocation mode, NDJSON event semantics, and artifact rsync flow).
+- Remote SLURM controller contract + operator runbook lives at `scratch/handoff/HANDOFF_to_remote.md` (includes SSH invocation mode, NDJSON event semantics, and artifact rsync flow).
 
-### Conversational assistant & patch pipeline
-- Chat sessions (`/chat/session`) persist in-process; every `send_message` call includes the current summary, lightweight document metadata, and the structured context items gathered from highlights or checklist rows.
-- The backend chat service (`app/services/chat.py`) uses tool calling: the LLM can invoke `commit_summary_edit` to deliver a full replacement summary, or return granular patches which the UI shows in `SummaryPatchPanel`.
-- All LLM calls (text, structured, chat) are logged in JSON for traceability, and `LLMService` automatically strips `<think>` reasoning tags before returning text to clients.
+### Conversational assistant status
+- Chat is removed from both backend and frontend.
+- Summary patching is still supported for local/manual edits and version history, but AI chat-assisted patch generation is not available.
 
 ### Attorney workspace (React)
 - **Home screen** (`frontend/src/features/home/HomeScreen.jsx`): enter a case ID to open the workspace.
-- **Summary panel**: shows the live draft, toggles between edit/read modes, runs “Generate with AI” (which triggers backend jobs and polls), tracks a local version history dropdown, and surfaces AI patch overlays you can click, preview, or revert.
-- **Checklist panel**: contrasts document coverage, outlines reasoning/evidence spans, and lets you push an item (and its supporting text) into the chat context with one click.
-- **Documents panel**: renders full-text evidence, highlights any spans referenced by checklist/chat context, and stays in sync with the summary when selections jump across panes.
-- **Chat panel**: supports multiple sessions, shows context “chips,” deduplicates repeated selections, and lets you hit `Tab` from either the summary or document pane to staple the current highlight into the chat payload. When the AI issues a patch, the panel records the change log and the summary panel updates without manual copy/paste.
+- **Summary panel**: shows the live draft, toggles between edit/read modes, tracks a local version history dropdown, and surfaces patch overlays you can click, preview, or revert. The AI generate button triggers remote cluster generation.
+- **Checklist panel**: contrasts document coverage, outlines reasoning/evidence spans, and supports manual add/delete editing.
+- **Documents panel**: renders full-text evidence, highlights referenced spans, and stays in sync with checklist-driven navigation.
 
 ## API Surface
 | Method | Route | Description |
 |--------|-------|-------------|
 | `GET`  | `/health/pulse` | Simple readiness probe. |
 | `GET`  | `/cases/{case_id}/documents` | Returns documents, optional prefetched checklist data, and checklist status metadata. |
-| `POST` | `/cases/{case_id}/summary` | Starts a background summary job; response contains the job envelope (ID + status). |
-| `GET`  | `/cases/{case_id}/summary/{job_id}` | Poll job status/result until `succeeded`. |
-| `POST` | `/chat/session` | Creates a server-side chat session. |
-| `GET`  | `/chat/session/{session_id}` | Fetches existing session state. |
-| `POST` | `/chat/session/{session_id}/message` | Sends a user turn with summary/document context; response may include summary patches or a full rewrite. |
+| `POST` | `/cases/{case_id}/summary` | Starts a remote summary generation job. |
+| `GET`  | `/cases/{case_id}/summary/{job_id}` | Polls summary generation status and returns output when complete. |
+| `GET`  | `/cases/summary/prompt` | Returns the default summary prompt template. |
+| `POST` | `/cases/{case_id}/checklist/start` | Starts remote extraction. |
+| `GET`  | `/cases/{case_id}/checklist/status` | Polls remote extraction status. |
 
 All schemas live under `backend/app/schemas/` and are enforced both inbound (FastAPI validation) and outbound (Pydantic models from the LLM layer).
 
@@ -88,8 +86,8 @@ npm run dev                      # launches on http://localhost:5173
 1. Start the FastAPI server.
 2. Start `npm run dev` and open `http://localhost:5173`.
 3. On the home screen, enter a case ID, then “Proceed to Summary Editor”.
-4. Click “Generate with AI” to queue a backend job; the UI shows job state, then inserts the returned text and takes a version snapshot.
-5. Use `Tab` while text is selected (summary or document) to push the snippet into the chat context, ask a question, and optionally apply the AI’s patch via the patch panel.
+4. Wait for checklist extraction to complete in the preparation page.
+5. Edit summary/checklist/documents in workspace and generate summaries through the remote cluster.
 
 ## Configuration
 ### Backend environment (`LEGAL_CASE_*`)
@@ -116,7 +114,6 @@ npm run dev                      # launches on http://localhost:5173
 - One-time migration helper: `backend/migrate_flat_db_to_sqlite.py`.
 
 ## Using the Workspace Effectively
-- **Versioning & patches**: Every AI-generated draft is saved in `useSummaryStore`’s `versionHistory`. The `SummaryPatchPanel` lists in-flight patches, lets you jump to the affected span, and revert a single patch or the full batch.
-- **Checklist insights**: Each checklist column (documents vs summary) shows status, reasoning, and evidence ranges. Clicking the “Add to Chat” icon pushes a concise, cite-rich note into the chat context so the AI can fix missing elements.
-- **Chat context shortcuts**: Selecting text and pressing `Tab` adds the snippet as a context chip. You can also pin arbitrary notes or checklist rows. The chat panel deduplicates overlapping ranges to keep payloads small.
+- **Versioning & patches**: Saved drafts are tracked in `useSummaryStore`’s `versionHistory`. The `SummaryPatchPanel` lists patches and lets you jump/revert as needed.
+- **Checklist insights**: Checklist columns show status and evidence ranges, and allow manual curation.
 Happy lawyering!

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Edit3, Sparkles, Plus } from 'lucide-react';
-import { useSummary, useHighlight, useDocuments, useChecklist, usePrompt } from '../state/WorkspaceProvider';
+import { useSummary, useHighlight } from '../state/WorkspaceProvider';
 import SummaryPatchPanel from './SummaryPatchPanel';
 import { createRangeFromOffsets, computeOverlayRects, scrollRangeIntoView } from '../../../utils/selection';
 
@@ -21,19 +21,11 @@ const SummaryPanel = () => {
         activePatchId,
         clearPatchPreview
     } = useSummary();
-    const documents = useDocuments();
-    const activeCaseId = documents.caseId;
     const {
         renderSummaryWithSuggestions,
         activeHighlight,
-        highlightRects,
-        showTabTooltip,
-        tooltipPosition,
-        selectedText,
-        selectedDocumentText
+        highlightRects
     } = useHighlight();
-    const { categories } = useChecklist();
-    const { prompt, hasCustomPrompt } = usePrompt();
     const [localError, setLocalError] = useState(null);
     const [patchOverlayRects, setPatchOverlayRects] = useState([]);
     const [patchOverlayMeta, setPatchOverlayMeta] = useState(null);
@@ -41,21 +33,14 @@ const SummaryPanel = () => {
 
     const canGenerateSummary = !isEditMode;
 
-    const contextDocuments = documents.documents;
-
     const handleGenerateSummary = useCallback(async () => {
         setLocalError(null);
         try {
-            await generateAISummary({
-                caseId: activeCaseId,
-                documents: contextDocuments,
-                checklist: { categories },
-                ...(hasCustomPrompt ? { prompt } : {})
-            });
+            await generateAISummary();
         } catch (error) {
             setLocalError(error.message || 'Failed to generate summary.');
         }
-    }, [activeCaseId, contextDocuments, generateAISummary, categories, hasCustomPrompt, prompt]);
+    }, [generateAISummary]);
 
     useEffect(() => {
         if (isEditMode || (patchAction && patchAction.isStale)) {
@@ -138,13 +123,6 @@ const SummaryPanel = () => {
         selectVersion(event.target.value);
     }, [selectVersion]);
 
-    const checklistItemCount = useMemo(
-        () => categories.reduce((total, category) => total + (category.values?.length || 0), 0),
-        [categories]
-    );
-
-    const isChecklistEmpty = checklistItemCount === 0;
-
     const versionOptions = useMemo(() => versionHistory.map((entry) => {
         const date = entry.savedAt ? new Date(entry.savedAt) : null;
         const hasValidDate = date && !Number.isNaN(date.getTime());
@@ -166,11 +144,15 @@ const SummaryPanel = () => {
                         {canGenerateSummary && (
                             <button
                                 onClick={handleGenerateSummary}
-                                disabled={isGeneratingSummary || documents.isLoadingDocuments || isChecklistEmpty}
+                                disabled={isGeneratingSummary}
                                 className="flex items-center px-3 py-1 text-sm bg-[var(--color-accent)] text-[var(--color-text-inverse)] rounded hover:bg-[var(--color-accent-hover)] disabled:opacity-50"
                             >
                                 <Sparkles className="h-4 w-4 mr-1" />
-                                {isGeneratingSummary ? 'Generating...' : summaryText ? 'Regenerate from checklist' : 'Generate from checklist'}
+                                {isGeneratingSummary
+                                    ? 'Generating...'
+                                    : summaryText
+                                        ? 'Regenerate from checklist'
+                                        : 'Generate from checklist'}
                             </button>
                         )}
                         <button
@@ -186,9 +168,6 @@ const SummaryPanel = () => {
                         </button>
                     </div>
                 </div>
-                {canGenerateSummary && !isGeneratingSummary && isChecklistEmpty && (
-                    <p className="text-xs text-[var(--color-text-muted)]">Add checklist items to enable generation.</p>
-                )}
                 <div className="flex items-center space-x-2">
                     <select
                         value={activeVersionId || ''}
@@ -278,19 +257,6 @@ const SummaryPanel = () => {
                     </div>
                 </div>
             </div>
-
-            {showTabTooltip && (selectedText || selectedDocumentText) && (
-                <div
-                    className="fixed z-50 bg-[var(--color-overlay-scrim)] text-[var(--color-text-inverse)] text-xs py-1 px-2 rounded pointer-events-none"
-                    style={{
-                        left: tooltipPosition.x - 50,
-                        top: tooltipPosition.y,
-                        transform: 'translateX(-50%)'
-                    }}
-                >
-                    [Tab] +
-                </div>
-            )}
         </div>
     );
 };

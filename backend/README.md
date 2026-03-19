@@ -12,17 +12,31 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ## Environment Variables (`.env`)
-- `LEGAL_CASE_OLLAMA_BASE_URL` – URL for the local Ollama server (defaults to `http://127.0.0.1:11434`)
-- `LEGAL_CASE_OLLAMA_MODEL` – Model tag (e.g. `qwen3:8b`)
-- `LEGAL_CASE_OLLAMA_TIMEOUT_SECONDS` – Request timeout applied to Ollama API calls (defaults to `30`)
-- `LEGAL_CASE_USE_MOCK_LLM` – Set to `true` to use deterministic mock responses
 - `LEGAL_CASE_DATABASE_URL` – SQLAlchemy database URL (e.g. `sqlite:///./app/data/legal_case.db`)
+- `LEGAL_CASE_CHECKLIST_START_ENABLED` – When `false`, checklist extraction start calls fail fast (debug switch)
+- `LEGAL_CASE_CLUSTER_RUN_MODE` – Backend execution mode: `remote` or `spoof`
+- `LEGAL_CASE_CLUSTER_SPOOF_EVENT_DELAY_SECONDS` – Optional per-event delay for spoof replay
+- `LEGAL_CASE_CLUSTER_SPOOF_EXTRACTION_FIXTURE_DIR` – Extraction spoof fixture directory
+- `LEGAL_CASE_CLUSTER_SPOOF_SUMMARY_FIXTURE_DIR` – Summary spoof fixture directory
+- `LEGAL_CASE_CLUSTER_SSH_HOST` – SSH host for remote extraction controller
+- `LEGAL_CASE_CLUSTER_REMOTE_REPO_DIR` – Remote repo root for controller invocation
+- `LEGAL_CASE_CLUSTER_REMOTE_PYTHON_PATH` – Remote python executable used to launch controller
+- `LEGAL_CASE_CLUSTER_REMOTE_CONTROLLER_SCRIPT` – Remote controller entrypoint (native path by default)
+- `LEGAL_CASE_CLUSTER_FOCUS_CONTEXT_TEMPLATE_PATH` – Checklist focus-context template file (supports placeholder `#CASE_TITLE`)
+- `LEGAL_CASE_CLUSTER_SUMMARY_REMOTE_CONTROLLER_SCRIPT` – Remote summary-agent controller entrypoint
+- `LEGAL_CASE_CLUSTER_SUMMARY_MODEL_NAME` – Default summary-agent model id
+- `LEGAL_CASE_CLUSTER_SUMMARY_MAX_STEPS` – Default summary-agent max steps
+- `LEGAL_CASE_CLUSTER_SUMMARY_REASONING_EFFORT` – Default summary-agent reasoning effort (`low|medium|high`)
+- `LEGAL_CASE_CLUSTER_SUMMARY_K_RECENT_TOOL_OUTPUTS` – Default tool-output history window
+- `LEGAL_CASE_CLUSTER_SUMMARY_PROMPT_CONFIG` – Optional default prompt config path
+- `LEGAL_CASE_CLUSTER_SUMMARY_FOCUS_CONTEXT_TEMPLATE_PATH` – Default summary focus-context template file (supports placeholders like `#CASE_TITLE`)
 
 ## Primary Endpoints
 | Method | Route | Description |
 |--------|-------|-------------|
 | `GET`  | `/cases/{case_id}/documents` | Returns catalogued documents with content |
-| `POST` | `/cases/{case_id}/summary` | Starts an async summary job; returns a job id |
-| `GET`  | `/cases/{case_id}/summary/{job_id}` | Fetches job status/result |
-| `POST` | `/chat/session` | Creates a chat session |
-| `POST` | `/chat/session/{session_id}/message` | Sends a message and returns AI + user turns |
+| `POST` | `/cases/{case_id}/summary` | Starts summary generation using the configured run mode |
+| `GET`  | `/cases/{case_id}/summary/{job_id}` | Polls summary job status and output |
+| `GET`  | `/cases/{case_id}/summary/prompt` | Returns default summary prompt template |
+| `POST` | `/cases/{case_id}/checklist/start` | Starts checklist extraction using the configured run mode |
+| `GET`  | `/cases/{case_id}/checklist/status` | Polls extraction status |

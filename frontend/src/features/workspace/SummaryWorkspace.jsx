@@ -1,10 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { X } from 'lucide-react';
 import WorkspaceStateProvider from './state/WorkspaceProvider';
 import ChecklistPanel from './components/ChecklistPage';
 import SummaryPanel from './components/SummaryPanel';
 import DocumentsPanel from './DocumentsPanel';
-import ChatPanel from './ChatPanel';
 import DividerHandle from './components/DividerHandle';
 import PromptEditor from './components/PromptEditor';
 import ThemeToggle from '../../theme/ThemeToggle';
@@ -44,7 +42,6 @@ const SummaryWorkspaceView = ({ onExit, initialCaseState }) => {
         'checklist-documents': 45
     });
     const [threeSplit, setThreeSplit] = useState({ first: 30, second: 65 });
-    const [isChatOpen, setIsChatOpen] = useState(false);
     const [isPromptEditorOpen, setIsPromptEditorOpen] = useState(false);
     const [caseStateActionError, setCaseStateActionError] = useState(null);
     const workspaceRef = useRef(null);
@@ -353,7 +350,6 @@ const SummaryWorkspaceView = ({ onExit, initialCaseState }) => {
                         <button
                             type="button"
                             onClick={() => {
-                                setIsChatOpen(false);
                                 setIsPromptEditorOpen(true);
                             }}
                             className="px-3 py-1.5 text-sm font-medium rounded border border-[var(--color-border)] bg-[var(--color-surface-panel-alt)] text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)]"
@@ -373,13 +369,6 @@ const SummaryWorkspaceView = ({ onExit, initialCaseState }) => {
                             className="px-3 py-1.5 text-sm font-medium rounded border border-[var(--color-border)] bg-[var(--color-surface-panel-alt)] text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)]"
                         >
                             Export Case State
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setIsChatOpen(true)}
-                            className="px-3 py-1.5 text-sm font-medium rounded border border-[var(--color-border)] bg-[var(--color-surface-panel-alt)] text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)]"
-                        >
-                            Ask AI
                         </button>
                         <ThemeToggle />
                         <button
@@ -406,29 +395,6 @@ const SummaryWorkspaceView = ({ onExit, initialCaseState }) => {
             <div ref={workspaceRef} className="flex h-[calc(100vh-96px)] min-h-0 overflow-hidden bg-[var(--color-surface-panel-alt)]">
                 {renderLayout()}
             </div>
-
-            {isChatOpen && (
-                <div className="fixed inset-0 z-50 flex">
-                    <div
-                        className="flex-1 bg-[var(--color-overlay-scrim)]"
-                        onClick={() => setIsChatOpen(false)}
-                        aria-hidden="true"
-                    />
-                    <div className="relative w-full max-w-[420px] h-full bg-[var(--color-surface-panel)] border-l border-[var(--color-border)] shadow-2xl">
-                        <button
-                            type="button"
-                            onClick={() => setIsChatOpen(false)}
-                            className="absolute top-3 right-3 p-2 rounded hover:bg-[var(--color-surface-muted)] text-[var(--color-text-muted)]"
-                            aria-label="Close chat"
-                        >
-                            <X className="h-4 w-4" />
-                        </button>
-                        <div className="h-full pt-10">
-                            <ChatPanel />
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

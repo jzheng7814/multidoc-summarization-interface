@@ -10,19 +10,11 @@ import {
 const CSS_HIGHLIGHT_KEY = 'jump-highlight';
 const EMPTY_TOOLTIP_POSITION = { x: 0, y: 0 };
 
-const DEFAULT_CHAT_HELPERS = {
-    isSelectionInContext: () => false,
-    addContextEntry: () => {}
-};
-
 const useHighlightStore = ({ summary, documents }) => {
-    const chatHelpersRef = useRef(DEFAULT_CHAT_HELPERS);
-
     const [selectedText, setSelectedText] = useState('');
     const [selectedRange, setSelectedRange] = useState(null);
     const [selectedDocumentText, setSelectedDocumentText] = useState('');
     const [selectedDocumentRange, setSelectedDocumentRange] = useState(null);
-    const [showTabTooltip, setShowTabTooltip] = useState(false);
     const [tooltipPosition, setTooltipPosition] = useState(EMPTY_TOOLTIP_POSITION);
     const [pendingHighlight, setPendingHighlight] = useState(null);
     const [pendingScroll, setPendingScroll] = useState(null);
@@ -30,10 +22,6 @@ const useHighlightStore = ({ summary, documents }) => {
     const [highlightRects, setHighlightRects] = useState([]);
     const cssHighlightHandleRef = useRef(null);
     const [interactionMode, setInteractionModeState] = useState('canvas');
-
-    const registerChatHelpers = useCallback((helpers) => {
-        chatHelpersRef.current = { ...DEFAULT_CHAT_HELPERS, ...helpers };
-    }, []);
 
     const setInteractionMode = useCallback((mode) => {
         setInteractionModeState(mode === 'checklist' ? 'checklist' : 'canvas');
@@ -79,19 +67,11 @@ const useHighlightStore = ({ summary, documents }) => {
         }
     }, []);
 
-    useEffect(() => {
-        if (interactionMode !== 'canvas') {
-            setShowTabTooltip(false);
-        }
-    }, [interactionMode]);
-
-
     const resetSelectionState = useCallback(() => {
         setSelectedText('');
         setSelectedRange(null);
         setSelectedDocumentText('');
         setSelectedDocumentRange(null);
-        setShowTabTooltip(false);
         setTooltipPosition(EMPTY_TOOLTIP_POSITION);
     }, []);
 
@@ -111,15 +91,10 @@ const useHighlightStore = ({ summary, documents }) => {
         setSelectedRange({ start: offsets.start, end: offsets.end });
         setSelectedDocumentText('');
         setSelectedDocumentRange(null);
-        const alreadyInContext = chatHelpersRef.current.isSelectionInContext({
-            type: 'selection',
-            range: { start: offsets.start, end: offsets.end }
-        });
-        setShowTabTooltip(interactionMode === 'canvas' && !alreadyInContext);
         updateTooltip(range.getBoundingClientRect());
-    }, [interactionMode, updateTooltip]);
+    }, [updateTooltip]);
 
-    const captureDocumentSelection = useCallback((range, container, documentId) => {
+    const captureDocumentSelection = useCallback((range, container) => {
         const offsets = getOffsetsForRange(container, range);
         if (!offsets) {
             return;
@@ -128,14 +103,8 @@ const useHighlightStore = ({ summary, documents }) => {
         setSelectedDocumentRange({ start: offsets.start, end: offsets.end });
         setSelectedText('');
         setSelectedRange(null);
-        const alreadyInContext = chatHelpersRef.current.isSelectionInContext({
-            type: 'document-selection',
-            range: { start: offsets.start, end: offsets.end },
-            documentId
-        });
-        setShowTabTooltip(interactionMode === 'canvas' && !alreadyInContext);
         updateTooltip(range.getBoundingClientRect());
-    }, [interactionMode, updateTooltip]);
+    }, [updateTooltip]);
 
     useEffect(() => {
         const handleSelectionChange = () => {
@@ -153,11 +122,6 @@ const useHighlightStore = ({ summary, documents }) => {
                     setSelectedRange({ start: selectionStart, end: selectionEnd });
                     setSelectedDocumentText('');
                     setSelectedDocumentRange(null);
-                    const alreadyInContext = chatHelpersRef.current.isSelectionInContext({
-                        type: 'selection',
-                        range: { start: selectionStart, end: selectionEnd }
-                    });
-                    setShowTabTooltip(interactionMode === 'canvas' && !alreadyInContext);
                     const rect = summaryEl.getBoundingClientRect();
                     setTooltipPosition({ x: rect.left + rect.width / 2, y: rect.top - 30 });
                     return;
@@ -182,7 +146,7 @@ const useHighlightStore = ({ summary, documents }) => {
 
             if (documents.documentRef.current && documents.documentRef.current.contains(range.startContainer)) {
                 if (!range.collapsed) {
-                    captureDocumentSelection(range, documents.documentRef.current, documents.selectedDocument);
+                    captureDocumentSelection(range, documents.documentRef.current);
                 } else {
                     resetSelectionState();
                 }
@@ -218,35 +182,6 @@ const useHighlightStore = ({ summary, documents }) => {
 
     useEffect(() => {
         const handleKeyDown = (event) => {
-            if (
-                interactionMode === 'canvas' &&
-                event.key === 'Tab' &&
-                !summary.isEditMode &&
-                (selectedText || selectedDocumentText)
-            ) {
-                event.preventDefault();
-                setShowTabTooltip(false);
-                if (selectedText && selectedRange) {
-                    chatHelpersRef.current.addContextEntry({
-                        type: 'selection',
-                        content: selectedText,
-                        source: 'Case Summary',
-                        range: selectedRange
-                    });
-                } else if (selectedDocumentText && selectedDocumentRange) {
-                    const currentDoc = documents.documents.find((doc) => doc.id === documents.selectedDocument);
-                    chatHelpersRef.current.addContextEntry({
-                        type: 'document-selection',
-                        content: selectedDocumentText,
-                        source: currentDoc ? currentDoc.title : 'Unknown Document',
-                        documentId: documents.selectedDocument,
-                        range: selectedDocumentRange
-                    });
-                }
-                window.getSelection()?.removeAllRanges();
-                resetSelectionState();
-            }
-
             if (event.key === 'Escape' && (selectedText || selectedDocumentText)) {
                 event.preventDefault();
                 window.getSelection()?.removeAllRanges();
@@ -256,7 +191,7 @@ const useHighlightStore = ({ summary, documents }) => {
 
         document.addEventListener('keydown', handleKeyDown);
         return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [documents.documents, documents.selectedDocument, interactionMode, resetSelectionState, selectedDocumentRange, selectedDocumentText, selectedRange, selectedText, summary.isEditMode]);
+    }, [resetSelectionState, selectedDocumentText, selectedText]);
 
     useEffect(() => {
         if (summary.isEditMode) {
@@ -271,34 +206,6 @@ const useHighlightStore = ({ summary, documents }) => {
     }, [activeHighlight, clearActiveHighlight, documents.selectedDocument]);
 
     const renderSummaryWithSuggestions = useCallback((text) => text, []);
-
-    const handleContextClick = useCallback((contextItem) => {
-        clearActiveHighlight();
-        if (contextItem.type === 'selection' && contextItem.range) {
-            setPendingHighlight({ type: 'summary', range: contextItem.range, timestamp: Date.now() });
-            return;
-        }
-
-        if (contextItem.type === 'document-selection' && contextItem.range) {
-            const targetDocumentId = contextItem.documentId ?? documents.selectedDocument;
-            const highlightPayload = {
-                type: 'document',
-                range: contextItem.range,
-                documentId: targetDocumentId,
-                timestamp: Date.now()
-            };
-            if (
-                targetDocumentId != null &&
-                targetDocumentId !== documents.selectedDocument &&
-                documents.documents.some((doc) => doc.id === targetDocumentId)
-            ) {
-                setPendingHighlight(highlightPayload);
-                documents.setSelectedDocument(targetDocumentId);
-            } else {
-                setPendingHighlight(highlightPayload);
-            }
-        }
-    }, [clearActiveHighlight, documents]);
 
     const jumpToDocumentRange = useCallback(({ documentId, range }) => {
         if (!range || range.start == null || range.end == null || range.start === range.end) {
@@ -331,7 +238,7 @@ const useHighlightStore = ({ summary, documents }) => {
         }
 
         performScroll();
-    }, [documents.documents, documents.documentRef, documents.selectedDocument, documents.setSelectedDocument]);
+    }, [documents]);
 
     useEffect(() => {
         if (!pendingHighlight) {
@@ -450,17 +357,14 @@ const useHighlightStore = ({ summary, documents }) => {
     }, [activeHighlight, clearActiveHighlight, documents.documentRef, summary.summaryRef]);
 
     const value = useMemo(() => ({
-        registerChatHelpers,
         selectedText,
         selectedRange,
         selectedDocumentText,
         selectedDocumentRange,
-        showTabTooltip,
         tooltipPosition,
         activeHighlight,
         highlightRects,
         renderSummaryWithSuggestions,
-        handleContextClick,
         jumpToDocumentRange,
         clearActiveHighlight,
         setInteractionMode,
@@ -468,16 +372,13 @@ const useHighlightStore = ({ summary, documents }) => {
         clearSelection: resetSelectionState
     }), [
         activeHighlight,
-        handleContextClick,
         jumpToDocumentRange,
         highlightRects,
-        registerChatHelpers,
         renderSummaryWithSuggestions,
         selectedDocumentRange,
         selectedDocumentText,
         selectedRange,
         selectedText,
-        showTabTooltip,
         tooltipPosition,
         clearActiveHighlight,
         interactionMode,

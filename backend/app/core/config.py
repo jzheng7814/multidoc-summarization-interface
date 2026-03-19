@@ -67,28 +67,27 @@ class Settings(BaseSettings):
     database_url: str
     openai_api_key: Optional[str] = None
     clearinghouse_api_key: Optional[str] = None
-    checklist_extraction_mode: Literal["local", "cluster"] = "local"
     checklist_start_enabled: bool = True
-    # Deprecated compatibility fields retained so older local .env files still load.
-    cluster_simulate: bool = False
-    cluster_remote_gavel_dir: str = ""
-    cluster_remote_agent_subdir: str = ""
-    cluster_remote_input_subdir: str = ""
-    cluster_remote_prepared_data_subdir: str = ""
-    cluster_remote_output_subdir: str = ""
+    cluster_run_mode: Literal["remote", "spoof"] = "remote"
+    cluster_spoof_event_delay_seconds: float = 0.0
+    cluster_spoof_extraction_fixture_dir: str = (
+        "../scratch/handoff/spoof_fixtures/extraction/run_20260317T222144Z_124c78addb"
+    )
+    cluster_spoof_summary_fixture_dir: str = (
+        "../scratch/handoff/spoof_fixtures/summary/run_20260319T025055Z_6dcb90725b"
+    )
     cluster_ssh_host: str = "sky1"
     cluster_remote_repo_dir: str = "/coc/pskynet6/$USER/gavel"
     cluster_remote_python_path: str = "/coc/pskynet6/$USER/miniconda3/envs/gavel-dev/bin/python"
     cluster_remote_controller_script: str = (
-        "src/extract_checklist_from_documents/gavel_agent/controller/run_controller.py"
+        "src/extract_checklist_from_documents/gavel_agent/controller/run_controller_native.py"
     )
     cluster_poll_seconds: int = 2
     cluster_max_wait_seconds: int = 21600
     cluster_model_name: str = "unsloth/gpt-oss-20b-BF16"
     cluster_checklist_strategy: Literal["all", "individual"] = "individual"
     cluster_checklist_spec_path: str = "app/resources/checklists/remote_checklist_spec.individual.json"
-    # Deprecated path-based config input, retained for local backward compatibility only.
-    cluster_checklist_config: str = "config/checklist_configs/all/all_26_items.yaml"
+    cluster_focus_context_template_path: str = "app/resources/checklists/focus_context.template.txt"
     cluster_max_steps: int = 300
     cluster_resume: bool = False
     cluster_debug: bool = False
@@ -96,8 +95,24 @@ class Settings(BaseSettings):
     cluster_dataset_prefix: str = "controller"
     cluster_slurm_partition: str = "nlprx-lab"
     cluster_slurm_qos: str = "short"
+    cluster_summary_remote_controller_script: str = (
+        "src/summarize_documents/summary_agent/controller/run_controller.py"
+    )
+    cluster_summary_model_name: str = "unsloth/gpt-oss-20b-BF16"
+    cluster_summary_max_steps: int = 200
+    cluster_summary_reasoning_effort: Literal["low", "medium", "high"] = "medium"
+    cluster_summary_k_recent_tool_outputs: int = 5
+    cluster_summary_prompt_config: Optional[str] = None
+    cluster_summary_focus_context_template_path: str = "app/resources/summary/focus_context.template.txt"
+    cluster_summary_slurm_partition: str = "nlprx-lab"
+    cluster_summary_slurm_qos: str = "short"
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", env_prefix="LEGAL_CASE_")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_prefix="LEGAL_CASE_",
+        extra="ignore",
+    )
 
     @cached_property
     def app_config(self) -> AppConfig:

@@ -2,7 +2,6 @@ import React, { createContext, useContext, useMemo } from 'react';
 import useDocumentsStore from './useDocumentsStore';
 import useSummaryStore from './useSummaryStore';
 import useHighlightStore from './useHighlightStore';
-import useChatStore from './useChatStore';
 import useChecklistStore from './useChecklistStore';
 import usePromptStore from './usePromptStore';
 
@@ -18,7 +17,6 @@ export const WorkspaceStateProvider = ({ children, caseId, initialCaseState = nu
     const documents = useDocumentsStore({ caseId, importedSnapshot: importedDocumentSnapshot });
     const summary = useSummaryStore({ caseId: documents.caseId });
     const highlight = useHighlightStore({ summary, documents });
-    const chat = useChatStore({ summary, documents, highlight });
     const importedChecklistSnapshot = initialCaseState
         ? {
             categories: initialCaseState.checklistCategories,
@@ -29,8 +27,8 @@ export const WorkspaceStateProvider = ({ children, caseId, initialCaseState = nu
     const prompt = usePromptStore();
 
     const value = useMemo(
-        () => ({ documents, summary, highlight, chat, checklist, prompt }),
-        [documents, summary, highlight, chat, checklist, prompt]
+        () => ({ documents, summary, highlight, checklist, prompt }),
+        [documents, summary, highlight, checklist, prompt]
     );
 
     return (
@@ -54,8 +52,6 @@ export const useDocuments = () => useWorkspaceState().documents;
 export const useSummary = () => useWorkspaceState().summary;
 // eslint-disable-next-line react-refresh/only-export-components
 export const useHighlight = () => useWorkspaceState().highlight;
-// eslint-disable-next-line react-refresh/only-export-components
-export const useChat = () => useWorkspaceState().chat;
 // eslint-disable-next-line react-refresh/only-export-components
 export const useChecklist = () => useWorkspaceState().checklist;
 // eslint-disable-next-line react-refresh/only-export-components

@@ -1,66 +1,29 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime
 import uuid
-import textwrap
-from typing import Dict, List, Optional
+from typing import Dict
 
 from fastapi import BackgroundTasks, HTTPException
 
+from app.data.checklist_store import SqlDocumentChecklistStore
 from app.eventing import get_event_producer
-from app.schemas.checklists import EvidenceCategoryCollection, EvidenceCollection, EvidenceItem, EvidencePointer
-from app.schemas.documents import DocumentReference
 from app.schemas.summary import SummaryJob, SummaryJobStatus, SummaryRequest
-from app.services.documents import get_document
-from app.services.llm import llm_service
+from app.services.cluster_queue import get_cluster_run_lock
+from app.services.documents import list_cached_documents
+from app.services.summary_engines import get_summary_generation_engine
 
 producer = get_event_producer(__name__)
 
 _summary_jobs: Dict[str, SummaryJob] = {}
 _summary_jobs_lock = asyncio.Lock()
-
-STYLE_ONE_SHOT = textwrap.dedent(
-    """
-    This case challenges the University of Virginia (UVA) and affiliated campus groups for allegedly permitting and failing to prevent pervasive antisemitism on its campus, particularly after the October 7 attacks, in violation of federal and state law. Other cases involving universities' responses to speech and activity concerning Israel and Palestine, including matters of antisemitism or anti-Palestinian expression, can be found here.
-
-    On May 17, 2024, an Israeli-American student at UVA filed suit in the U.S. District Court for the Western District of Virginia. The complaint named UVA, its President (Ryan), its Rector (Hardie), and two campus groups, the Faculty for Justice in Palestine (FJP) and Students for Justice in Palestine (SJP). The plaintiff asserted Title VI claims against UVA; claims under 42 U.S.C. Sections 1981, 1983, and 1988 against President Ryan and Rector Hardie; and claims against FJP and SJP under Virginia Code Section 8.01-42.1, 42 U.S.C. Sections 1981 and 1988, as well as common-law claims for negligence, gross negligence, and intentional infliction of emotional distress. He sought declaratory and injunctive relief, damages, and attorneys' fees. The case was assigned to Judge Robert S. Ballou.
-
-    In the complaint, the plaintiff alleged that, as a result of the defendants' conduct, he was subjected to discrimination, harassment, and retaliation because of his Jewish and Israeli identity. He alleged that UVA and its officials created a hostile educational environment, denied him equal access to programs, and targeted him for protected activity. He further claimed that FJP and SJP members engaged in harassment and intimidation, causing him emotional distress.
-
-    Defendants FJP and SJP filed a joint motion to dismiss on July 1, 2024, arguing that their actions were protected by the First Amendment, that the plaintiff lacked standing, and that the complaint failed to state statutory or tort claims. Defendants UVA, Rector Hardie, and President Ryan filed a separate motion asserting that the plaintiff lacked standing, failed to allege intentional discrimination or retaliation, raised insufficient hostile-environment claims, and that claims against Ryan and Hardie were barred by the Eleventh Amendment and qualified immunity.
-
-    On August 6, 2024, the plaintiff voluntarily dismissed the claims against defendant Rector Hardie without prejudice.
-
-    That same day, the plaintiff filed an amended complaint that, among other changes, removed Rector Hardie from the action, expanded the existing federal civil rights claim against FJP and SJP to include alleged violations of 42 U.S.C. Sections 1985 and 1986, and added a new civil conspiracy claim against FJP and SJP. On September 10, 2024, defendants UVA and President Ryan filed a motion to dismiss the amended complaint, arguing that the plaintiff failed to allege intentional discrimination, retaliation, or a viable hostile environment claim under Title VI, and that all claims against President Ryan are unsupported and barred by qualified immunity.
-
-    The plaintiff voluntarily dismissed the claims against defendants SJP and FJP without prejudice on September 16, 2024. The next day, the court entered an order dismissing the case without prejudice as to these student groups.
-
-    On November 19, 2024, the plaintiff and defendants UVA and President Ryan entered into a stipulation of dismissal with prejudice. On December 4, 2024, the court ordered the action dismissed with prejudice as to these parties.
-
-    Although the reason for the various dismissals has not been made public, The Cavalier Daily reported that the case ended in a settlement that was not disclosed to the public.
-
-    This case is closed.
-    """
-)
+_cluster_queue_lock = get_cluster_run_lock()
+_checklist_store = SqlDocumentChecklistStore()
 
 DEFAULT_SUMMARY_PROMPT = (
-    "You are drafting a precise legal case summary for an attorney.\n"
-    "Use the evidence below in the order presented (document order, then position within document) and maintain"
-    " a clear sense of the case state as it evolves.\n\n"
-    "Evidence (chronological):\n"
-    "{evidence_block}\n\n"
-    "Instructions:\n"
-    "Produce a clear, formal case narrative written for an educated general audience. "
-    "Keep the tone professional but avoid legalese and unnecessary jargon. "
-    "Follow the chronological flow of the evidence. "
-    "Write in straightforward, objective prose at approximately the reading level of a university student. "
-    "Do not use headers, numbered sections, bullet points, lists, or first/second person. "
-    "Do not add a concluding paragraph to the end which runs through all of the events from the start. Narrate the case strictly from beginning to end. "
-    "Finish with one concise line describing the current state of the case (e.g. This case is <closed/ongoing/etc>.)\n\n"
-    "Style example (cadence only; do not treat this as evidence):\n"
-    f"{STYLE_ONE_SHOT.strip()}\n"
-    "Use only the provided evidence above for facts; do not borrow facts, dates, parties, or claims from the style example.\n"
+    "You are drafting a grounded multi-document summary.\n"
+    "Use source documents as primary authority, treat structured inputs as retrieval aids rather than ground truth, "
+    "and follow any run-specific focus context for scope, target identity, and special constraints.\n"
 )
 
 
@@ -69,145 +32,112 @@ def get_default_summary_prompt() -> str:
 
 
 async def create_summary_job(case_id: str, request: SummaryRequest, background_tasks: BackgroundTasks) -> SummaryJob:
+    cached_docs = list_cached_documents(case_id)
+    if not cached_docs:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Summary generation requires cached local documents for case '{case_id}'. "
+                "Load documents first."
+            ),
+        )
+    if _checklist_store.get(case_id) is None:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Summary generation requires a completed checklist for case '{case_id}'. "
+                "Run checklist extraction first."
+            ),
+        )
+
     job_id = str(uuid.uuid4())
     job = SummaryJob(id=job_id, case_id=case_id, status=SummaryJobStatus.pending)
     async with _summary_jobs_lock:
         _summary_jobs[job_id] = job
+
     background_tasks.add_task(_run_summary_job, job_id, case_id, request)
     return job
 
 
 async def _run_summary_job(job_id: str, case_id: str, request: SummaryRequest) -> None:
-    await _update_job(job_id, status=SummaryJobStatus.running)
+    if _cluster_queue_lock.locked():
+        producer.info("Summary job queued behind another cluster run", {"job_id": job_id, "case_id": case_id})
+
+    async with _cluster_queue_lock:
+        await _update_job(job_id, status=SummaryJobStatus.running)
+
+        try:
+            engine = get_summary_generation_engine()
+            producer.info(
+                "Summary generation engine selected",
+                {"job_id": job_id, "case_id": case_id, "engine": engine.name},
+            )
+            result = await engine.run(
+                case_id,
+                request,
+                progress_callback=lambda event_type, event_data: _handle_cluster_progress(job_id, event_type, event_data),
+            )
+            await _update_job(
+                job_id,
+                status=SummaryJobStatus.succeeded,
+                summary_text=result.summary_text,
+                run_id=result.run_id,
+                remote_job_id=result.job_id,
+                error=None,
+            )
+        except Exception as exc:  # pylint: disable=broad-except
+            producer.error(
+                "Summary job failed",
+                {
+                    "job_id": job_id,
+                    "case_id": case_id,
+                    "error": str(exc),
+                },
+            )
+            await _update_job(
+                job_id,
+                status=SummaryJobStatus.failed,
+                error=str(exc),
+            )
+
+
+def _handle_cluster_progress(job_id: str, event_type: str, event_data: Dict[str, object]) -> None:
+    updates: Dict[str, str] = {}
+
+    if event_type == "started":
+        run_id = event_data.get("run_id")
+        if isinstance(run_id, str) and run_id.strip():
+            updates["run_id"] = run_id.strip()
+
+    if event_type == "slurm_submitted":
+        remote_job_id = event_data.get("job_id")
+        if isinstance(remote_job_id, str) and remote_job_id.strip():
+            updates["remote_job_id"] = remote_job_id.strip()
+
+    if not updates:
+        return
 
     try:
-        sorted_docs = sorted(request.documents, key=_document_sort_key)
-        evidence = _flatten_checklist(request.checklist, sorted_docs)
-        doc_titles = _build_document_titles(case_id, sorted_docs)
-        ordered_items = _order_evidence_items(evidence, doc_titles)
-        evidence_block = _format_evidence_block(ordered_items, doc_titles)
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        return
 
-        prompt_template = request.prompt if request.prompt is not None else DEFAULT_SUMMARY_PROMPT
-        prompt = prompt_template.replace("{evidence_block}", evidence_block)
-
-        summary_text = await llm_service.generate_text(prompt)
-        await _update_job(job_id, status=SummaryJobStatus.succeeded, summary_text=summary_text.strip())
-    except HTTPException:
-        raise
-    except Exception as exc:  # pylint: disable=broad-except
-        producer.error(
-            "Summary job failed",
-            {"job_id": job_id, "error": str(exc)},
-        )
-        await _update_job(job_id, status=SummaryJobStatus.failed, error=str(exc))
+    loop.create_task(_update_job(job_id, **updates))
 
 
 async def _update_job(job_id: str, **updates) -> None:
     async with _summary_jobs_lock:
         job = _summary_jobs.get(job_id)
-        if not job:
+        if job is None:
             return
-        updated = job.model_copy(update=updates)
-        _summary_jobs[job_id] = updated
+        _summary_jobs[job_id] = job.model_copy(update=updates)
 
 
-async def get_summary_job(job_id: str) -> SummaryJob:
+async def get_summary_job(case_id: str, job_id: str) -> SummaryJob:
     async with _summary_jobs_lock:
         job = _summary_jobs.get(job_id)
-    if not job:
+
+    if job is None or str(job.case_id) != str(case_id):
         raise HTTPException(status_code=404, detail="Summary job not found")
+
     return job
-
-
-def _parse_date(value: Optional[str]) -> Optional[datetime]:
-    if not value:
-        return None
-    try:
-        return datetime.fromisoformat(value)
-    except ValueError:
-        return None
-
-
-def _document_sort_key(document: DocumentReference) -> tuple:
-    if getattr(document, "is_docket", False):
-        return (0, document.id)
-    date_value = _parse_date(getattr(document, "date", None))
-    if date_value is None:
-        return (1, 1, 0, document.id)
-    return (1, 0, -date_value.timestamp(), document.id)
-
-
-def _build_document_titles(case_id: str, documents: List[DocumentReference]) -> Dict[int, str]:
-    titles: Dict[int, str] = {}
-    for ref in documents:
-        display_title = ref.title or ref.alias
-        if display_title is None:
-            try:
-                doc = get_document(case_id, ref.id)
-                display_title = doc.title or doc.id
-            except Exception:  # pylint: disable=broad-except
-                display_title = ref.id
-        titles[int(ref.id)] = str(display_title)
-    return titles
-
-
-def _flatten_checklist(
-    checklist: EvidenceCategoryCollection, documents: List[DocumentReference]
-) -> EvidenceCollection:
-    doc_lookup = {int(doc.id): doc.content for doc in documents}
-    items: List[EvidenceItem] = []
-    for category in checklist.categories:
-        for value in category.values:
-            if value.document_id is None:
-                raise ValueError("Checklist item missing documentId.")
-            if value.start_offset is None or value.end_offset is None:
-                raise ValueError("Checklist item missing offsets.")
-            if value.start_offset >= value.end_offset:
-                raise ValueError("Checklist item has invalid offsets.")
-            doc_text = doc_lookup.get(int(value.document_id))
-            if doc_text is None:
-                raise ValueError("Checklist item references missing document.")
-            if value.end_offset > len(doc_text):
-                raise ValueError("Checklist item offsets outside document bounds.")
-            evidence_text = doc_text[value.start_offset:value.end_offset]
-            items.append(
-                EvidenceItem(
-                    bin_id=category.id,
-                    value=value.value,
-                    evidence=EvidencePointer(
-                        document_id=int(value.document_id),
-                        start_offset=value.start_offset,
-                        end_offset=value.end_offset,
-                        text=evidence_text,
-                    ),
-                )
-            )
-    return EvidenceCollection(items=items)
-
-
-def _order_evidence_items(evidence: EvidenceCollection, titles: Dict[int, str]) -> List[EvidenceItem]:
-    doc_order = {doc_id: idx for idx, doc_id in enumerate(titles.keys())}
-    return sorted(
-        evidence.items,
-        key=lambda item: (
-            doc_order.get(item.evidence.document_id, len(doc_order)),
-            item.evidence.start_offset if item.evidence.start_offset is not None else 0,
-        ),
-    )
-
-
-def _format_evidence_block(items: List[EvidenceItem], titles: Dict[int, str]) -> str:
-    lines: List[str] = []
-    for item in items:
-        doc_id = item.evidence.document_id
-        title = titles.get(doc_id, f"Document {doc_id}")
-        evidence_text = item.evidence.text or ""
-        evidence_text = evidence_text.replace("\n", " ").strip()
-        if len(evidence_text) > 400:
-            evidence_text = evidence_text[:400] + " ..."
-        snippet = f' "{evidence_text}"' if evidence_text else ""
-        offset_part = ""
-        if item.evidence.start_offset is not None and item.evidence.end_offset is not None:
-            offset_part = f" offsets [{item.evidence.start_offset}-{item.evidence.end_offset}]"
-        lines.append(f"- Doc {doc_id} - {title}: [{item.bin_id}] {item.value}{offset_part}{snippet}")
-    return "\n".join(lines)

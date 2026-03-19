@@ -120,21 +120,6 @@ export async function fetchSummaryPrompt() {
     return request('/cases/summary/prompt');
 }
 
-export async function createChatSession() {
-    return request('/chat/session', { method: 'POST' });
-}
-
-export async function getChatSession(sessionId) {
-    return request(`/chat/session/${sessionId}`);
-}
-
-export async function sendChatMessage(sessionId, body) {
-    return request(`/chat/session/${sessionId}/message`, {
-        method: 'POST',
-        body: JSON.stringify(body)
-    });
-}
-
 export function getApiBaseUrl() {
     return API_BASE_URL;
 }

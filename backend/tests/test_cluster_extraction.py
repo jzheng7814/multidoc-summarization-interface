@@ -137,7 +137,10 @@ class ClusterChecklistRunnerTests(unittest.TestCase):
             )
         ]
 
-        with patch("app.services.cluster_extraction.asyncio.create_subprocess_exec", _fake_create_subprocess_exec):
+        with (
+            patch("app.services.cluster_extraction.asyncio.create_subprocess_exec", _fake_create_subprocess_exec),
+            patch("app.services.cluster_extraction.get_case_title", return_value="Example Case Title"),
+        ):
             collection = asyncio.run(runner.run("46210", documents))
 
         self.assertEqual(len(collection.items), 1)
@@ -244,6 +247,7 @@ class ClusterChecklistRunnerTests(unittest.TestCase):
 
         with (
             patch("app.services.cluster_extraction.asyncio.create_subprocess_exec", _fake_create_subprocess_exec),
+            patch("app.services.cluster_extraction.get_case_title", return_value="Example Case Title"),
             patch.object(
                 runner,
                 "_load_artifact_payload_from_completed_event",
@@ -294,7 +298,10 @@ class ClusterChecklistRunnerTests(unittest.TestCase):
             )
         ]
 
-        with patch("app.services.cluster_extraction.asyncio.create_subprocess_exec", _fake_create_subprocess_exec):
+        with (
+            patch("app.services.cluster_extraction.asyncio.create_subprocess_exec", _fake_create_subprocess_exec),
+            patch("app.services.cluster_extraction.get_case_title", return_value="Example Case Title"),
+        ):
             with self.assertRaises(RuntimeError) as exc:
                 asyncio.run(runner.run("100", documents))
 

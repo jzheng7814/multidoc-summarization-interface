@@ -28,6 +28,7 @@ from app.schemas.checklists import (
 )
 from app.schemas.documents import DocumentReference
 from app.services.cluster_checklist_spec import load_cluster_checklist_spec
+from app.services.cluster_queue import get_cluster_run_lock
 from app.services.checklist_engines import get_checklist_extraction_engine
 from app.services.documents import get_document
 
@@ -35,8 +36,6 @@ producer = get_event_producer(__name__)
 
 _ASSET_DIR = Path(__file__).resolve().parents[1] / "resources" / "checklists"
 _ITEM_DESCRIPTIONS_PATH = _ASSET_DIR / "item_specific_info_improved.json"
-
-_CHECKLIST_VERSION = "evidence-items-v1"
 
 if not _ITEM_DESCRIPTIONS_PATH.exists():
     raise RuntimeError(f"Checklist item descriptions not found at {_ITEM_DESCRIPTIONS_PATH}")
@@ -134,7 +133,7 @@ class ExtractionRunManager:
     def __init__(self, store: DocumentChecklistStore) -> None:
         self._store = store
         self._lock = asyncio.Lock()
-        self._global_lock = asyncio.Lock()
+        self._global_lock = get_cluster_run_lock()
         self._in_flight: Dict[str, asyncio.Task[EvidenceCollection]] = {}
         self._status_by_case: Dict[str, ChecklistRunState] = {}
 
@@ -149,7 +148,6 @@ class ExtractionRunManager:
             self._store.set(
                 case_id,
                 items=sanitized_items,
-                version=stored.version,
             )
         return sanitized_items
 
@@ -265,9 +263,8 @@ class ExtractionRunManager:
                 self._store.set(
                     case_id,
                     items=sanitized_items,
-                    version=stored.version,
                 )
-            return StoredDocumentChecklist(items=sanitized_items, version=stored.version)
+            return StoredDocumentChecklist(items=sanitized_items)
 
         await self.ensure_extraction(case_id, documents)
         stored = self._store.get(case_id)
@@ -362,7 +359,6 @@ class ExtractionRunManager:
                     self._store.set(
                         case_id,
                         items=sanitized_items,
-                        version=stored.version,
                     )
                 self._update_status(
                     case_key,
@@ -800,7 +796,7 @@ async def _run_extraction(
         result = await engine.run(case_id, documents, progress_callback=progress_callback)
 
         sanitized_items = _strip_sentence_ids_from_collection(result, text_lookup)
-        _DOCUMENT_CHECKLIST_STORE.set(case_id, items=sanitized_items, version=_CHECKLIST_VERSION)
+        _DOCUMENT_CHECKLIST_STORE.set(case_id, items=sanitized_items)
         return _copy_collection(sanitized_items)
 
     except Exception as exc:

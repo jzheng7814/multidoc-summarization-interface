@@ -103,7 +103,7 @@ def build_case_payload(case_id: str) -> Dict[str, Any]:
     client = ClearinghouseClient(api_key=api_key)
     case_detail = client.fetch_case_detail(case_id)
 
-    documents, _ = client.fetch_case_documents(case_id)
+    documents, fetched_case_title = client.fetch_case_documents(case_id)
     sorted_documents = sorted(documents, key=_document_sort_key)
 
     doc_names: List[str] = []
@@ -125,9 +125,15 @@ def build_case_payload(case_id: str) -> Dict[str, Any]:
 
     total_token_num = sum(doc_token_counts)
     summary_long = _strip_html(case_detail.get("summary"))
+    case_title = _strip_html(fetched_case_title)
+    if not case_title:
+        case_title = _strip_html(case_detail.get("name"))
+    if not case_title:
+        raise RuntimeError(f"Unable to determine case title for case '{case_id}'.")
 
     payload: Dict[str, Any] = {
         "case_id": str(case_id),
+        "case_title": case_title,
         "case_documents": doc_names,
         "case_documents_text": doc_texts,
         "case_documents_title": doc_titles,
