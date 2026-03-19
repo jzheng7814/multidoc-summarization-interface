@@ -1,175 +1,167 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
+
 import HomeScreen from './features/home/HomeScreen';
-import ChecklistPreparationPage from './features/workspace/ChecklistPreparationPage';
-import SummaryWorkspace from './features/workspace/SummaryWorkspace';
-import { uploadDocuments } from './services/apiClient';
-import { normaliseImportedCaseState } from './features/workspace/caseState';
+import ExtractionWaitingPage from './features/runFlow/ExtractionWaitingPage';
+import PostExtractionReviewPage from './features/runFlow/PostExtractionReviewPage';
+import RunWorkspace from './features/runFlow/RunWorkspace';
+import SummaryWaitingPage from './features/runFlow/SummaryWaitingPage';
+import { buildInitialRunCaseState } from './features/runFlow/runSnapshot';
+import { fetchRun, fetchRunChecklist, fetchRunDocuments, updateRunChecklist } from './services/apiClient';
+
+const EMPTY_SESSION = {
+    runId: '',
+    caseTitle: '',
+    sourceCaseId: '',
+    extractionConfig: null,
+    summaryConfig: null,
+    documents: [],
+    checklistCategories: [],
+    summaryText: ''
+};
 
 const App = () => {
-    const [currentPage, setCurrentPage] = useState('home');
-    const [intakeMode, setIntakeMode] = useState('caseId');
-    const [caseId, setCaseId] = useState('');
-    const [caseIdError, setCaseIdError] = useState('');
-    const [uploadCaseName, setUploadCaseName] = useState('');
-    const [uploadedDocuments, setUploadedDocuments] = useState([]);
-    const [isUploading, setIsUploading] = useState(false);
-    const [stateFile, setStateFile] = useState(null);
-    const [isImportingState, setIsImportingState] = useState(false);
-    const [initialCaseState, setInitialCaseState] = useState(null);
-    const [activeCaseId, setActiveCaseId] = useState('');
+    const [stage, setStage] = useState('setup');
+    const [session, setSession] = useState(EMPTY_SESSION);
+    const [globalError, setGlobalError] = useState('');
 
-    const handleProceed = useCallback(async () => {
-        if (intakeMode === 'state') {
-            if (!stateFile) {
-                setCaseIdError('Please choose a saved case-state JSON file to continue.');
-                return;
-            }
-            setIsImportingState(true);
-            setCaseIdError('');
-            try {
-                const text = await stateFile.text();
-                const parsedPayload = JSON.parse(text);
-                const parsedState = normaliseImportedCaseState(parsedPayload);
-                setInitialCaseState(parsedState);
-                setCaseId(parsedState.caseId);
-                setActiveCaseId(parsedState.caseId);
-                setCurrentPage('summary');
-            } catch (error) {
-                setCaseIdError(error.message || 'Failed to import saved case state.');
-            } finally {
-                setIsImportingState(false);
-            }
-            return;
+    const handleStartExtraction = async ({ runData, extractionConfig, summaryConfig }) => {
+        const runId = String(runData?.runId ?? runData?.run_id ?? '').trim();
+        if (!runId) {
+            throw new Error('Run ID is missing from run initialization response.');
         }
+        const caseTitle = String(runData?.caseTitle ?? runData?.case_title ?? '').trim();
+        const sourceCaseId = String(runData?.sourceCaseId ?? runData?.source_case_id ?? '').trim();
+        setGlobalError('');
+        setSession({
+            runId,
+            caseTitle,
+            sourceCaseId,
+            extractionConfig,
+            summaryConfig,
+            documents: [],
+            checklistCategories: [],
+            summaryText: ''
+        });
+        setStage('extraction_wait');
+    };
 
-        if (intakeMode === 'upload') {
-            if (!uploadCaseName.trim()) {
-                setCaseIdError('Please enter a case name to continue.');
-                return;
-            }
-            if (!uploadedDocuments.length) {
-                setCaseIdError('Please add at least one document to continue.');
-                return;
-            }
-            setIsUploading(true);
-            setCaseIdError('');
-            try {
-                const response = await uploadDocuments({
-                    caseName: uploadCaseName,
-                    documents: uploadedDocuments
-                });
-                const assignedCaseId = String(response?.caseId ?? response?.case_id ?? '').trim();
-                if (!assignedCaseId) {
-                    throw new Error('Upload succeeded but no case ID was returned.');
-                }
-                setInitialCaseState(null);
-                setCaseId(assignedCaseId);
-                setActiveCaseId(assignedCaseId);
-                setCurrentPage('waiting');
-            } catch (error) {
-                setCaseIdError(error.message || 'Failed to upload documents.');
-            } finally {
-                setIsUploading(false);
-            }
-            return;
-        }
+    const handleExtractionCompleted = async () => {
+        try {
+            const [runPayload, documentsPayload, checklistPayload] = await Promise.all([
+                fetchRun(session.runId),
+                fetchRunDocuments(session.runId),
+                fetchRunChecklist(session.runId)
+            ]);
+            const caseTitle = String(runPayload?.caseTitle ?? runPayload?.case_title ?? session.caseTitle).trim();
+            const sourceCaseId = String(runPayload?.sourceCaseId ?? runPayload?.source_case_id ?? session.sourceCaseId).trim();
+            const documents = Array.isArray(documentsPayload) ? documentsPayload : [];
+            const categories = Array.isArray(checklistPayload?.categories) ? checklistPayload.categories : [];
 
-        const normalisedCaseId = (caseId || '').trim();
-        if (!normalisedCaseId) {
-            setCaseIdError('Please enter a valid case ID to continue.');
-            return;
+            setSession((current) => ({
+                ...current,
+                caseTitle,
+                sourceCaseId,
+                documents,
+                checklistCategories: categories
+            }));
+            setStage('review');
+        } catch (error) {
+            setGlobalError(error?.message || 'Failed to load extraction outputs.');
+            setStage('setup');
         }
-        setCaseIdError('');
-        setInitialCaseState(null);
-        setActiveCaseId(normalisedCaseId);
-        setCurrentPage('waiting');
-    }, [caseId, intakeMode, stateFile, uploadCaseName, uploadedDocuments]);
+    };
 
-    const handleExitWorkspace = useCallback((error) => {
-        setCurrentPage('home');
-        setInitialCaseState(null);
-        if (error) {
-            setCaseIdError(error.message || 'Failed to load the requested case.');
-        }
-    }, []);
+    const handleSummaryCompleted = async (summaryPayload) => {
+        const text = String(summaryPayload?.summaryText ?? summaryPayload?.summary_text ?? '');
+        setSession((current) => ({
+            ...current,
+            summaryText: text
+        }));
+        setStage('workspace');
+    };
 
-    const canProceed = useMemo(() => {
-        if (intakeMode === 'state') {
-            return !isImportingState && Boolean(stateFile);
+    const handleStartSummary = async (checklistCategories) => {
+        if (!session.runId) {
+            throw new Error('Run ID is missing; cannot start summary.');
         }
-        if (intakeMode === 'upload') {
-            return !isUploading && uploadCaseName.trim().length > 0 && uploadedDocuments.length > 0;
-        }
-        return caseId.trim().length > 0;
-    }, [caseId, intakeMode, isImportingState, isUploading, stateFile, uploadCaseName, uploadedDocuments.length]);
+        const payload = await updateRunChecklist(session.runId, {
+            categories: Array.isArray(checklistCategories) ? checklistCategories : []
+        });
+        const persistedCategories = Array.isArray(payload?.categories) ? payload.categories : [];
+        setSession((current) => ({
+            ...current,
+            checklistCategories: persistedCategories
+        }));
+        setStage('summary_wait');
+    };
 
-    if (currentPage === 'home') {
+    const initialCaseState = useMemo(
+        () => buildInitialRunCaseState({
+            runId: session.runId,
+            sourceCaseId: session.sourceCaseId,
+            documents: session.documents,
+            checklistCategories: session.checklistCategories,
+            summaryText: session.summaryText
+        }),
+        [session.checklistCategories, session.documents, session.runId, session.sourceCaseId, session.summaryText]
+    );
+
+    if (stage === 'extraction_wait') {
         return (
-            <HomeScreen
-                intakeMode={intakeMode}
-                onIntakeModeChange={(mode) => {
-                    setIntakeMode(mode);
-                    if (caseIdError) {
-                        setCaseIdError('');
-                    }
-                }}
-                caseId={caseId}
-                caseIdError={caseIdError}
-                onCaseIdChange={(value) => {
-                    setCaseId(value);
-                    if (caseIdError) {
-                        setCaseIdError('');
-                    }
-                }}
-                uploadCaseName={uploadCaseName}
-                onUploadCaseNameChange={(value) => {
-                    setUploadCaseName(value);
-                    if (caseIdError) {
-                        setCaseIdError('');
-                    }
-                }}
-                uploadedDocuments={uploadedDocuments}
-                onUploadedDocumentsChange={(documents) => {
-                    setUploadedDocuments(documents);
-                    if (caseIdError) {
-                        setCaseIdError('');
-                    }
-                }}
-                stateFile={stateFile}
-                onStateFileChange={(file) => {
-                    setStateFile(file);
-                    if (caseIdError) {
-                        setCaseIdError('');
-                    }
-                }}
-                isUploading={isUploading}
-                isImportingState={isImportingState}
-                onProceed={handleProceed}
-                canProceed={canProceed}
+            <ExtractionWaitingPage
+                key={`extract-${session.runId}`}
+                runId={session.runId}
+                caseTitle={session.caseTitle}
+                extractionConfig={session.extractionConfig}
+                onCompleted={handleExtractionCompleted}
             />
         );
     }
 
-    if (currentPage === 'waiting') {
+    if (stage === 'review') {
         return (
-            <ChecklistPreparationPage
-                caseId={activeCaseId}
-                onReady={() => {
-                    setCurrentPage('summary');
-                }}
-                onBack={() => {
-                    setCurrentPage('home');
-                }}
+            <PostExtractionReviewPage
+                key={`review-${session.runId}`}
+                runId={session.runId}
+                caseTitle={session.caseTitle}
+                initialCaseState={initialCaseState}
+                onStartSummary={handleStartSummary}
+            />
+        );
+    }
+
+    if (stage === 'summary_wait') {
+        return (
+            <SummaryWaitingPage
+                key={`summary-${session.runId}`}
+                runId={session.runId}
+                caseTitle={session.caseTitle}
+                summaryConfig={session.summaryConfig}
+                onCompleted={handleSummaryCompleted}
+            />
+        );
+    }
+
+    if (stage === 'workspace') {
+        return (
+            <RunWorkspace
+                key={`workspace-${session.runId}`}
+                runId={session.runId}
+                caseTitle={session.caseTitle}
+                initialCaseState={initialCaseState}
             />
         );
     }
 
     return (
-        <SummaryWorkspace
-            onExit={handleExitWorkspace}
-            caseId={activeCaseId}
-            initialCaseState={initialCaseState}
-        />
+        <>
+            {globalError && (
+                <div className="bg-[var(--color-danger-soft)] border-b border-[var(--color-danger-soft)] px-4 py-2 text-sm text-[var(--color-text-danger)]">
+                    {globalError}
+                </div>
+            )}
+            <HomeScreen onStartExtraction={handleStartExtraction} />
+        </>
     );
 };
 

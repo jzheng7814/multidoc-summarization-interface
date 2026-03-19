@@ -166,8 +166,8 @@ const hydratePatchAction = (action) => {
     };
 };
 
-const useSummaryStore = ({ caseId } = {}) => {
-    const [summaryText, setSummaryTextState] = useState('');
+const useSummaryStore = ({ caseId, initialSummaryText = '' } = {}) => {
+    const [summaryText, setSummaryTextState] = useState(() => String(initialSummaryText || ''));
     const [isEditMode, setIsEditMode] = useState(false);
     const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
     const [summaryJobId, setSummaryJobId] = useState(null);

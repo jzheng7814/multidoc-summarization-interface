@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, Optional, Protocol
+from dataclasses import dataclass
+from typing import Any, Callable, Dict, Mapping, Optional, Protocol, Sequence
 
 from app.core.config import Settings, get_settings
+from app.schemas.checklists import EvidenceCollection
+from app.schemas.documents import Document
 from app.schemas.summary import SummaryRequest
 from app.services.cluster_summary import ClusterSummaryResult, ClusterSummaryRunner, run_cluster_summary
-from app.services.documents import list_cached_documents
 from app.services.spoof_replay import (
     load_spoof_events,
     load_spoof_json,
@@ -20,13 +22,22 @@ from app.services.spoof_replay import (
 ProgressCallback = Callable[[str, Dict[str, Any]], None]
 
 
+@dataclass(frozen=True)
+class SummaryRunInput:
+    case_id: str
+    case_title: Optional[str]
+    documents: Sequence[Document]
+    checklist_collection: EvidenceCollection
+    checklist_definitions: Mapping[str, str]
+    request: SummaryRequest
+
+
 class SummaryGenerationEngine(Protocol):
     name: str
 
     async def run(
         self,
-        case_id: str,
-        request: SummaryRequest,
+        run_input: SummaryRunInput,
         progress_callback: Optional[ProgressCallback] = None,
     ) -> ClusterSummaryResult:
         ...
@@ -37,11 +48,18 @@ class ClusterSummaryGenerationEngine:
 
     async def run(
         self,
-        case_id: str,
-        request: SummaryRequest,
+        run_input: SummaryRunInput,
         progress_callback: Optional[ProgressCallback] = None,
     ) -> ClusterSummaryResult:
-        return await run_cluster_summary(case_id, request, progress_callback=progress_callback)
+        return await run_cluster_summary(
+            run_input.case_id,
+            case_title=run_input.case_title,
+            documents=run_input.documents,
+            checklist_collection=run_input.checklist_collection,
+            checklist_definitions=run_input.checklist_definitions,
+            request=run_input.request,
+            progress_callback=progress_callback,
+        )
 
 
 class SpoofSummaryGenerationEngine:
@@ -52,15 +70,14 @@ class SpoofSummaryGenerationEngine:
 
     async def run(
         self,
-        case_id: str,
-        request: SummaryRequest,
+        run_input: SummaryRunInput,
         progress_callback: Optional[ProgressCallback] = None,
     ) -> ClusterSummaryResult:
         fixture_dir = resolve_spoof_fixture_dir(self._settings.cluster_spoof_summary_fixture_dir)
         request_payload = load_spoof_request_payload(fixture_dir)
-        validate_fixture_case(case_id, request_payload, label="Spoof summary fixture")
+        validate_fixture_case(run_input.case_id, request_payload, label="Spoof summary fixture")
         validate_fixture_document_ids(
-            [document.id for document in list_cached_documents(case_id)],
+            [document.id for document in run_input.documents],
             request_payload,
             label="Spoof summary fixture",
         )
@@ -90,7 +107,7 @@ class SpoofSummaryGenerationEngine:
         if not job_id:
             raise RuntimeError("Spoof summary fixture is missing job_id in terminal event and result payload.")
 
-        summary_text = runner._extract_summary_text(summary_payload, result_payload, case_id).strip()  # pylint: disable=protected-access
+        summary_text = runner._extract_summary_text(summary_payload, result_payload, run_input.case_id).strip()  # pylint: disable=protected-access
         summary_stats = result_payload.get("completion_stats")
         if not isinstance(summary_stats, dict):
             summary_stats = summary_payload.get("summary_stats")

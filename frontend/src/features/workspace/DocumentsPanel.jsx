@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useDocuments, useHighlight, useChecklist } from './state/WorkspaceProvider';
 import { computeOverlayRects, createRangeFromOffsets } from '../../utils/selection';
 
-const DocumentsPanel = () => {
+const DocumentsPanel = ({ checklistReadOnly = false }) => {
     const {
         documents,
         selectedDocument,
@@ -107,7 +107,7 @@ const DocumentsPanel = () => {
                         <pre className="text-xs leading-relaxed font-mono whitespace-pre-wrap break-words text-[var(--color-text-primary)] min-h-full w-full">
                             {currentDocumentText}
                         </pre>
-                        {selectionAvailable && (
+                        {selectionAvailable && !checklistReadOnly && (
                             <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-[var(--color-overlay-scrim)] px-3 py-1 text-xs text-[var(--color-text-inverse)] shadow">
                                 Select a checklist category to capture this span.
                             </div>

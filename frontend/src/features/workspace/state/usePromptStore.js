@@ -38,8 +38,8 @@ const clearStoredPrompt = () => {
     }
 };
 
-const usePromptStore = () => {
-    const storedPrompt = loadStoredPrompt();
+const usePromptStore = ({ enabled = true } = {}) => {
+    const storedPrompt = enabled ? loadStoredPrompt() : null;
     const [prompt, setPrompt] = useState(storedPrompt ?? '');
     const [defaultPrompt, setDefaultPrompt] = useState('');
     const [hasCustomPrompt, setHasCustomPrompt] = useState(Boolean(storedPrompt));
@@ -47,6 +47,15 @@ const usePromptStore = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
+        if (!enabled) {
+            setPrompt('');
+            setDefaultPrompt('');
+            setHasCustomPrompt(false);
+            setError(null);
+            setIsLoading(false);
+            return () => {};
+        }
+
         let isMounted = true;
         setIsLoading(true);
         setError(null);
@@ -75,29 +84,38 @@ const usePromptStore = () => {
         return () => {
             isMounted = false;
         };
-    }, [hasCustomPrompt]);
+    }, [enabled, hasCustomPrompt]);
 
     const savePrompt = useCallback((nextPrompt) => {
+        if (!enabled) {
+            return;
+        }
         const value = typeof nextPrompt === 'string' ? nextPrompt : '';
         setPrompt(value);
         setHasCustomPrompt(true);
         saveStoredPrompt(value);
-    }, []);
+    }, [enabled]);
 
     const clearCustomPrompt = useCallback(() => {
+        if (!enabled) {
+            return;
+        }
         setHasCustomPrompt(false);
         clearStoredPrompt();
         setPrompt(defaultPrompt);
-    }, [defaultPrompt]);
+    }, [defaultPrompt, enabled]);
 
     const commitPrompt = useCallback((nextPrompt) => {
+        if (!enabled) {
+            return;
+        }
         const value = typeof nextPrompt === 'string' ? nextPrompt : '';
         if (defaultPrompt && value === defaultPrompt) {
             clearCustomPrompt();
             return;
         }
         savePrompt(value);
-    }, [clearCustomPrompt, defaultPrompt, savePrompt]);
+    }, [clearCustomPrompt, defaultPrompt, enabled, savePrompt]);
 
     return {
         prompt,

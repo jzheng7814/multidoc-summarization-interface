@@ -23,9 +23,16 @@ def load_cluster_checklist_spec(raw_path: str, strategy: ChecklistStrategy) -> D
     if not isinstance(payload, dict):
         raise RuntimeError("Checklist spec file root must be a JSON object.")
 
+    return validate_cluster_checklist_spec_payload(payload, strategy=strategy, path=path)
+
+
+def validate_cluster_checklist_spec_payload(
+    payload: Dict[str, Any], *, strategy: ChecklistStrategy, path: Path | None = None
+) -> Dict[str, Any]:
+    effective_path = path or Path("<inline-checklist-spec>")
     if strategy == "all":
-        return _validate_all_spec(payload, path)
-    return _validate_individual_spec(payload, path)
+        return _validate_all_spec(payload, effective_path)
+    return _validate_individual_spec(payload, effective_path)
 
 
 def _resolve_path(raw_path: str) -> Path:

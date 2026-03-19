@@ -17,7 +17,6 @@ from app.schemas.checklists import SUMMARY_DOCUMENT_ID, EvidenceCollection, Evid
 from app.schemas.documents import DocumentReference
 from app.services.cluster_checklist_spec import load_cluster_checklist_spec
 from app.services.cluster_focus_context import load_cluster_focus_context
-from app.services.documents import get_case_title, get_document
 from app.services.spoof_replay import validate_spoof_fixture_dir
 
 producer = get_event_producer(__name__)
@@ -33,6 +32,17 @@ class ResolvedClusterDocument:
     text: str
 
 
+@dataclass(frozen=True)
+class ClusterExtractionResult:
+    collection: EvidenceCollection
+    run_id: Optional[str]
+    job_id: Optional[str]
+    output_dir: Optional[str]
+    manifest_path: Optional[str]
+    result_payload_path: Optional[str]
+    checklist_ndjson_path: Optional[str]
+
+
 class ClusterChecklistRunner:
     def __init__(self) -> None:
         self._settings = get_settings()
@@ -42,12 +52,29 @@ class ClusterChecklistRunner:
         case_id: str,
         documents: List[DocumentReference],
         progress_callback: Optional[ProgressCallback] = None,
-    ) -> EvidenceCollection:
+        *,
+        checklist_spec: Optional[Dict[str, Any]] = None,
+        focus_context: Optional[str] = None,
+    ) -> ClusterExtractionResult:
         if not documents:
-            return EvidenceCollection(items=[])
+            return ClusterExtractionResult(
+                collection=EvidenceCollection(items=[]),
+                run_id=None,
+                job_id=None,
+                output_dir=None,
+                manifest_path=None,
+                result_payload_path=None,
+                checklist_ndjson_path=None,
+            )
 
         request_id = f"cluster_{case_id}_{uuid.uuid4().hex[:12]}"
-        request_payload = self._build_controller_request(case_id, request_id, documents)
+        request_payload = self._build_controller_request(
+            case_id,
+            request_id,
+            documents,
+            checklist_spec=checklist_spec,
+            focus_context=focus_context,
+        )
         remote_command = self._build_remote_command()
 
         producer.info(
@@ -124,6 +151,16 @@ class ClusterChecklistRunner:
                 )
 
             collection = await self._collection_from_completed_event(terminal_data, documents)
+            run_id = self._coerce_string(terminal_data.get("run_id"))
+            job_id = self._coerce_string(terminal_data.get("job_id"))
+            output_dir = self._coerce_string(terminal_data.get("output_dir"))
+            manifest_path = self._coerce_string(terminal_data.get("manifest_path"))
+            artifacts = terminal_data.get("artifacts")
+            result_payload_path: Optional[str] = None
+            checklist_ndjson_path: Optional[str] = None
+            if isinstance(artifacts, dict):
+                result_payload_path = self._coerce_string(artifacts.get("result_payload_path"))
+                checklist_ndjson_path = self._coerce_string(artifacts.get("checklist_ndjson_path"))
             producer.info(
                 "Cluster controller run completed",
                 {
@@ -133,7 +170,15 @@ class ClusterChecklistRunner:
                     "job_id": terminal_data.get("job_id"),
                 },
             )
-            return collection
+            return ClusterExtractionResult(
+                collection=collection,
+                run_id=run_id,
+                job_id=job_id,
+                output_dir=output_dir,
+                manifest_path=manifest_path,
+                result_payload_path=result_payload_path,
+                checklist_ndjson_path=checklist_ndjson_path,
+            )
         finally:
             if not stderr_task.done():
                 stderr_task.cancel()
@@ -269,15 +314,17 @@ class ClusterChecklistRunner:
         case_id: str,
         request_id: str,
         documents: List[DocumentReference],
+        *,
+        checklist_spec: Optional[Dict[str, Any]] = None,
+        focus_context: Optional[str] = None,
     ) -> Dict[str, Any]:
-        resolved_docs = self._resolve_documents(case_id, documents)
+        resolved_docs = self._resolve_documents(documents)
         checklist_strategy = self._settings.cluster_checklist_strategy
-        checklist_spec = load_cluster_checklist_spec(
+        resolved_checklist_spec = checklist_spec or load_cluster_checklist_spec(
             self._settings.cluster_checklist_spec_path,
             strategy=checklist_strategy,
         )
-        case_title = get_case_title(case_id)
-        focus_context = load_cluster_focus_context(case_title)
+        resolved_focus_context = focus_context or load_cluster_focus_context(str(case_id))
         request: Dict[str, Any] = {
             "request_id": request_id,
             "case": {
@@ -290,8 +337,8 @@ class ClusterChecklistRunner:
             },
             "model": self._settings.cluster_model_name,
             "checklist_strategy": checklist_strategy,
-            "checklist_spec": checklist_spec,
-            "focus_context": focus_context,
+            "checklist_spec": resolved_checklist_spec,
+            "focus_context": resolved_focus_context,
             "resume": bool(self._settings.cluster_resume),
             "debug": bool(self._settings.cluster_debug),
         }
@@ -311,22 +358,17 @@ class ClusterChecklistRunner:
 
         return request
 
-    def _resolve_documents(self, case_id: str, documents: List[DocumentReference]) -> List[ResolvedClusterDocument]:
+    def _resolve_documents(self, documents: List[DocumentReference]) -> List[ResolvedClusterDocument]:
         resolved: List[ResolvedClusterDocument] = []
         for doc_ref in documents:
-            if doc_ref.include_full_text:
-                if doc_ref.content is None:
-                    raise ValueError(f"Document '{doc_ref.id}' missing inline content for cluster extraction.")
-                text = doc_ref.content
-                title = doc_ref.title or doc_ref.alias or f"Document {doc_ref.id}"
-                doc_type = doc_ref.type or ""
-                date = doc_ref.date
-            else:
-                stored = get_document(case_id, doc_ref.id)
-                text = doc_ref.content if doc_ref.content is not None else stored.content
-                title = doc_ref.title or doc_ref.alias or stored.title or f"Document {doc_ref.id}"
-                doc_type = doc_ref.type or stored.type or ""
-                date = doc_ref.date or stored.date
+            if not doc_ref.include_full_text or doc_ref.content is None:
+                raise ValueError(
+                    f"Document '{doc_ref.id}' must include inline full text for cluster extraction."
+                )
+            text = doc_ref.content
+            title = doc_ref.title or doc_ref.alias or f"Document {doc_ref.id}"
+            doc_type = doc_ref.type or ""
+            date = doc_ref.date
 
             resolved.append(
                 ResolvedClusterDocument(
@@ -741,5 +783,14 @@ async def run_cluster_extraction(
     case_id: str,
     documents: List[DocumentReference],
     progress_callback: Optional[ProgressCallback] = None,
-) -> EvidenceCollection:
-    return await _RUNNER.run(case_id, documents, progress_callback=progress_callback)
+    *,
+    checklist_spec: Optional[Dict[str, Any]] = None,
+    focus_context: Optional[str] = None,
+) -> ClusterExtractionResult:
+    return await _RUNNER.run(
+        case_id,
+        documents,
+        progress_callback=progress_callback,
+        checklist_spec=checklist_spec,
+        focus_context=focus_context,
+    )

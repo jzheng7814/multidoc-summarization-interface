@@ -91,6 +91,127 @@ export async function uploadDocuments(uploadPayload) {
     });
 }
 
+export async function createRunFromCaseId(caseId) {
+    const normalized = String(caseId || '').trim();
+    if (!normalized) {
+        throw new Error('Case ID is required.');
+    }
+    return request('/runs/from-case-id', {
+        method: 'POST',
+        body: JSON.stringify({ caseId: normalized })
+    });
+}
+
+export async function createRunFromUpload(uploadPayload) {
+    const caseName = String(uploadPayload?.caseName || '').trim();
+    const documents = Array.isArray(uploadPayload?.documents) ? uploadPayload.documents : [];
+    if (!caseName) {
+        throw new Error('Case name is required for upload.');
+    }
+    if (!documents.length) {
+        throw new Error('At least one document is required for upload.');
+    }
+
+    const manifestDocuments = documents.map((entry, index) => {
+        const file = entry?.file;
+        if (!file) {
+            throw new Error(`Document #${index + 1} is missing an uploaded file.`);
+        }
+        const name = String(entry?.name || '').trim();
+        const date = String(entry?.date || '').trim();
+        const type = String(entry?.type || '').trim();
+        const typeOther = String(entry?.typeOther || '').trim();
+        if (!name || !date || !type) {
+            throw new Error(`Document #${index + 1} must include name, date, and type.`);
+        }
+        return {
+            name,
+            date,
+            type,
+            typeOther: type === 'Other' ? typeOther : undefined,
+            fileName: file.name
+        };
+    });
+
+    const formData = new FormData();
+    formData.append(
+        'manifest',
+        JSON.stringify({
+            caseName,
+            documents: manifestDocuments
+        })
+    );
+    documents.forEach((entry) => {
+        formData.append('files', entry.file, entry.file.name);
+    });
+
+    return request('/runs/upload-documents', {
+        method: 'POST',
+        body: formData
+    });
+}
+
+export async function fetchRunDefaults() {
+    return request('/runs/defaults');
+}
+
+export async function fetchRun(runId) {
+    return request(`/runs/${runId}`);
+}
+
+export async function updateRunExtractionConfig(runId, extractionConfig) {
+    return request(`/runs/${runId}/extraction-config`, {
+        method: 'PUT',
+        body: JSON.stringify(extractionConfig)
+    });
+}
+
+export async function updateRunSummaryConfig(runId, summaryConfig) {
+    return request(`/runs/${runId}/summary-config`, {
+        method: 'PUT',
+        body: JSON.stringify(summaryConfig)
+    });
+}
+
+export async function startRunExtraction(runId, extractionConfig = null) {
+    const payload = extractionConfig ? { extractionConfig } : {};
+    return request(`/runs/${runId}/extraction/start`, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    });
+}
+
+export async function fetchRunExtractionStatus(runId) {
+    return request(`/runs/${runId}/extraction/status`);
+}
+
+export async function fetchRunChecklist(runId) {
+    return request(`/runs/${runId}/checklist`);
+}
+
+export async function updateRunChecklist(runId, checklistPayload) {
+    return request(`/runs/${runId}/checklist`, {
+        method: 'PUT',
+        body: JSON.stringify(checklistPayload)
+    });
+}
+
+export async function fetchRunDocuments(runId) {
+    return request(`/runs/${runId}/documents`);
+}
+
+export async function startRunSummary(runId, summaryConfig = null) {
+    const payload = summaryConfig ? { summaryConfig } : {};
+    return request(`/runs/${runId}/summary/start`, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    });
+}
+
+export async function fetchRunSummaryStatus(runId) {
+    return request(`/runs/${runId}/summary/status`);
+}
+
 export async function startSummaryJob(caseId, body) {
     return request(`/cases/${caseId}/summary`, {
         method: 'POST',

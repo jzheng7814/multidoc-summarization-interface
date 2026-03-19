@@ -4,7 +4,7 @@ import { useSummary, useHighlight } from '../state/WorkspaceProvider';
 import SummaryPatchPanel from './SummaryPatchPanel';
 import { createRangeFromOffsets, computeOverlayRects, scrollRangeIntoView } from '../../../utils/selection';
 
-const SummaryPanel = () => {
+const SummaryPanel = ({ allowGeneration = true }) => {
     const {
         summaryText,
         setSummaryText,
@@ -31,7 +31,7 @@ const SummaryPanel = () => {
     const [patchOverlayMeta, setPatchOverlayMeta] = useState(null);
     const patchPanelRef = useRef(null);
 
-    const canGenerateSummary = !isEditMode;
+    const canGenerateSummary = allowGeneration && !isEditMode;
 
     const handleGenerateSummary = useCallback(async () => {
         setLocalError(null);

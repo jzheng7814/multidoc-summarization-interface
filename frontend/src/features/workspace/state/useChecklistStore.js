@@ -173,6 +173,26 @@ const useChecklistStore = ({ caseId, importedSnapshot = null } = {}) => {
         return valueId;
     }, []);
 
+    const updateItem = useCallback(async (valueId, updater) => {
+        if (!valueId || typeof updater !== 'function') {
+            return null;
+        }
+        let updatedItem = null;
+        setItems((previous) => previous.map((item) => {
+            if (item.id !== valueId) {
+                return item;
+            }
+            const next = updater(item);
+            if (!next || typeof next !== 'object') {
+                updatedItem = item;
+                return item;
+            }
+            updatedItem = next;
+            return next;
+        }));
+        return updatedItem;
+    }, []);
+
     const replaceItems = useCallback((nextItems) => {
         setUsingImportedSnapshot(true);
         setIsLoading(false);
@@ -243,6 +263,7 @@ const useChecklistStore = ({ caseId, importedSnapshot = null } = {}) => {
         refreshChecklist,
         addItem,
         deleteItem,
+        updateItem,
         replaceItems,
         activateImportedSnapshot,
         suppressNextServerHydration,

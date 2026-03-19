@@ -6,8 +6,18 @@ import useChecklistStore from './useChecklistStore';
 import usePromptStore from './usePromptStore';
 
 const WorkspaceStateContext = createContext(null);
+const PROMPT_STORE_DISABLED = {
+    prompt: '',
+    defaultPrompt: '',
+    hasCustomPrompt: false,
+    isLoading: false,
+    error: null,
+    savePrompt: () => {},
+    clearCustomPrompt: () => {},
+    commitPrompt: () => {}
+};
 
-export const WorkspaceStateProvider = ({ children, caseId, initialCaseState = null }) => {
+export const WorkspaceStateProvider = ({ children, caseId, initialCaseState = null, enablePromptStore = true }) => {
     const importedDocumentSnapshot = initialCaseState
         ? {
             caseId: initialCaseState.caseId,
@@ -15,7 +25,10 @@ export const WorkspaceStateProvider = ({ children, caseId, initialCaseState = nu
         }
         : null;
     const documents = useDocumentsStore({ caseId, importedSnapshot: importedDocumentSnapshot });
-    const summary = useSummaryStore({ caseId: documents.caseId });
+    const summary = useSummaryStore({
+        caseId: documents.caseId,
+        initialSummaryText: initialCaseState?.summaryText ?? ''
+    });
     const highlight = useHighlightStore({ summary, documents });
     const importedChecklistSnapshot = initialCaseState
         ? {
@@ -24,7 +37,8 @@ export const WorkspaceStateProvider = ({ children, caseId, initialCaseState = nu
         }
         : null;
     const checklist = useChecklistStore({ caseId: documents.caseId, importedSnapshot: importedChecklistSnapshot });
-    const prompt = usePromptStore();
+    const promptStore = usePromptStore({ enabled: enablePromptStore });
+    const prompt = enablePromptStore ? promptStore : PROMPT_STORE_DISABLED;
 
     const value = useMemo(
         () => ({ documents, summary, highlight, checklist, prompt }),

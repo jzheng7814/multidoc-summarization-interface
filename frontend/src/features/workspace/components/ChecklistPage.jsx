@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { useChecklist, useDocuments, useHighlight } from '../state/WorkspaceProvider';
 import { buildDocumentLookup } from '../caseState';
 
 const ACTIVE_CHECKLIST_STATUSES = new Set(['pending', 'queued', 'preprocessing', 'waiting_resources', 'running', 'finalizing']);
 
-const ChecklistPanel = ({ isActive }) => {
-    const { categories, isLoading, addItem, deleteItem } = useChecklist();
+const ChecklistPanel = ({ isActive, readOnly = false }) => {
+    const { categories, isLoading, addItem, deleteItem, updateItem } = useChecklist();
     const documents = useDocuments();
     const {
         selectedDocumentText,
@@ -16,11 +16,18 @@ const ChecklistPanel = ({ isActive }) => {
         jumpToDocumentRange
     } = useHighlight();
     const [isPickerOpen, setIsPickerOpen] = useState(false);
+    const [editingValueId, setEditingValueId] = useState('');
+    const [editingValueInput, setEditingValueInput] = useState('');
+    const [reselectingValueId, setReselectingValueId] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [actionError, setActionError] = useState(null);
     const [expandedEvidence, setExpandedEvidence] = useState(() => new Set());
     const [valueInput, setValueInput] = useState('');
     const [selectedCategoryId, setSelectedCategoryId] = useState('');
+    const selectedDocumentRangeRef = useRef(selectedDocumentRange);
+    const selectedDocumentIdRef = useRef(documents.selectedDocument);
+    const reselectingValueIdRef = useRef(reselectingValueId);
+    const reselectDragStartedRef = useRef(false);
 
     useEffect(() => {
         if (!selectedDocumentText) {
@@ -28,7 +35,26 @@ const ChecklistPanel = ({ isActive }) => {
         }
     }, [selectedDocumentText]);
 
+    useEffect(() => {
+        if (readOnly && reselectingValueId) {
+            setReselectingValueId('');
+        }
+    }, [readOnly, reselectingValueId]);
+
+    useEffect(() => {
+        selectedDocumentRangeRef.current = selectedDocumentRange;
+    }, [selectedDocumentRange]);
+
+    useEffect(() => {
+        selectedDocumentIdRef.current = documents.selectedDocument;
+    }, [documents.selectedDocument]);
+
+    useEffect(() => {
+        reselectingValueIdRef.current = reselectingValueId;
+    }, [reselectingValueId]);
+
     const selectionAvailable = Boolean(
+        !readOnly &&
         isActive &&
         selectedDocumentText &&
         selectedDocumentRange &&
@@ -36,7 +62,7 @@ const ChecklistPanel = ({ isActive }) => {
     );
 
     const handleDelete = useCallback(async (valueId) => {
-        if (!valueId) {
+        if (!valueId || readOnly) {
             return;
         }
         setActionError(null);
@@ -45,7 +71,23 @@ const ChecklistPanel = ({ isActive }) => {
         } catch (error) {
             setActionError(error.message || 'Failed to delete checklist item.');
         }
-    }, [deleteItem]);
+    }, [deleteItem, readOnly]);
+
+    const valuesById = useMemo(() => {
+        const lookup = {};
+        categories.forEach((category) => {
+            category.values.forEach((value) => {
+                lookup[value.id] = value;
+            });
+        });
+        return lookup;
+    }, [categories]);
+
+    useEffect(() => {
+        if (reselectingValueId && !valuesById[reselectingValueId]) {
+            setReselectingValueId('');
+        }
+    }, [reselectingValueId, valuesById]);
 
     const documentLookup = useMemo(() => buildDocumentLookup(documents.documents || []), [documents.documents]);
 
@@ -115,13 +157,83 @@ const ChecklistPanel = ({ isActive }) => {
     }, [jumpToDocumentRange]);
 
     const handleOpenModal = useCallback(() => {
+        if (readOnly) {
+            return;
+        }
         setActionError(null);
         setValueInput('');
         if (categories.length > 0) {
             setSelectedCategoryId(categories[0].id);
         }
         setIsPickerOpen(true);
-    }, [categories]);
+    }, [categories, readOnly]);
+
+    const handleOpenEditValue = useCallback((value) => {
+        if (readOnly || !value?.id) {
+            return;
+        }
+        setActionError(null);
+        setEditingValueId(value.id);
+        setEditingValueInput(String(value.text || value.value || ''));
+    }, [readOnly]);
+
+    const handleCloseEditValue = useCallback(() => {
+        setEditingValueId('');
+        setEditingValueInput('');
+        setIsSubmitting(false);
+    }, []);
+
+    const handleSubmitEditValue = useCallback(async () => {
+        if (!editingValueId) {
+            return;
+        }
+        const trimmed = editingValueInput.trim();
+        if (!trimmed) {
+            setActionError('Checklist text is required.');
+            return;
+        }
+        setIsSubmitting(true);
+        setActionError(null);
+        try {
+            await updateItem(editingValueId, (current) => ({
+                ...current,
+                value: trimmed,
+                text: trimmed
+            }));
+            handleCloseEditValue();
+        } catch (error) {
+            setActionError(error.message || 'Failed to update checklist item.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    }, [editingValueId, editingValueInput, handleCloseEditValue, updateItem]);
+
+    const handleStartReselectSpan = useCallback((value) => {
+        if (readOnly || !value?.id) {
+            return;
+        }
+        setActionError(null);
+        clearSelection();
+        window.getSelection()?.removeAllRanges();
+        setReselectingValueId(value.id);
+        if (
+            value.documentId != null &&
+            value.startOffset != null &&
+            value.endOffset != null &&
+            value.endOffset > value.startOffset
+        ) {
+            jumpToDocumentRange({
+                documentId: value.documentId,
+                range: { start: value.startOffset, end: value.endOffset }
+            });
+        }
+    }, [clearSelection, jumpToDocumentRange, readOnly]);
+
+    const handleCancelReselectSpan = useCallback(() => {
+        setReselectingValueId('');
+        clearSelection();
+        window.getSelection()?.removeAllRanges();
+    }, [clearSelection]);
 
     const handleCloseModal = useCallback(() => {
         setIsPickerOpen(false);
@@ -163,8 +275,77 @@ const ChecklistPanel = ({ isActive }) => {
         }
     }, [addItem, clearSelection, documents.selectedDocument, selectedCategoryId, selectedDocumentRange, selectionAvailable, valueInput]);
 
+    useEffect(() => {
+        if (!reselectingValueId || readOnly) {
+            return undefined;
+        }
+        const container = documents.documentRef.current;
+        if (!container) {
+            return undefined;
+        }
+
+        const handleMouseDown = (event) => {
+            if (!container.contains(event.target)) {
+                return;
+            }
+            reselectDragStartedRef.current = true;
+            setActionError(null);
+        };
+
+        const handleMouseUp = () => {
+            if (!reselectDragStartedRef.current) {
+                return;
+            }
+            reselectDragStartedRef.current = false;
+
+            window.requestAnimationFrame(() => {
+                const activeValueId = reselectingValueIdRef.current;
+                if (!activeValueId) {
+                    return;
+                }
+                const value = valuesById[activeValueId];
+                if (!value) {
+                    setReselectingValueId('');
+                    return;
+                }
+
+                const selectedRange = selectedDocumentRangeRef.current;
+                const selectedDocumentId = selectedDocumentIdRef.current;
+                if (
+                    !selectedRange ||
+                    selectedDocumentId == null ||
+                    selectedRange.start == null ||
+                    selectedRange.end == null ||
+                    selectedRange.end <= selectedRange.start
+                ) {
+                    return;
+                }
+
+                void updateItem(activeValueId, (current) => ({
+                    ...current,
+                    documentId: selectedDocumentId,
+                    startOffset: selectedRange.start,
+                    endOffset: selectedRange.end
+                })).then(() => {
+                    setReselectingValueId('');
+                    clearSelection();
+                    window.getSelection()?.removeAllRanges();
+                }).catch((error) => {
+                    setActionError(error.message || 'Failed to update supporting span.');
+                });
+            });
+        };
+
+        container.addEventListener('mousedown', handleMouseDown);
+        window.addEventListener('mouseup', handleMouseUp);
+        return () => {
+            container.removeEventListener('mousedown', handleMouseDown);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [clearSelection, documents.documentRef, readOnly, reselectingValueId, updateItem, valuesById]);
+
     const renderSelectionTooltip = () => {
-        if (!selectionAvailable || isPickerOpen) {
+        if (readOnly || !selectionAvailable || isPickerOpen || reselectingValueId) {
             return null;
         }
         const style = {
@@ -197,15 +378,33 @@ const ChecklistPanel = ({ isActive }) => {
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="text-base font-semibold text-[var(--color-text-primary)]">Document Checklist</h2>
-                        <p className="text-xs text-[var(--color-text-muted)]">Review extracted items or add your own from document spans.</p>
+                        <p className="text-xs text-[var(--color-text-muted)]">
+                            {readOnly
+                                ? 'Review extracted items and evidence spans.'
+                                : 'Review extracted items or add your own from document spans.'}
+                        </p>
                     </div>
                     {isLoading && (
                         <span className="text-xs text-[var(--color-accent)] font-medium">Loading…</span>
                     )}
                 </div>
                 <p className="mt-2 text-[11px] text-[var(--color-text-secondary)]">
-                    Refine this checklist from document spans; generation pulls directly from here.
+                    {readOnly
+                        ? 'Checklist is read-only for this stage.'
+                        : 'Refine this checklist from document spans; generation pulls directly from here.'}
                 </p>
+                {!readOnly && reselectingValueId && (
+                    <div className="mt-2 flex items-center justify-between gap-2 rounded border border-[var(--color-accent-soft)] bg-[var(--color-accent-soft)] px-2 py-1 text-[11px] text-[var(--color-text-secondary)]">
+                        <span>Select a new span in the document viewer; it will save automatically.</span>
+                        <button
+                            type="button"
+                            onClick={handleCancelReselectSpan}
+                            className="text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                )}
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[var(--color-surface-panel-alt)]">
                 {!isChecklistReady ? (
@@ -280,14 +479,36 @@ const ChecklistPanel = ({ isActive }) => {
                                                                     )}
                                                                 </div>
                                                             </div>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleDelete(value.id)}
-                                                                className="text-[var(--color-text-muted)] hover:text-[var(--color-danger)]"
-                                                                title="Delete item"
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </button>
+                                                            {!readOnly && (
+                                                                <div className="flex items-center gap-1">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleOpenEditValue(value)}
+                                                                        className="rounded border border-[var(--color-border)] bg-[var(--color-surface-panel)] px-2 py-1 text-[11px] text-[var(--color-text-secondary)] hover:border-[var(--color-border-strong)]"
+                                                                    >
+                                                                        Edit Value
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleStartReselectSpan(value)}
+                                                                        className={`rounded border px-2 py-1 text-[11px] ${
+                                                                            reselectingValueId === value.id
+                                                                                ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-accent)]'
+                                                                                : 'border-[var(--color-border)] bg-[var(--color-surface-panel)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-strong)]'
+                                                                        }`}
+                                                                    >
+                                                                        Reselect Span
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleDelete(value.id)}
+                                                                        className="text-[var(--color-text-muted)] hover:text-[var(--color-danger)]"
+                                                                        title="Delete item"
+                                                                    >
+                                                                        <Trash2 className="h-4 w-4" />
+                                                                    </button>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                         {isExpanded && evidenceText && (
                                                             <div className="mt-2 rounded border border-[var(--color-border)] bg-[var(--color-surface-panel)] p-2 text-xs text-[var(--color-text-primary)]">
@@ -311,7 +532,7 @@ const ChecklistPanel = ({ isActive }) => {
                         {actionError}
                     </div>
                 )}
-                {isPickerOpen && selectionAvailable && (
+                {!readOnly && isPickerOpen && selectionAvailable && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay-scrim)] px-4">
                         <div
                             className="w-full max-w-xl rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-panel)] shadow-2xl"
@@ -388,6 +609,61 @@ const ChecklistPanel = ({ isActive }) => {
                                     disabled={isSubmitting}
                                 >
                                     {isSubmitting ? 'Saving…' : 'Save to checklist'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {!readOnly && editingValueId && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay-scrim)] px-4">
+                        <div
+                            className="w-full max-w-xl rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-panel)] shadow-2xl"
+                            data-preserve-selection="true"
+                        >
+                            <div className="flex items-center justify-between border-b border-[var(--color-border)] px-4 py-3">
+                                <div>
+                                    <p className="text-sm font-semibold text-[var(--color-text-primary)]">Edit checklist value</p>
+                                    <p className="text-[11px] text-[var(--color-text-muted)]">Update the extracted value text.</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={handleCloseEditValue}
+                                    className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+                                    disabled={isSubmitting}
+                                >
+                                    Close
+                                </button>
+                            </div>
+                            <div className="px-4 py-3 space-y-3">
+                                <div>
+                                    <label className="text-xs font-semibold text-[var(--color-text-secondary)] mb-1 block" htmlFor="edit-checklist-value">
+                                        Checklist value
+                                    </label>
+                                    <textarea
+                                        id="edit-checklist-value"
+                                        value={editingValueInput}
+                                        onChange={(event) => setEditingValueInput(event.target.value)}
+                                        className="w-full min-h-[120px] rounded border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+                                        disabled={isSubmitting}
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-end gap-2 border-t border-[var(--color-border)] bg-[var(--color-surface-panel-alt)] px-4 py-3">
+                                <button
+                                    type="button"
+                                    onClick={handleCloseEditValue}
+                                    className="rounded border border-[var(--color-border)] px-3 py-1.5 text-sm text-[var(--color-text-secondary)] hover:border-[var(--color-border-strong)] disabled:opacity-50"
+                                    disabled={isSubmitting}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleSubmitEditValue}
+                                    className="rounded bg-[var(--color-accent)] px-3 py-1.5 text-sm font-semibold text-[var(--color-text-inverse)] shadow hover:bg-[var(--color-accent-hover)] disabled:opacity-60"
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting ? 'Saving…' : 'Save value'}
                                 </button>
                             </div>
                         </div>

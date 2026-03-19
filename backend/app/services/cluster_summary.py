@@ -9,16 +9,15 @@ import tempfile
 import uuid
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
 
 from app.core.config import get_settings
 from app.eventing import get_event_producer
+from app.schemas.checklists import EvidenceCollection
+from app.schemas.documents import Document
 from app.schemas.summary import SummaryRequest
 from app.services.spoof_replay import validate_spoof_fixture_dir
 from app.services.summary_agent_payload import build_summary_agent_request_payload
-
-if TYPE_CHECKING:
-    from app.schemas.checklists import EvidenceCollection
 
 producer = get_event_producer(__name__)
 ProgressCallback = Callable[[str, Dict[str, Any]], None]
@@ -42,29 +41,26 @@ class ClusterSummaryRunner:
     async def run(
         self,
         case_id: str,
+        *,
+        case_title: Optional[str],
+        documents: Sequence[Document],
+        checklist_collection: EvidenceCollection,
+        checklist_definitions: Mapping[str, str],
         request: SummaryRequest,
         progress_callback: Optional[ProgressCallback] = None,
     ) -> ClusterSummaryResult:
-        from app.services.documents import get_case_title, list_cached_documents
-
-        docs = list_cached_documents(case_id)
-        if not docs:
-            raise RuntimeError(f"No cached documents are available for case '{case_id}'.")
-        case_title = get_case_title(case_id)
-
-        request_id = f"summary_{case_id}_{uuid.uuid4().hex[:12]}"
-        checklist_collection = self._load_stored_checklist(case_id)
-        from app.services.checklists import get_checklist_definitions
-
-        checklist_definitions = get_checklist_definitions()
+        if not documents:
+            raise RuntimeError(f"No documents are available for case '{case_id}'.")
         if not checklist_definitions:
             raise RuntimeError("Checklist definitions are empty; cannot build summary-agent request.")
+
+        request_id = f"summary_{case_id}_{uuid.uuid4().hex[:12]}"
 
         controller_request = build_summary_agent_request_payload(
             case_id=case_id,
             case_title=case_title,
             request_id=request_id,
-            documents=docs,
+            documents=documents,
             checklist_collection=checklist_collection,
             checklist_definitions=checklist_definitions,
             request=request,
@@ -154,18 +150,6 @@ class ClusterSummaryRunner:
                     await stderr_task
                 except asyncio.CancelledError:
                     pass
-
-    def _load_stored_checklist(self, case_id: str) -> EvidenceCollection:
-        from app.data.checklist_store import SqlDocumentChecklistStore
-
-        checklist_store = SqlDocumentChecklistStore()
-        stored = checklist_store.get(case_id)
-        if stored is None:
-            raise RuntimeError(
-                f"Summary generation requires a cached checklist for case '{case_id}'. "
-                "Run checklist extraction first."
-            )
-        return stored.items
 
     def _resolve_remote_repo_dir(self) -> str:
         inner_command = f"cd {self._double_quote(self._settings.cluster_remote_repo_dir)} && pwd"
@@ -413,7 +397,20 @@ def validate_cluster_summary_runtime_prerequisites() -> None:
 
 async def run_cluster_summary(
     case_id: str,
+    *,
+    case_title: Optional[str],
+    documents: Sequence[Document],
+    checklist_collection: EvidenceCollection,
+    checklist_definitions: Mapping[str, str],
     request: SummaryRequest,
     progress_callback: Optional[ProgressCallback] = None,
 ) -> ClusterSummaryResult:
-    return await _RUNNER.run(case_id, request, progress_callback=progress_callback)
+    return await _RUNNER.run(
+        case_id,
+        case_title=case_title,
+        documents=documents,
+        checklist_collection=checklist_collection,
+        checklist_definitions=checklist_definitions,
+        request=request,
+        progress_callback=progress_callback,
+    )

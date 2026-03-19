@@ -5,7 +5,6 @@ import SummaryPanel from './components/SummaryPanel';
 import DocumentsPanel from './DocumentsPanel';
 import DividerHandle from './components/DividerHandle';
 import PromptEditor from './components/PromptEditor';
-import ThemeToggle from '../../theme/ThemeToggle';
 import { useChecklist, useDocuments, useHighlight, usePrompt, useSummary } from './state/WorkspaceProvider';
 import {
     buildCaseStatePayload,
@@ -370,7 +369,6 @@ const SummaryWorkspaceView = ({ onExit, initialCaseState }) => {
                         >
                             Export Case State
                         </button>
-                        <ThemeToggle />
                         <button
                             onClick={() => onExit?.()}
                             className="text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] text-sm font-medium"

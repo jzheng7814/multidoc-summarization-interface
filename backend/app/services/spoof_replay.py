@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from collections import Counter
 import json
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence
@@ -120,7 +121,7 @@ def validate_fixture_document_ids(
 
     fixture_ids = [str(value).strip() for value in raw_fixture_ids]
     current_ids = [str(value).strip() for value in document_ids]
-    if fixture_ids != current_ids:
+    if Counter(fixture_ids) != Counter(current_ids):
         raise RuntimeError(
             f"{label} document ids do not match fixture payload. "
             f"requested={current_ids}, fixture={fixture_ids}"
