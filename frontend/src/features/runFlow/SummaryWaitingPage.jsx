@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { fetchRunSummaryStatus, startRunSummary } from '../../services/apiClient';
+import { fetchRunSummaryStatus } from '../../services/apiClient';
 
 const ACTIVE_STATUSES = new Set(['queued', 'running']);
 
@@ -32,8 +32,8 @@ function buildStatusLabel(stage, dotCount) {
 const SummaryWaitingPage = ({
     runId,
     caseTitle,
-    summaryConfig,
-    onCompleted
+    onCompleted,
+    onFailed
 }) => {
     const [stage, setStage] = useState(() => parseSummaryStage({ status: 'queued' }));
     const [localError, setLocalError] = useState('');
@@ -66,6 +66,11 @@ const SummaryWaitingPage = ({
                 await onCompleted?.(payload);
                 return;
             }
+            if (next.status === 'failed') {
+                clearPollTimeout();
+                await onFailed?.(next);
+                return;
+            }
             if (ACTIVE_STATUSES.has(next.status)) {
                 pollTimeoutRef.current = window.setTimeout(() => {
                     void pollStatus();
@@ -77,42 +82,17 @@ const SummaryWaitingPage = ({
             }
             setLocalError(error?.message || 'Failed to poll summary status.');
         }
-    }, [clearPollTimeout, handleStagePayload, onCompleted, runId]);
-
-    const startSummary = useCallback(async () => {
-        setLocalError('');
-        clearPollTimeout();
-        try {
-            const payload = await startRunSummary(runId, summaryConfig);
-            if (!isMountedRef.current) {
-                return;
-            }
-            const next = handleStagePayload(payload);
-            if (next.status === 'succeeded') {
-                await onCompleted?.(payload);
-                return;
-            }
-            pollTimeoutRef.current = window.setTimeout(() => {
-                void pollStatus();
-            }, 800);
-        } catch (error) {
-            if (!isMountedRef.current) {
-                return;
-            }
-            const parsed = parseSummaryStage({ status: 'failed', error: error?.message || 'Summary failed to start.' });
-            setStage(parsed);
-            setLocalError(parsed.error || 'Summary failed to start.');
-        }
-    }, [clearPollTimeout, handleStagePayload, onCompleted, pollStatus, runId, summaryConfig]);
+    }, [clearPollTimeout, handleStagePayload, onCompleted, onFailed, runId]);
 
     useEffect(() => {
         isMountedRef.current = true;
-        void startSummary();
+        setLocalError('');
+        void pollStatus();
         return () => {
             isMountedRef.current = false;
             clearPollTimeout();
         };
-    }, [clearPollTimeout, startSummary]);
+    }, [clearPollTimeout, pollStatus]);
 
     useEffect(() => {
         const intervalId = window.setInterval(() => {

@@ -7,6 +7,7 @@ from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 
 ReasoningEffort = Literal["low", "medium", "high"]
+WorkflowStage = Literal["setup", "extraction_wait", "review", "summary_wait", "workspace"]
 
 
 class RunDocumentPayload(BaseModel):
@@ -169,6 +170,11 @@ class RunCreateResponse(BaseModel):
         serialization_alias="summaryStatus",
         validation_alias=AliasChoices("summaryStatus", "summary_status"),
     )
+    workflow_stage: WorkflowStage = Field(
+        ...,
+        serialization_alias="workflowStage",
+        validation_alias=AliasChoices("workflowStage", "workflow_stage"),
+    )
     extraction_config: RunExtractionConfig = Field(
         ...,
         serialization_alias="extractionConfig",
@@ -304,6 +310,16 @@ class RunSummaryStartRequest(BaseModel):
         default=None,
         serialization_alias="summaryConfig",
         validation_alias=AliasChoices("summaryConfig", "summary_config"),
+    )
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+
+class RunWorkflowStageUpdateRequest(BaseModel):
+    workflow_stage: WorkflowStage = Field(
+        ...,
+        serialization_alias="workflowStage",
+        validation_alias=AliasChoices("workflowStage", "workflow_stage"),
     )
 
     model_config = ConfigDict(extra="forbid", populate_by_name=True)

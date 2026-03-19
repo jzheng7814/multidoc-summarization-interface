@@ -16,6 +16,7 @@ class StoredRun:
     source_case_id: Optional[str]
     case_title: str
     created_at: str
+    workflow_stage: str
     extraction_config: Dict[str, Any]
     summary_config: Dict[str, Any]
     extraction_status: str
@@ -51,6 +52,7 @@ class RunStore(Protocol):
         source_case_id: Optional[str],
         case_title: str,
         created_at: str,
+        workflow_stage: str,
         documents: List[Document],
         extraction_config: Dict[str, Any],
         summary_config: Dict[str, Any],
@@ -73,6 +75,7 @@ class SqlRunStore:
         source_case_id: Optional[str],
         case_title: str,
         created_at: str,
+        workflow_stage: str,
         documents: List[Document],
         extraction_config: Dict[str, Any],
         summary_config: Dict[str, Any],
@@ -88,6 +91,7 @@ class SqlRunStore:
                 source_case_id=source_case_id,
                 case_title=case_title,
                 created_at=created_at,
+                workflow_stage=workflow_stage,
                 extraction_config_json=self._dump_json(extraction_config),
                 summary_config_json=self._dump_json(summary_config),
                 extraction_status="not_started",
@@ -167,6 +171,7 @@ class SqlRunStore:
                 source_case_id=record.source_case_id,
                 case_title=record.case_title,
                 created_at=record.created_at,
+                workflow_stage=record.workflow_stage,
                 extraction_config=self._load_json(record.extraction_config_json),
                 summary_config=self._load_json(record.summary_config_json),
                 extraction_status=record.extraction_status,
@@ -219,6 +224,18 @@ class SqlRunStore:
         finally:
             session.close()
 
+    def update_workflow_stage(self, run_id: str, workflow_stage: str) -> None:
+        session = self._session_factory()
+        try:
+            record = self._require_record(session, run_id)
+            record.workflow_stage = workflow_stage
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
     def update_extraction_state(
         self,
         run_id: str,
@@ -244,6 +261,39 @@ class SqlRunStore:
                 record.extraction_remote_job_id = remote_job_id
             if remote_output_dir is not None:
                 record.extraction_remote_output_dir = remote_output_dir
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    def reset_for_extraction_start(self, run_id: str) -> None:
+        session = self._session_factory()
+        try:
+            record = self._require_record(session, run_id)
+            record.extraction_status = "not_started"
+            record.extraction_error = None
+            record.extraction_progress_json = None
+            record.extraction_result_json = None
+            record.extraction_remote_run_id = None
+            record.extraction_remote_job_id = None
+            record.extraction_remote_output_dir = None
+            record.extraction_manifest_path = None
+            record.extraction_result_payload_path = None
+            record.extraction_checklist_ndjson_path = None
+
+            record.summary_status = "not_started"
+            record.summary_error = None
+            record.summary_progress_json = None
+            record.summary_result_json = None
+            record.summary_text = None
+            record.summary_remote_run_id = None
+            record.summary_remote_job_id = None
+            record.summary_remote_output_dir = None
+            record.summary_manifest_path = None
+            record.summary_result_payload_path = None
+            record.summary_summary_path = None
             session.commit()
         except Exception:
             session.rollback()
@@ -319,6 +369,28 @@ class SqlRunStore:
                 record.summary_remote_job_id = remote_job_id
             if remote_output_dir is not None:
                 record.summary_remote_output_dir = remote_output_dir
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    def reset_for_summary_start(self, run_id: str) -> None:
+        session = self._session_factory()
+        try:
+            record = self._require_record(session, run_id)
+            record.summary_status = "not_started"
+            record.summary_error = None
+            record.summary_progress_json = None
+            record.summary_result_json = None
+            record.summary_text = None
+            record.summary_remote_run_id = None
+            record.summary_remote_job_id = None
+            record.summary_remote_output_dir = None
+            record.summary_manifest_path = None
+            record.summary_result_payload_path = None
+            record.summary_summary_path = None
             session.commit()
         except Exception:
             session.rollback()

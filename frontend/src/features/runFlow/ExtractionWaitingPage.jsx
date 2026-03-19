@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { fetchRunExtractionStatus, startRunExtraction } from '../../services/apiClient';
+import { fetchRunExtractionStatus } from '../../services/apiClient';
 
 const ACTIVE_STATUSES = new Set(['queued', 'running']);
 
@@ -35,12 +35,11 @@ function buildStatusLabel(stage, dotCount) {
 const ExtractionWaitingPage = ({
     runId,
     caseTitle,
-    extractionConfig,
-    onCompleted
+    onCompleted,
+    onFailed
 }) => {
     const [stage, setStage] = useState(() => parseExtractionStage({ status: 'queued' }));
     const [localError, setLocalError] = useState('');
-    const [isRetrying, setIsRetrying] = useState(false);
     const [dotCount, setDotCount] = useState(1);
     const pollTimeoutRef = useRef(null);
     const isMountedRef = useRef(true);
@@ -70,6 +69,11 @@ const ExtractionWaitingPage = ({
                 await onCompleted?.();
                 return;
             }
+            if (next.status === 'failed') {
+                clearPollTimeout();
+                await onFailed?.(next);
+                return;
+            }
             if (ACTIVE_STATUSES.has(next.status)) {
                 pollTimeoutRef.current = window.setTimeout(() => {
                     void pollStatus();
@@ -81,47 +85,17 @@ const ExtractionWaitingPage = ({
             }
             setLocalError(error?.message || 'Failed to poll extraction status.');
         }
-    }, [clearPollTimeout, handleStagePayload, onCompleted, runId]);
-
-    const startExtraction = useCallback(async () => {
-        setIsRetrying(true);
-        setLocalError('');
-        clearPollTimeout();
-        try {
-            const payload = await startRunExtraction(runId, extractionConfig);
-            if (!isMountedRef.current) {
-                return;
-            }
-            const next = handleStagePayload(payload);
-            if (next.status === 'succeeded') {
-                await onCompleted?.();
-                return;
-            }
-            pollTimeoutRef.current = window.setTimeout(() => {
-                void pollStatus();
-            }, 800);
-        } catch (error) {
-            if (!isMountedRef.current) {
-                return;
-            }
-            const parsed = parseExtractionStage({ status: 'failed', error: error?.message || 'Extraction failed to start.' });
-            setStage(parsed);
-            setLocalError(parsed.error || 'Extraction failed to start.');
-        } finally {
-            if (isMountedRef.current) {
-                setIsRetrying(false);
-            }
-        }
-    }, [clearPollTimeout, extractionConfig, handleStagePayload, onCompleted, pollStatus, runId]);
+    }, [clearPollTimeout, handleStagePayload, onCompleted, onFailed, runId]);
 
     useEffect(() => {
         isMountedRef.current = true;
-        void startExtraction();
+        setLocalError('');
+        void pollStatus();
         return () => {
             isMountedRef.current = false;
             clearPollTimeout();
         };
-    }, [clearPollTimeout, startExtraction]);
+    }, [clearPollTimeout, pollStatus]);
 
     useEffect(() => {
         const intervalId = window.setInterval(() => {
@@ -131,8 +105,6 @@ const ExtractionWaitingPage = ({
     }, []);
 
     const statusLabel = useMemo(() => buildStatusLabel(stage, dotCount), [dotCount, stage]);
-    const failed = stage.status === 'failed';
-
     return (
         <div className="min-h-screen bg-[var(--color-surface-app)] text-[var(--color-text-primary)] flex items-center justify-center p-6">
             <div className="w-full max-w-3xl rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-panel)] shadow-lg p-8">
@@ -178,21 +150,6 @@ const ExtractionWaitingPage = ({
                 {(stage.error || localError) && (
                     <div className="mt-4 rounded-md border border-[var(--color-danger-soft)] bg-[var(--color-danger-soft)] px-3 py-2 text-sm text-[var(--color-text-danger)]">
                         {stage.error || localError}
-                    </div>
-                )}
-
-                {failed && (
-                    <div className="mt-6 flex justify-end">
-                        <button
-                            type="button"
-                            onClick={() => {
-                                void startExtraction();
-                            }}
-                            disabled={isRetrying}
-                            className="px-3 py-1.5 text-sm rounded bg-[var(--color-accent)] text-[var(--color-text-inverse)] hover:bg-[var(--color-accent-hover)] disabled:opacity-60"
-                        >
-                            {isRetrying ? 'Retrying…' : 'Retry Extraction'}
-                        </button>
                     </div>
                 )}
             </div>

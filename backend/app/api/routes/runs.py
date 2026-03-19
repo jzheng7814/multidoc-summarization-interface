@@ -18,10 +18,16 @@ from app.schemas.runs import (
     RunSummaryConfig,
     RunSummaryStartRequest,
     RunSummaryStatusEnvelope,
+    RunWorkflowStageUpdateRequest,
 )
 from app.services import runs as run_service
 
 router = APIRouter(prefix="/runs", tags=["runs"])
+
+
+@router.post("", response_model=RunCreateResponse)
+async def create_empty_run() -> RunCreateResponse:
+    return run_service.create_empty_run()
 
 
 @router.post("/from-case-id", response_model=RunCreateResponse)
@@ -42,6 +48,25 @@ async def create_run_from_upload(
     return await run_service.create_run_from_upload(manifest_payload, files)
 
 
+@router.post("/{run_id}/from-case-id", response_model=RunCreateResponse)
+async def update_run_from_case_id(run_id: str, request: RunCreateFromCaseIdRequest) -> RunCreateResponse:
+    return run_service.update_run_from_case_id(run_id, request.case_id)
+
+
+@router.post("/{run_id}/upload-documents", response_model=RunCreateResponse)
+async def update_run_from_upload(
+    run_id: str,
+    manifest: str = Form(...),
+    files: List[UploadFile] = File(...),
+) -> RunCreateResponse:
+    try:
+        manifest_payload = UploadDocumentsManifest.model_validate_json(manifest)
+    except ValidationError as exc:
+        raise HTTPException(status_code=422, detail="Invalid upload manifest payload.") from exc
+
+    return await run_service.update_run_from_upload(run_id, manifest_payload, files)
+
+
 @router.get("/defaults", response_model=RunDefaultConfigResponse)
 async def get_run_defaults() -> RunDefaultConfigResponse:
     return run_service.get_default_configs()
@@ -50,6 +75,11 @@ async def get_run_defaults() -> RunDefaultConfigResponse:
 @router.get("/{run_id}", response_model=RunCreateResponse)
 async def get_run(run_id: str) -> RunCreateResponse:
     return run_service.get_run(run_id)
+
+
+@router.put("/{run_id}/workflow-stage", response_model=RunCreateResponse)
+async def update_workflow_stage(run_id: str, request: RunWorkflowStageUpdateRequest) -> RunCreateResponse:
+    return run_service.update_workflow_stage(run_id, request.workflow_stage)
 
 
 @router.get("/{run_id}/documents", response_model=List[RunDocumentPayload])

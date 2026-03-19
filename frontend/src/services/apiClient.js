@@ -91,6 +91,13 @@ export async function uploadDocuments(uploadPayload) {
     });
 }
 
+export async function createRun() {
+    return request('/runs', {
+        method: 'POST',
+        body: JSON.stringify({})
+    });
+}
+
 export async function createRunFromCaseId(caseId) {
     const normalized = String(caseId || '').trim();
     if (!normalized) {
@@ -151,12 +158,83 @@ export async function createRunFromUpload(uploadPayload) {
     });
 }
 
+export async function updateRunFromCaseId(runId, caseId) {
+    const normalized = String(caseId || '').trim();
+    if (!normalized) {
+        throw new Error('Case ID is required.');
+    }
+    return request(`/runs/${runId}/from-case-id`, {
+        method: 'POST',
+        body: JSON.stringify({ caseId: normalized })
+    });
+}
+
+export async function updateRunFromUpload(runId, uploadPayload) {
+    const caseName = String(uploadPayload?.caseName || '').trim();
+    const documents = Array.isArray(uploadPayload?.documents) ? uploadPayload.documents : [];
+    if (!caseName) {
+        throw new Error('Case name is required for upload.');
+    }
+    if (!documents.length) {
+        throw new Error('At least one document is required for upload.');
+    }
+
+    const manifestDocuments = documents.map((entry, index) => {
+        const file = entry?.file;
+        if (!file) {
+            throw new Error(`Document #${index + 1} is missing an uploaded file.`);
+        }
+        const name = String(entry?.name || '').trim();
+        const date = String(entry?.date || '').trim();
+        const type = String(entry?.type || '').trim();
+        const typeOther = String(entry?.typeOther || '').trim();
+        if (!name || !date || !type) {
+            throw new Error(`Document #${index + 1} must include name, date, and type.`);
+        }
+        return {
+            name,
+            date,
+            type,
+            typeOther: type === 'Other' ? typeOther : undefined,
+            fileName: file.name
+        };
+    });
+
+    const formData = new FormData();
+    formData.append(
+        'manifest',
+        JSON.stringify({
+            caseName,
+            documents: manifestDocuments
+        })
+    );
+    documents.forEach((entry) => {
+        formData.append('files', entry.file, entry.file.name);
+    });
+
+    return request(`/runs/${runId}/upload-documents`, {
+        method: 'POST',
+        body: formData
+    });
+}
+
 export async function fetchRunDefaults() {
     return request('/runs/defaults');
 }
 
 export async function fetchRun(runId) {
     return request(`/runs/${runId}`);
+}
+
+export async function updateRunWorkflowStage(runId, workflowStage) {
+    const normalized = String(workflowStage || '').trim();
+    if (!normalized) {
+        throw new Error('workflowStage is required.');
+    }
+    return request(`/runs/${runId}/workflow-stage`, {
+        method: 'PUT',
+        body: JSON.stringify({ workflowStage: normalized })
+    });
 }
 
 export async function updateRunExtractionConfig(runId, extractionConfig) {

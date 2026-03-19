@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import colorsys
 from datetime import date as date_type, datetime, timezone
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, cast
 import uuid
 
 from fastapi import BackgroundTasks, HTTPException, UploadFile
@@ -29,6 +29,7 @@ from app.schemas.runs import (
     RunStageStatus,
     RunSummaryConfig,
     RunSummaryStatusEnvelope,
+    WorkflowStage,
 )
 from app.schemas.summary import SummaryRequest
 from app.services.checklist_engines import get_checklist_extraction_engine
@@ -49,6 +50,7 @@ settings = get_settings()
 _run_store = SqlRunStore()
 _cluster_queue_lock = get_cluster_run_lock()
 _start_lock = asyncio.Lock()
+_WORKFLOW_STAGE_VALUES = {"setup", "extraction_wait", "review", "summary_wait", "workspace"}
 
 MANUAL_UPLOAD_DOCUMENT_TYPES: List[str] = [
     "Complaint",
@@ -92,12 +94,22 @@ def create_run_from_documents(
         source_case_id=source_case_id,
         case_title=case_title,
         created_at=created_at,
+        workflow_stage="setup",
         documents=list(documents),
         extraction_config=extraction_config,
         summary_config=summary_config,
     )
     stored = _require_run(run_id)
     return _to_run_response(stored)
+
+
+def create_empty_run() -> RunCreateResponse:
+    return create_run_from_documents(
+        source_type="new_run",
+        source_case_id=None,
+        case_title="Untitled Run",
+        documents=[],
+    )
 
 
 def create_run_from_case_id(case_id: str) -> RunCreateResponse:
@@ -127,8 +139,99 @@ async def create_run_from_upload(manifest: UploadDocumentsManifest, files: List[
     )
 
 
+def update_run_from_case_id(run_id: str, case_id: str) -> RunCreateResponse:
+    run = _require_run(run_id)
+    _assert_run_not_active(run)
+    normalized = str(case_id).strip()
+    if not normalized:
+        raise HTTPException(status_code=400, detail="case_id is required.")
+
+    docs, case_title = _fetch_documents_from_clearinghouse(normalized)
+    _replace_run_documents(
+        run,
+        source_type="case_id",
+        source_case_id=normalized,
+        case_title=case_title,
+        documents=docs,
+    )
+    return get_run(run_id)
+
+
+async def update_run_from_upload(run_id: str, manifest: UploadDocumentsManifest, files: List[UploadFile]) -> RunCreateResponse:
+    run = _require_run(run_id)
+    _assert_run_not_active(run)
+
+    case_title = manifest.case_name.strip()
+    if not case_title:
+        raise HTTPException(status_code=400, detail="Case name is required.")
+    documents = await _parse_uploaded_documents(manifest, files)
+    _replace_run_documents(
+        run,
+        source_type="manual_upload",
+        source_case_id=None,
+        case_title=case_title,
+        documents=documents,
+    )
+    return get_run(run_id)
+
+
 def get_run(run_id: str) -> RunCreateResponse:
     return _to_run_response(_require_run(run_id))
+
+
+def update_workflow_stage(run_id: str, workflow_stage: WorkflowStage) -> RunCreateResponse:
+    run = _require_run(run_id)
+    normalized_stage = _normalize_workflow_stage(workflow_stage)
+    if run.summary_status in {"queued", "running"} and normalized_stage != "summary_wait":
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Run '{run.id}' has active summary status '{run.summary_status}'. "
+                "workflow_stage cannot be changed away from summary_wait."
+            ),
+        )
+    if run.extraction_status in {"queued", "running"} and normalized_stage != "extraction_wait":
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Run '{run.id}' has active extraction status '{run.extraction_status}'. "
+                "workflow_stage cannot be changed away from extraction_wait."
+            ),
+        )
+    if normalized_stage == "workspace" and run.summary_status != "succeeded":
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Run '{run.id}' cannot move to workspace because summary_status is "
+                f"'{run.summary_status}' (expected succeeded)."
+            ),
+        )
+    if normalized_stage == "review" and run.extraction_status != "succeeded":
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Run '{run.id}' cannot move to review because extraction_status is "
+                f"'{run.extraction_status}' (expected succeeded)."
+            ),
+        )
+    if normalized_stage == "summary_wait" and run.summary_status not in {"queued", "running"}:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Run '{run.id}' cannot move to summary_wait because summary_status is "
+                f"'{run.summary_status}' (expected queued or running)."
+            ),
+        )
+    if normalized_stage == "extraction_wait" and run.extraction_status not in {"queued", "running"}:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Run '{run.id}' cannot move to extraction_wait because extraction_status is "
+                f"'{run.extraction_status}' (expected queued or running)."
+            ),
+        )
+    _set_workflow_stage(run.id, normalized_stage)
+    return get_run(run.id)
 
 
 def get_default_configs() -> RunDefaultConfigResponse:
@@ -174,6 +277,13 @@ async def start_extraction(run_id: str, background_tasks: BackgroundTasks, confi
 
         if run.extraction_status in {"queued", "running"}:
             return get_extraction_status(run_id)
+        if not run.documents:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Run '{run_id}' has no documents. Load documents before starting extraction.",
+            )
+
+        _run_store.reset_for_extraction_start(run_id)
 
         _run_store.update_extraction_state(
             run_id,
@@ -181,6 +291,7 @@ async def start_extraction(run_id: str, background_tasks: BackgroundTasks, confi
             error=None,
             progress={"phase": "queued", "event_type": "queued"},
         )
+        _set_workflow_stage(run_id, "extraction_wait")
         background_tasks.add_task(_run_extraction_job, run_id)
 
     return get_extraction_status(run_id)
@@ -195,6 +306,7 @@ async def _run_extraction_job(run_id: str) -> None:
             error=message,
             progress={"phase": "failed", "event_type": "failed", "error": message},
         )
+        _set_workflow_stage(run_id, "setup")
         return
 
     run = _require_run(run_id)
@@ -243,6 +355,7 @@ async def _run_extraction_job(run_id: str) -> None:
                 result_payload_path=result.result_payload_path,
                 checklist_ndjson_path=result.checklist_ndjson_path,
             )
+            _set_workflow_stage(run_id, "review")
         except Exception as exc:  # pylint: disable=broad-except
             _run_store.update_extraction_state(
                 run_id,
@@ -250,6 +363,7 @@ async def _run_extraction_job(run_id: str) -> None:
                 error=str(exc),
                 progress={"phase": "failed", "event_type": "failed", "error": str(exc)},
             )
+            _set_workflow_stage(run_id, "setup")
             producer.error("Extraction run failed", {"run_id": run_id, "error": str(exc)})
 
 
@@ -263,14 +377,6 @@ async def start_summary(run_id: str, background_tasks: BackgroundTasks, config: 
 
         if run.summary_status in {"queued", "running"}:
             return get_summary_status(run_id)
-        if run.summary_status in {"succeeded", "failed"}:
-            raise HTTPException(
-                status_code=409,
-                detail=(
-                    f"Summary generation for run '{run_id}' is one-shot and has already been attempted "
-                    f"(status={run.summary_status}). Create a new run to generate again."
-                ),
-            )
 
         if not run.extraction_result:
             raise HTTPException(
@@ -281,12 +387,14 @@ async def start_summary(run_id: str, background_tasks: BackgroundTasks, config: 
                 ),
             )
 
+        _run_store.reset_for_summary_start(run_id)
         _run_store.update_summary_state(
             run_id,
             status="queued",
             error=None,
             progress={"phase": "queued", "event_type": "queued"},
         )
+        _set_workflow_stage(run_id, "summary_wait")
         background_tasks.add_task(_run_summary_job, run_id)
 
     return get_summary_status(run_id)
@@ -363,6 +471,7 @@ async def _run_summary_job(run_id: str) -> None:
                 result_payload_path=result.result_payload_path,
                 summary_path=result.summary_path,
             )
+            _set_workflow_stage(run_id, "workspace")
         except Exception as exc:  # pylint: disable=broad-except
             _run_store.update_summary_state(
                 run_id,
@@ -370,6 +479,7 @@ async def _run_summary_job(run_id: str) -> None:
                 error=str(exc),
                 progress={"phase": "failed", "event_type": "failed", "error": str(exc)},
             )
+            _set_workflow_stage(run_id, "review")
             producer.error("Summary run failed", {"run_id": run_id, "error": str(exc)})
 
 
@@ -481,7 +591,7 @@ def update_checklist_categories(run_id: str, payload: EvidenceCategoryCollection
                 "(status must be succeeded)."
             ),
         )
-    if run.summary_status in {"queued", "running", "succeeded", "failed"}:
+    if run.summary_status in {"queued", "running"}:
         raise HTTPException(
             status_code=409,
             detail=(
@@ -800,6 +910,7 @@ def _to_run_response(run: StoredRun) -> RunCreateResponse:
         created_at=run.created_at,
         extraction_status=run.extraction_status,
         summary_status=run.summary_status,
+        workflow_stage=_normalize_workflow_stage(run.workflow_stage),
         extraction_config=extraction_config,
         summary_config=summary_config,
         documents=documents,
@@ -837,6 +948,52 @@ def _sort_documents(documents: List[Document]) -> List[Document]:
         return (1, 0, date_value, document.id)
 
     return sorted(list(documents), key=_sort_key)
+
+
+def _assert_run_not_active(run: StoredRun) -> None:
+    if run.extraction_status in {"queued", "running"}:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Run '{run.id}' is actively running extraction (status={run.extraction_status}).",
+        )
+    if run.summary_status in {"queued", "running"}:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Run '{run.id}' is actively running summary (status={run.summary_status}).",
+        )
+
+
+def _replace_run_documents(
+    run: StoredRun,
+    *,
+    source_type: str,
+    source_case_id: Optional[str],
+    case_title: str,
+    documents: Sequence[Document],
+) -> None:
+    _run_store.create_run(
+        run_id=run.id,
+        source_type=source_type,
+        source_case_id=source_case_id,
+        case_title=case_title,
+        created_at=run.created_at,
+        workflow_stage="setup",
+        documents=list(documents),
+        extraction_config=run.extraction_config,
+        summary_config=run.summary_config,
+    )
+
+
+def _normalize_workflow_stage(value: Any) -> WorkflowStage:
+    text = str(value).strip()
+    if text not in _WORKFLOW_STAGE_VALUES:
+        raise HTTPException(status_code=400, detail=f"Unsupported workflow_stage '{text}'.")
+    return cast(WorkflowStage, text)
+
+
+def _set_workflow_stage(run_id: str, workflow_stage: WorkflowStage) -> None:
+    normalized = _normalize_workflow_stage(workflow_stage)
+    _run_store.update_workflow_stage(run_id, normalized)
 
 
 def _normalize_upload_date(value: Optional[str], index: int) -> str:

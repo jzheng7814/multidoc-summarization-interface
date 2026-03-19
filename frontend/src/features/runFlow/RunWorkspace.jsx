@@ -10,7 +10,7 @@ const PANE_ORDER = ['checklist', 'summary', 'documents'];
 const MIN_SPLIT = 15;
 const MAX_SPLIT = 85;
 
-const RunWorkspaceLayout = ({ runId, caseTitle }) => {
+const RunWorkspaceLayout = ({ runId, caseTitle, onBackToReview }) => {
     const [visiblePanes, setVisiblePanes] = useState({
         checklist: true,
         summary: true,
@@ -22,6 +22,8 @@ const RunWorkspaceLayout = ({ runId, caseTitle }) => {
         'checklist-documents': 45
     });
     const [threeSplit, setThreeSplit] = useState({ first: 30, second: 65 });
+    const [isNavigatingBack, setIsNavigatingBack] = useState(false);
+    const [backError, setBackError] = useState('');
     const workspaceRef = useRef(null);
     const dragCleanupRef = useRef(null);
     const { setInteractionMode } = useHighlight();
@@ -48,6 +50,18 @@ const RunWorkspaceLayout = ({ runId, caseTitle }) => {
             return next;
         });
     }, []);
+
+    const handleBackToReview = useCallback(async () => {
+        setBackError('');
+        setIsNavigatingBack(true);
+        try {
+            await onBackToReview?.();
+        } catch (error) {
+            setBackError(error?.message || 'Failed to return to checklist review.');
+        } finally {
+            setIsNavigatingBack(false);
+        }
+    }, [onBackToReview]);
 
     const startDragPair = useCallback((pairKey) => (event) => {
         event.preventDefault();
@@ -180,6 +194,16 @@ const RunWorkspaceLayout = ({ runId, caseTitle }) => {
                         </p>
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                void handleBackToReview();
+                            }}
+                            disabled={isNavigatingBack}
+                            className="rounded border border-[var(--color-border)] bg-[var(--color-surface-panel-alt)] px-3 py-1.5 text-sm text-[var(--color-text-secondary)] hover:border-[var(--color-border-strong)]"
+                        >
+                            {isNavigatingBack ? 'Returning…' : 'Back'}
+                        </button>
                         <div className="flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
                             View:
                             <div className="flex rounded-md border border-[var(--color-border)] bg-[var(--color-surface-panel-alt)] overflow-hidden">
@@ -201,6 +225,11 @@ const RunWorkspaceLayout = ({ runId, caseTitle }) => {
                         </div>
                     </div>
                 </div>
+                {backError && (
+                    <div className="w-full rounded border border-[var(--color-danger-soft)] bg-[var(--color-danger-soft)] px-3 py-2 text-xs text-[var(--color-text-danger)]">
+                        {backError}
+                    </div>
+                )}
             </div>
 
             <div ref={workspaceRef} className="flex h-[calc(100vh-96px)] min-h-0 overflow-hidden bg-[var(--color-surface-panel-alt)]">
@@ -213,14 +242,15 @@ const RunWorkspaceLayout = ({ runId, caseTitle }) => {
 const RunWorkspace = ({
     runId,
     caseTitle,
-    initialCaseState
+    initialCaseState,
+    onBackToReview
 }) => (
     <WorkspaceStateProvider
         caseId={initialCaseState?.caseId}
         initialCaseState={initialCaseState}
         enablePromptStore={false}
     >
-        <RunWorkspaceLayout runId={runId} caseTitle={caseTitle} />
+        <RunWorkspaceLayout runId={runId} caseTitle={caseTitle} onBackToReview={onBackToReview} />
     </WorkspaceStateProvider>
 );
 

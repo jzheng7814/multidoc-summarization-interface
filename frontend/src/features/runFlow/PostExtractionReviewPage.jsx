@@ -4,10 +4,11 @@ import DocumentsPanel from '../workspace/DocumentsPanel';
 import ChecklistPanel from '../workspace/components/ChecklistPage';
 import WorkspaceStateProvider, { useChecklist, useHighlight } from '../workspace/state/WorkspaceProvider';
 
-const ReviewLayout = ({ runId, caseTitle, onStartSummary }) => {
+const ReviewLayout = ({ runId, caseTitle, onStartSummary, onBackToSetup }) => {
     const { setInteractionMode } = useHighlight();
     const { categories } = useChecklist();
     const [isPersisting, setIsPersisting] = useState(false);
+    const [isNavigatingBack, setIsNavigatingBack] = useState(false);
     const [actionError, setActionError] = useState('');
 
     useEffect(() => {
@@ -26,6 +27,18 @@ const ReviewLayout = ({ runId, caseTitle, onStartSummary }) => {
         }
     };
 
+    const handleBackToSetup = async () => {
+        setActionError('');
+        setIsNavigatingBack(true);
+        try {
+            await onBackToSetup?.();
+        } catch (error) {
+            setActionError(error?.message || 'Failed to return to setup.');
+        } finally {
+            setIsNavigatingBack(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-[var(--color-surface-app)] text-[var(--color-text-primary)]">
             <div className="bg-[var(--color-surface-panel)] border-b border-[var(--color-border)] px-6 py-4 shadow-sm">
@@ -40,6 +53,16 @@ const ReviewLayout = ({ runId, caseTitle, onStartSummary }) => {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                void handleBackToSetup();
+                            }}
+                            disabled={isPersisting || isNavigatingBack}
+                            className="px-3 py-1.5 text-sm rounded border border-[var(--color-border)] bg-[var(--color-surface-panel-alt)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-strong)]"
+                        >
+                            {isNavigatingBack ? 'Returning…' : 'Back'}
+                        </button>
                         <button
                             type="button"
                             onClick={handleStartSummary}
@@ -73,7 +96,8 @@ const PostExtractionReviewPage = ({
     runId,
     caseTitle,
     initialCaseState,
-    onStartSummary
+    onStartSummary,
+    onBackToSetup
 }) => (
     <WorkspaceStateProvider
         caseId={initialCaseState?.caseId}
@@ -84,6 +108,7 @@ const PostExtractionReviewPage = ({
             runId={runId}
             caseTitle={caseTitle}
             onStartSummary={onStartSummary}
+            onBackToSetup={onBackToSetup}
         />
     </WorkspaceStateProvider>
 );

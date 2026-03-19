@@ -19,6 +19,7 @@ class RunRecord(Base):
 
     extraction_config_json: Mapped[str] = mapped_column(Text, nullable=False)
     summary_config_json: Mapped[str] = mapped_column(Text, nullable=False)
+    workflow_stage: Mapped[str] = mapped_column(String, nullable=False, default="setup")
 
     extraction_status: Mapped[str] = mapped_column(String, nullable=False, default="not_started")
     extraction_error: Mapped[str | None] = mapped_column(Text, nullable=True)
