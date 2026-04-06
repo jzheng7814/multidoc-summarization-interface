@@ -202,7 +202,7 @@ Startup wiring happens in `app/main.py`:
 - initialize event system
 - validate execution prerequisites
 
-By default the backend writes file logs to `backend/logs/` and exposes a Unix socket at the path configured by `MULTI_DOCUMENT_IPC_SOCKET_PATH`. The purpose of this socket is for user-coded log-ingesting applications to be able to view backend logs live, for example to track SLURM scheduling flow correctness, or track checklist or summary runs as they occur. No tools are packaged in the repo but it is trivial to build any variety of log viewers of your choosing.
+By default the backend writes file logs to `backend/logs/` and exposes a Unix socket at the path configured by `MULTI_DOCUMENT_IPC_SOCKET_PATH`. The purpose of this socket is for user-coded log-ingesting applications to be able to view backend logs live, for example to track SLURM scheduling flow correctness, or track checklist or summary runs as they occur. Basic ones are packaged in tools/ but you can write new ones as you desire relatively easily.
 
 ## Run Lifecycle
 ### 1. Create The Run Shell
