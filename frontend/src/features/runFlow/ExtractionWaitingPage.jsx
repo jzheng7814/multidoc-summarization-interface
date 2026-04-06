@@ -8,15 +8,15 @@ function parseExtractionStage(payload) {
     const stage = payload?.extraction ?? payload ?? {};
     return {
         status: String(stage?.status || 'queued'),
-        phase: stage?.phase || stage?.eventType || stage?.event_type || null,
-        slurmState: stage?.slurmState ?? stage?.slurm_state ?? null,
-        currentStep: stage?.currentStep ?? stage?.current_step ?? null,
-        maxSteps: stage?.maxSteps ?? stage?.max_steps ?? null,
-        itemIndex: stage?.itemIndex ?? stage?.item_index ?? null,
-        itemsTotal: stage?.itemsTotal ?? stage?.items_total ?? null,
-        configName: stage?.configName ?? stage?.config_name ?? null,
-        toolName: stage?.toolName ?? stage?.tool_name ?? null,
-        toolSuccess: stage?.toolSuccess ?? stage?.tool_success ?? null,
+        phase: stage?.phase || stage?.eventType || null,
+        slurmState: stage?.slurmState ?? null,
+        currentStep: stage?.currentStep ?? null,
+        maxSteps: stage?.maxSteps ?? null,
+        itemIndex: stage?.itemIndex ?? null,
+        itemsTotal: stage?.itemsTotal ?? null,
+        configName: stage?.configName ?? null,
+        toolName: stage?.toolName ?? null,
+        toolSuccess: stage?.toolSuccess ?? null,
         error: stage?.error || null
     };
 }

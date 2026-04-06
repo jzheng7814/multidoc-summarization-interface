@@ -44,7 +44,7 @@ const useChecklistStore = ({ importedSnapshot = null } = {}) => {
         ? importedSnapshot.items
         : [];
 
-    const [categoryMeta, setCategoryMeta] = useState(initialCategoryMeta);
+    const [categoryMeta] = useState(initialCategoryMeta);
     const [items, setItems] = useState(initialItems);
 
     const addItem = useCallback(async (payload) => {
@@ -96,15 +96,6 @@ const useChecklistStore = ({ importedSnapshot = null } = {}) => {
         return updatedItem;
     }, []);
 
-    const replaceItems = useCallback((nextItems) => {
-        setItems(Array.isArray(nextItems) ? nextItems : []);
-    }, []);
-
-    const activateImportedSnapshot = useCallback(({ categories, items: importedItems }) => {
-        setCategoryMeta(normaliseCategoryMeta(categories));
-        setItems(Array.isArray(importedItems) ? importedItems : []);
-    }, []);
-
     const categories = useMemo(() => buildCategories(categoryMeta, items), [categoryMeta, items]);
 
     const highlightsByDocument = useMemo(() => {
@@ -143,15 +134,9 @@ const useChecklistStore = ({ importedSnapshot = null } = {}) => {
     return {
         categories,
         items,
-        isLoading: false,
-        error: null,
-        refreshChecklist: async () => null,
         addItem,
         deleteItem,
         updateItem,
-        replaceItems,
-        activateImportedSnapshot,
-        suppressNextServerHydration: () => {},
         highlightsByDocument
     };
 };

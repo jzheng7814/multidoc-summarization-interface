@@ -89,15 +89,6 @@ export async function createRun() {
     });
 }
 
-export async function createRunFromUpload(uploadPayload) {
-    const formData = new FormData();
-    appendUploadFormData(formData, uploadPayload);
-    return request('/runs/upload-documents', {
-        method: 'POST',
-        body: formData
-    });
-}
-
 export async function updateRunFromUpload(runId, uploadPayload) {
     const formData = new FormData();
     appendUploadFormData(formData, uploadPayload);
@@ -105,10 +96,6 @@ export async function updateRunFromUpload(runId, uploadPayload) {
         method: 'POST',
         body: formData
     });
-}
-
-export async function fetchRunDefaults() {
-    return request('/runs/defaults');
 }
 
 export async function fetchRun(runId) {
@@ -123,20 +110,6 @@ export async function updateRunWorkflowStage(runId, workflowStage) {
     return request(`/runs/${runId}/workflow-stage`, {
         method: 'PUT',
         body: JSON.stringify({ workflowStage: normalized })
-    });
-}
-
-export async function updateRunExtractionConfig(runId, extractionConfig) {
-    return request(`/runs/${runId}/extraction-config`, {
-        method: 'PUT',
-        body: JSON.stringify(extractionConfig)
-    });
-}
-
-export async function updateRunSummaryConfig(runId, summaryConfig) {
-    return request(`/runs/${runId}/summary-config`, {
-        method: 'PUT',
-        body: JSON.stringify(summaryConfig)
     });
 }
 

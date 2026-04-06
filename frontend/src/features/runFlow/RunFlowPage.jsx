@@ -78,13 +78,13 @@ const RunFlowPage = ({ runId }) => {
 
         try {
             const runPayload = await fetchRun(runId);
-            const extractionStatus = String(runPayload?.extractionStatus ?? runPayload?.extraction_status ?? 'not_started');
-            const summaryStatus = String(runPayload?.summaryStatus ?? runPayload?.summary_status ?? 'not_started');
-            const workflowStage = runPayload?.workflowStage ?? runPayload?.workflow_stage ?? null;
+            const extractionStatus = String(runPayload?.extractionStatus ?? 'not_started');
+            const summaryStatus = String(runPayload?.summaryStatus ?? 'not_started');
+            const workflowStage = runPayload?.workflowStage ?? null;
 
             const title = String(runPayload?.title ?? '').trim();
-            const extractionConfig = runPayload?.extractionConfig ?? runPayload?.extraction_config ?? null;
-            const summaryConfig = runPayload?.summaryConfig ?? runPayload?.summary_config ?? null;
+            const extractionConfig = runPayload?.extractionConfig ?? null;
+            const summaryConfig = runPayload?.summaryConfig ?? null;
 
             let documents = [];
             let checklistCategories = [];
@@ -108,7 +108,7 @@ const RunFlowPage = ({ runId }) => {
 
             if (summaryStatus === 'succeeded') {
                 const summaryPayload = await fetchRunSummaryStatus(runId);
-                summaryText = String(summaryPayload?.summaryText ?? summaryPayload?.summary_text ?? '');
+                summaryText = String(summaryPayload?.summaryText ?? '');
             }
 
             setSession({
@@ -137,8 +137,8 @@ const RunFlowPage = ({ runId }) => {
             return;
         }
         const title = String(runPayload?.title ?? '').trim();
-        const extractionConfig = runPayload?.extractionConfig ?? runPayload?.extraction_config ?? null;
-        const summaryConfig = runPayload?.summaryConfig ?? runPayload?.summary_config ?? null;
+        const extractionConfig = runPayload?.extractionConfig ?? null;
+        const summaryConfig = runPayload?.summaryConfig ?? null;
         setSession((current) => ({
             ...current,
             title,
@@ -190,8 +190,8 @@ const RunFlowPage = ({ runId }) => {
             const title = String(runPayload?.title ?? '').trim();
             const documents = Array.isArray(documentsPayload) ? documentsPayload : [];
             const categories = Array.isArray(checklistPayload?.categories) ? checklistPayload.categories : [];
-            const extractionConfig = runPayload?.extractionConfig ?? runPayload?.extraction_config ?? session.extractionConfig;
-            const summaryConfig = runPayload?.summaryConfig ?? runPayload?.summary_config ?? session.summaryConfig;
+            const extractionConfig = runPayload?.extractionConfig ?? session.extractionConfig;
+            const summaryConfig = runPayload?.summaryConfig ?? session.summaryConfig;
 
             setSession((current) => ({
                 ...current,
@@ -232,7 +232,7 @@ const RunFlowPage = ({ runId }) => {
     }, [runId, session.summaryConfig]);
 
     const handleSummaryCompleted = useCallback(async (summaryPayload) => {
-        const summaryText = String(summaryPayload?.summaryText ?? summaryPayload?.summary_text ?? '');
+        const summaryText = String(summaryPayload?.summaryText ?? '');
         setSession((current) => ({
             ...current,
             summaryText

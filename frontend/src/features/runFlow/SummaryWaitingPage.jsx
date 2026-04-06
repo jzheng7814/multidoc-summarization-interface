@@ -8,12 +8,12 @@ function parseSummaryStage(payload) {
     const stage = payload?.summary ?? payload ?? {};
     return {
         status: String(stage?.status || 'queued'),
-        phase: stage?.phase || stage?.eventType || stage?.event_type || null,
-        slurmState: stage?.slurmState ?? stage?.slurm_state ?? null,
-        currentStep: stage?.currentStep ?? stage?.current_step ?? null,
-        maxSteps: stage?.maxSteps ?? stage?.max_steps ?? null,
-        toolName: stage?.toolName ?? stage?.tool_name ?? null,
-        toolSuccess: stage?.toolSuccess ?? stage?.tool_success ?? null,
+        phase: stage?.phase || stage?.eventType || null,
+        slurmState: stage?.slurmState ?? null,
+        currentStep: stage?.currentStep ?? null,
+        maxSteps: stage?.maxSteps ?? null,
+        toolName: stage?.toolName ?? null,
+        toolSuccess: stage?.toolSuccess ?? null,
         error: stage?.error || null
     };
 }

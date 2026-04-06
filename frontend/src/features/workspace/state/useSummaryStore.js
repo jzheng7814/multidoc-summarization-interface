@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { diffWordsWithSpace } from 'diff';
 
-const normaliseCaseId = (value) => String(value ?? '').trim();
-
 const toPositiveInteger = (value, defaultValue = 0) => {
     const parsed = typeof value === 'number' ? value : Number.parseInt(value, 10);
     if (!Number.isFinite(parsed) || parsed < 0) {
@@ -164,12 +162,9 @@ const hydratePatchAction = (action) => {
     };
 };
 
-const useSummaryStore = ({ caseId, initialSummaryText = '' } = {}) => {
+const useSummaryStore = ({ initialSummaryText = '' } = {}) => {
     const [summaryText, setSummaryTextState] = useState(() => String(initialSummaryText || ''));
     const [isEditMode, setIsEditMode] = useState(false);
-    const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
-    const [summaryJobId, setSummaryJobId] = useState(null);
-    const [lastSummaryError, setLastSummaryError] = useState(null);
     const summaryRef = useRef(null);
     const [versionHistory, setVersionHistory] = useState([]);
     const [activeVersionId, setActiveVersionId] = useState(null);
@@ -179,8 +174,6 @@ const useSummaryStore = ({ caseId, initialSummaryText = '' } = {}) => {
     const toggleEditMode = useCallback(() => {
         setIsEditMode((previous) => !previous);
     }, []);
-
-    const resolvedCaseId = useMemo(() => normaliseCaseId(caseId), [caseId]);
 
     const draftSummaryRef = useRef(null);
 
@@ -359,22 +352,12 @@ const useSummaryStore = ({ caseId, initialSummaryText = '' } = {}) => {
         }
     }, [activePatchId, patchAction]);
 
-    const generateAISummary = useCallback(async () => {
-        const error = new Error('Direct summary generation is no longer supported from the workspace. Use the run flow.');
-        setLastSummaryError(error);
-        throw error;
-    }, []);
-
     const value = useMemo(() => ({
         summaryText,
         setSummaryText,
         isEditMode,
         setIsEditMode,
         toggleEditMode,
-        isGeneratingSummary,
-        generateAISummary,
-        summaryJobId,
-        lastSummaryError,
         summaryRef,
         versionHistory,
         activeVersionId,
@@ -387,14 +370,9 @@ const useSummaryStore = ({ caseId, initialSummaryText = '' } = {}) => {
         revertAllPatches,
         previewPatch,
         clearPatchPreview,
-        dismissPatchAction,
-        caseId: resolvedCaseId
+        dismissPatchAction
     }), [
-        generateAISummary,
         isEditMode,
-        isGeneratingSummary,
-        lastSummaryError,
-        summaryJobId,
         summaryText,
         toggleEditMode,
         versionHistory,
@@ -409,7 +387,6 @@ const useSummaryStore = ({ caseId, initialSummaryText = '' } = {}) => {
         previewPatch,
         clearPatchPreview,
         dismissPatchAction,
-        resolvedCaseId,
         setSummaryText
     ]);
 

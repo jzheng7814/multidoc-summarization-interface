@@ -3,10 +3,8 @@ import { Trash2 } from 'lucide-react';
 import { useChecklist, useDocuments, useHighlight } from '../state/WorkspaceProvider';
 import { buildDocumentLookup } from '../documentLookup';
 
-const ACTIVE_CHECKLIST_STATUSES = new Set(['pending', 'queued', 'preprocessing', 'waiting_resources', 'running', 'finalizing']);
-
 const ChecklistPanel = ({ isActive, readOnly = false }) => {
-    const { categories, isLoading, addItem, deleteItem, updateItem } = useChecklist();
+    const { categories, addItem, deleteItem, updateItem } = useChecklist();
     const documents = useDocuments();
     const {
         selectedDocumentText,
@@ -367,10 +365,7 @@ const ChecklistPanel = ({ isActive, readOnly = false }) => {
     };
 
     const sortedCategories = useMemo(() => categories, [categories]);
-    const checklistStatus = documents.documentChecklistStatus;
-    const isPendingFromDocs = ACTIVE_CHECKLIST_STATUSES.has(checklistStatus);
-    const effectiveLoading = isLoading || isPendingFromDocs;
-    const isChecklistReady = !effectiveLoading && sortedCategories.length > 0;
+    const isChecklistReady = sortedCategories.length > 0;
 
     return (
         <div className="h-full flex flex-col overflow-hidden bg-[var(--color-surface-panel)] border-r border-[var(--color-border)]">
@@ -384,9 +379,6 @@ const ChecklistPanel = ({ isActive, readOnly = false }) => {
                                 : 'Review extracted items or add your own from document spans.'}
                         </p>
                     </div>
-                    {isLoading && (
-                        <span className="text-xs text-[var(--color-accent)] font-medium">Loading…</span>
-                    )}
                 </div>
                 <p className="mt-2 text-[11px] text-[var(--color-text-secondary)]">
                     {readOnly
@@ -408,7 +400,7 @@ const ChecklistPanel = ({ isActive, readOnly = false }) => {
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[var(--color-surface-panel-alt)]">
                 {!isChecklistReady ? (
-                    <div className="text-xs text-[var(--color-text-muted)]">Loading checklist…</div>
+                    <div className="text-xs text-[var(--color-text-muted)]">No checklist items yet.</div>
                 ) : (
                     sortedCategories.map((category) => (
                         <div

@@ -6,18 +6,15 @@ import useChecklistStore from './useChecklistStore';
 
 const WorkspaceStateContext = createContext(null);
 
-export const WorkspaceStateProvider = ({ children, caseId, initialCaseState = null }) => {
+export const WorkspaceStateProvider = ({ children, runId, initialCaseState = null }) => {
     const importedDocumentSnapshot = initialCaseState
         ? {
-            caseId: initialCaseState.caseId,
+            runId: initialCaseState.runId,
             documents: initialCaseState.documents
         }
         : null;
-    const documents = useDocumentsStore({ caseId, importedSnapshot: importedDocumentSnapshot });
-    const summary = useSummaryStore({
-        caseId: documents.caseId,
-        initialSummaryText: initialCaseState?.summaryText ?? ''
-    });
+    const documents = useDocumentsStore({ runId, importedSnapshot: importedDocumentSnapshot });
+    const summary = useSummaryStore({ initialSummaryText: initialCaseState?.summaryText ?? '' });
     const highlight = useHighlightStore({ summary, documents });
     const importedChecklistSnapshot = initialCaseState
         ? {

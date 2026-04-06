@@ -205,8 +205,6 @@ const useHighlightStore = ({ summary, documents }) => {
         }
     }, [activeHighlight, clearActiveHighlight, documents.selectedDocument]);
 
-    const renderSummaryWithSuggestions = useCallback((text) => text, []);
-
     const jumpToDocumentRange = useCallback(({ documentId, range }) => {
         if (!range || range.start == null || range.end == null || range.start === range.end) {
             return;
@@ -364,7 +362,6 @@ const useHighlightStore = ({ summary, documents }) => {
         tooltipPosition,
         activeHighlight,
         highlightRects,
-        renderSummaryWithSuggestions,
         jumpToDocumentRange,
         clearActiveHighlight,
         setInteractionMode,
@@ -374,7 +371,6 @@ const useHighlightStore = ({ summary, documents }) => {
         activeHighlight,
         jumpToDocumentRange,
         highlightRects,
-        renderSummaryWithSuggestions,
         selectedDocumentRange,
         selectedDocumentText,
         selectedRange,

@@ -21,9 +21,9 @@ function flattenChecklistCategories(categories = []) {
                 categoryId: String(category?.id || ''),
                 value: String(value?.value ?? value?.text ?? ''),
                 text: String(value?.text ?? value?.value ?? ''),
-                documentId: parseDocumentId(value?.documentId ?? value?.document_id),
-                startOffset: value?.startOffset ?? value?.start_offset ?? null,
-                endOffset: value?.endOffset ?? value?.end_offset ?? null
+                documentId: parseDocumentId(value?.documentId),
+                startOffset: value?.startOffset ?? null,
+                endOffset: value?.endOffset ?? null
             });
         });
     });
@@ -37,7 +37,7 @@ export function buildInitialRunCaseState({
     summaryText = ''
 }) {
     return {
-        caseId: String(runId || '').trim(),
+        runId: String(runId || '').trim(),
         documents: Array.isArray(documents) ? documents : [],
         checklistCategories: Array.isArray(checklistCategories) ? checklistCategories : [],
         items: flattenChecklistCategories(checklistCategories),

@@ -1,17 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Edit3, Sparkles, Plus } from 'lucide-react';
+import { Edit3, Plus } from 'lucide-react';
 import { useSummary, useHighlight } from '../state/WorkspaceProvider';
 import SummaryPatchPanel from './SummaryPatchPanel';
 import { createRangeFromOffsets, computeOverlayRects, scrollRangeIntoView } from '../../../utils/selection';
 
-const SummaryPanel = ({ allowGeneration = true }) => {
+const SummaryPanel = () => {
     const {
         summaryText,
         setSummaryText,
         isEditMode,
         toggleEditMode,
-        isGeneratingSummary,
-        generateAISummary,
         summaryRef,
         versionHistory,
         activeVersionId,
@@ -22,25 +20,12 @@ const SummaryPanel = ({ allowGeneration = true }) => {
         clearPatchPreview
     } = useSummary();
     const {
-        renderSummaryWithSuggestions,
         activeHighlight,
         highlightRects
     } = useHighlight();
-    const [localError, setLocalError] = useState(null);
     const [patchOverlayRects, setPatchOverlayRects] = useState([]);
     const [patchOverlayMeta, setPatchOverlayMeta] = useState(null);
     const patchPanelRef = useRef(null);
-
-    const canGenerateSummary = allowGeneration && !isEditMode;
-
-    const handleGenerateSummary = useCallback(async () => {
-        setLocalError(null);
-        try {
-            await generateAISummary();
-        } catch (error) {
-            setLocalError(error.message || 'Failed to generate summary.');
-        }
-    }, [generateAISummary]);
 
     useEffect(() => {
         if (isEditMode || (patchAction && patchAction.isStale)) {
@@ -138,23 +123,6 @@ const SummaryPanel = ({ allowGeneration = true }) => {
                 <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Summary</h2>
                     <div className="flex items-center space-x-2">
-                        {!summaryText && isEditMode && (
-                            <span className="text-xs text-[var(--color-text-muted)] italic">(Generate disabled in edit mode)</span>
-                        )}
-                        {canGenerateSummary && (
-                            <button
-                                onClick={handleGenerateSummary}
-                                disabled={isGeneratingSummary}
-                                className="flex items-center px-3 py-1 text-sm bg-[var(--color-accent)] text-[var(--color-text-inverse)] rounded hover:bg-[var(--color-accent-hover)] disabled:opacity-50"
-                            >
-                                <Sparkles className="h-4 w-4 mr-1" />
-                                {isGeneratingSummary
-                                    ? 'Generating...'
-                                    : summaryText
-                                        ? 'Regenerate from checklist'
-                                        : 'Generate from checklist'}
-                            </button>
-                        )}
                         <button
                             onClick={toggleEditMode}
                             className={`flex items-center px-3 py-1 text-sm rounded transition ${
@@ -189,11 +157,6 @@ const SummaryPanel = ({ allowGeneration = true }) => {
                         <Plus className="h-4 w-4" />
                     </button>
                 </div>
-                {localError && (
-                    <div className="mt-2 text-xs text-[var(--color-danger)]">
-                        {localError}
-                    </div>
-                )}
             </div>
 
             <SummaryPatchPanel panelRef={patchPanelRef} />
@@ -214,7 +177,7 @@ const SummaryPanel = ({ allowGeneration = true }) => {
                                 ref={summaryRef}
                                 className="relative h-full w-full border border-[var(--color-border)] rounded-md px-3 py-2 text-sm leading-relaxed cursor-text overflow-y-auto whitespace-pre-wrap bg-[var(--color-surface-panel)] text-[var(--color-text-primary)]"
                             >
-                                {summaryText ? renderSummaryWithSuggestions(summaryText) : (
+                                {summaryText ? summaryText : (
                                     <span className="text-[var(--color-text-muted)]">Your summary will appear here...</span>
                                 )}
                                 {activeHighlight?.useOverlay && activeHighlight.type === 'summary' && highlightRects.map((rect, index) => (

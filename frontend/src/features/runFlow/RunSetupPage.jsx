@@ -40,10 +40,10 @@ function createDefaultChecklistItem() {
     return {
         key: `New_Item_${Date.now()}`,
         description: '',
-        user_instruction: '',
+        userInstruction: '',
         constraints: [],
-        max_steps: 20,
-        reasoning_effort: 'medium'
+        maxSteps: 20,
+        reasoningEffort: 'medium'
     };
 }
 
@@ -55,72 +55,72 @@ function cleanConstraintLines(rawValue) {
 }
 
 function parseExtractionConfig(payload) {
-    const focusContext = String(payload?.focus_context ?? payload?.focusContext ?? '').trim();
+    const focusContext = String(payload?.focusContext ?? '').trim();
     if (!focusContext) {
-        throw new Error('Extraction config must include non-empty focus_context.');
+        throw new Error('Extraction config must include non-empty focusContext.');
     }
 
-    const checklistSpec = payload?.checklist_spec ?? payload?.checklistSpec;
-    const checklistItems = checklistSpec?.checklist_items ?? checklistSpec?.checklistItems;
+    const checklistSpec = payload?.checklistSpec;
+    const checklistItems = checklistSpec?.checklistItems;
     if (!Array.isArray(checklistItems) || !checklistItems.length) {
-        throw new Error('Extraction config must include checklist_spec.checklist_items.');
+        throw new Error('Extraction config must include checklistSpec.checklistItems.');
     }
 
     const normalizedItems = checklistItems.map((item, index) => {
         const key = String(item?.key || '').trim();
         const description = String(item?.description || '').trim();
-        const userInstruction = String(item?.user_instruction ?? item?.userInstruction ?? '').trim();
-        const reasoningEffort = String(item?.reasoning_effort ?? item?.reasoningEffort ?? '').trim().toLowerCase();
-        const maxSteps = Number.parseInt(item?.max_steps ?? item?.maxSteps, 10);
+        const userInstruction = String(item?.userInstruction ?? '').trim();
+        const reasoningEffort = String(item?.reasoningEffort ?? '').trim().toLowerCase();
+        const maxSteps = Number.parseInt(item?.maxSteps, 10);
         const constraints = cleanConstraintLines(item?.constraints);
 
         if (!key || !description || !userInstruction) {
             throw new Error(`Checklist item #${index + 1} is missing required text fields.`);
         }
         if (Number.isNaN(maxSteps) || maxSteps < 1) {
-            throw new Error(`Checklist item #${index + 1} has invalid max_steps.`);
+            throw new Error(`Checklist item #${index + 1} has invalid maxSteps.`);
         }
         if (!['low', 'medium', 'high'].includes(reasoningEffort)) {
-            throw new Error(`Checklist item #${index + 1} has invalid reasoning_effort.`);
+            throw new Error(`Checklist item #${index + 1} has invalid reasoningEffort.`);
         }
 
         return {
             key,
             description,
-            user_instruction: userInstruction,
+            userInstruction,
             constraints,
-            max_steps: maxSteps,
-            reasoning_effort: reasoningEffort
+            maxSteps,
+            reasoningEffort
         };
     });
 
     return {
-        focus_context: focusContext,
-        checklist_spec: {
-            checklist_items: normalizedItems
+        focusContext,
+        checklistSpec: {
+            checklistItems: normalizedItems
         }
     };
 }
 
 function parseSummaryConfig(payload) {
-    const focusContext = String(payload?.focus_context ?? payload?.focusContext ?? '').trim();
-    const reasoningEffort = String(payload?.reasoning_effort ?? payload?.reasoningEffort ?? '').trim().toLowerCase();
-    const maxSteps = Number.parseInt(payload?.max_steps ?? payload?.maxSteps, 10);
+    const focusContext = String(payload?.focusContext ?? '').trim();
+    const reasoningEffort = String(payload?.reasoningEffort ?? '').trim().toLowerCase();
+    const maxSteps = Number.parseInt(payload?.maxSteps, 10);
 
     if (!focusContext) {
-        throw new Error('Summary config must include non-empty focus_context.');
+        throw new Error('Summary config must include non-empty focusContext.');
     }
     if (!['low', 'medium', 'high'].includes(reasoningEffort)) {
-        throw new Error('Summary config reasoning_effort must be low, medium, or high.');
+        throw new Error('Summary config reasoningEffort must be low, medium, or high.');
     }
     if (Number.isNaN(maxSteps) || maxSteps < 1) {
-        throw new Error('Summary config max_steps must be >= 1.');
+        throw new Error('Summary config maxSteps must be >= 1.');
     }
 
     return {
-        focus_context: focusContext,
-        reasoning_effort: reasoningEffort,
-        max_steps: maxSteps
+        focusContext,
+        reasoningEffort,
+        maxSteps
     };
 }
 
@@ -152,13 +152,13 @@ function RunSetupPage({
         if (!initialRunData) {
             return null;
         }
-        return parseExtractionConfig(initialRunData?.extractionConfig ?? initialRunData?.extraction_config);
+        return parseExtractionConfig(initialRunData?.extractionConfig);
     });
     const [summaryConfig, setSummaryConfig] = useState(() => {
         if (!initialRunData) {
             return null;
         }
-        return parseSummaryConfig(initialRunData?.summaryConfig ?? initialRunData?.summary_config);
+        return parseSummaryConfig(initialRunData?.summaryConfig);
     });
     const [extractionConfigError, setExtractionConfigError] = useState('');
     const [summaryConfigError, setSummaryConfigError] = useState('');
@@ -179,22 +179,22 @@ function RunSetupPage({
         if (!initialRunData) {
             return;
         }
-        const incomingRunId = String(initialRunData?.runId ?? initialRunData?.run_id ?? runId ?? '').trim();
+        const incomingRunId = String(initialRunData?.runId ?? runId ?? '').trim();
         const isRunChanged = configuredRunIdRef.current !== incomingRunId;
         configuredRunIdRef.current = incomingRunId;
 
         setRunData(initialRunData);
         if (isRunChanged) {
-            setExtractionConfig(parseExtractionConfig(initialRunData?.extractionConfig ?? initialRunData?.extraction_config));
-            setSummaryConfig(parseSummaryConfig(initialRunData?.summaryConfig ?? initialRunData?.summary_config));
+            setExtractionConfig(parseExtractionConfig(initialRunData?.extractionConfig));
+            setSummaryConfig(parseSummaryConfig(initialRunData?.summaryConfig));
             setEditingItemIndex(null);
             return;
         }
         setExtractionConfig((current) => (
-            current || parseExtractionConfig(initialRunData?.extractionConfig ?? initialRunData?.extraction_config)
+            current || parseExtractionConfig(initialRunData?.extractionConfig)
         ));
         setSummaryConfig((current) => (
-            current || parseSummaryConfig(initialRunData?.summaryConfig ?? initialRunData?.summary_config)
+            current || parseSummaryConfig(initialRunData?.summaryConfig)
         ));
     }, [initialRunData, runId]);
 
@@ -272,10 +272,10 @@ function RunSetupPage({
             setRunData(payload);
             onRunDataUpdated?.(payload);
             if (!extractionConfig) {
-                setExtractionConfig(parseExtractionConfig(payload?.extractionConfig ?? payload?.extraction_config));
+                setExtractionConfig(parseExtractionConfig(payload?.extractionConfig));
             }
             if (!summaryConfig) {
-                setSummaryConfig(parseSummaryConfig(payload?.summaryConfig ?? payload?.summary_config));
+                setSummaryConfig(parseSummaryConfig(payload?.summaryConfig));
             }
             setEditingItemIndex(null);
         } catch (error) {
@@ -338,8 +338,8 @@ function RunSetupPage({
             }
             return {
                 ...current,
-                checklist_spec: {
-                    checklist_items: [...current.checklist_spec.checklist_items, createDefaultChecklistItem()]
+                checklistSpec: {
+                    checklistItems: [...current.checklistSpec.checklistItems, createDefaultChecklistItem()]
                 }
             };
         });
@@ -350,7 +350,7 @@ function RunSetupPage({
             if (!current) {
                 return current;
             }
-            const nextItems = current.checklist_spec.checklist_items.map((entry, index) => {
+            const nextItems = current.checklistSpec.checklistItems.map((entry, index) => {
                 if (index !== itemIndex) {
                     return entry;
                 }
@@ -358,8 +358,8 @@ function RunSetupPage({
             });
             return {
                 ...current,
-                checklist_spec: {
-                    checklist_items: nextItems
+                checklistSpec: {
+                    checklistItems: nextItems
                 }
             };
         });
@@ -372,8 +372,8 @@ function RunSetupPage({
             }
             return {
                 ...current,
-                checklist_spec: {
-                    checklist_items: current.checklist_spec.checklist_items.filter((_, index) => index !== itemIndex)
+                checklistSpec: {
+                    checklistItems: current.checklistSpec.checklistItems.filter((_, index) => index !== itemIndex)
                 }
             };
         });
@@ -431,7 +431,7 @@ function RunSetupPage({
                         <h2 className="text-xl font-semibold">Section 1: Upload Documents</h2>
                         {runData && (
                             <div className="text-xs text-[var(--color-text-secondary)] rounded-full border border-[var(--color-border)] px-3 py-1">
-                                Run ID: {runData.runId || runData.run_id}
+                                Run ID: {runData.runId}
                             </div>
                         )}
                     </div>
@@ -555,8 +555,8 @@ function RunSetupPage({
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-[var(--color-text-secondary)]">Focus Text</label>
                                 <textarea
-                                    value={extractionConfig.focus_context}
-                                    onChange={(event) => setExtractionConfig((current) => ({ ...current, focus_context: event.target.value }))}
+                                    value={extractionConfig.focusContext}
+                                    onChange={(event) => setExtractionConfig((current) => ({ ...current, focusContext: event.target.value }))}
                                     rows={10}
                                     className="w-full rounded-md border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 py-2 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                                 />
@@ -576,7 +576,7 @@ function RunSetupPage({
                                 </div>
 
                                 <div className="space-y-3 max-h-[900px] overflow-auto pr-1">
-                                    {extractionConfig.checklist_spec.checklist_items.map((item, index) => {
+                                    {extractionConfig.checklistSpec.checklistItems.map((item, index) => {
                                         const isEditing = editingItemIndex === index;
                                         return (
                                             <div key={`${item.key}-${index}`} className="rounded border border-[var(--color-border)] bg-[var(--color-surface-panel)] p-3 space-y-3">
@@ -624,8 +624,8 @@ function RunSetupPage({
                                                             <label className="text-xs font-semibold text-[var(--color-text-secondary)]">User Instruction</label>
                                                             <textarea
                                                                 rows={3}
-                                                                value={item.user_instruction}
-                                                                onChange={(event) => handleUpdateChecklistItem(index, (current) => ({ ...current, user_instruction: event.target.value }))}
+                                                                value={item.userInstruction}
+                                                                onChange={(event) => handleUpdateChecklistItem(index, (current) => ({ ...current, userInstruction: event.target.value }))}
                                                                 className="w-full rounded border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 py-2 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                                                             />
                                                         </div>
@@ -650,10 +650,10 @@ function RunSetupPage({
                                                                 <input
                                                                     type="number"
                                                                     min={1}
-                                                                    value={item.max_steps}
+                                                                    value={item.maxSteps}
                                                                     onChange={(event) => handleUpdateChecklistItem(index, (current) => ({
                                                                         ...current,
-                                                                        max_steps: Math.max(1, Number.parseInt(event.target.value || '1', 10))
+                                                                        maxSteps: Math.max(1, Number.parseInt(event.target.value || '1', 10))
                                                                     }))}
                                                                     className="w-full rounded border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                                                                 />
@@ -661,8 +661,8 @@ function RunSetupPage({
                                                             <div className="space-y-1">
                                                                 <label className="text-xs font-semibold text-[var(--color-text-secondary)]">Reasoning Effort</label>
                                                                 <select
-                                                                    value={item.reasoning_effort}
-                                                                    onChange={(event) => handleUpdateChecklistItem(index, (current) => ({ ...current, reasoning_effort: event.target.value }))}
+                                                                    value={item.reasoningEffort}
+                                                                    onChange={(event) => handleUpdateChecklistItem(index, (current) => ({ ...current, reasoningEffort: event.target.value }))}
                                                                     className="w-full rounded border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                                                                 >
                                                                     <option value="low">low</option>
@@ -675,7 +675,7 @@ function RunSetupPage({
                                                 ) : (
                                                     <div className="text-xs text-[var(--color-text-secondary)] space-y-1">
                                                         <div className="line-clamp-2">{item.description}</div>
-                                                        <div>Reasoning: {item.reasoning_effort} · Max steps: {item.max_steps}</div>
+                                                        <div>Reasoning: {item.reasoningEffort} · Max steps: {item.maxSteps}</div>
                                                     </div>
                                                 )}
                                             </div>
@@ -733,8 +733,8 @@ function RunSetupPage({
                                 <label className="text-sm font-medium text-[var(--color-text-secondary)]">Focus Text</label>
                                 <textarea
                                     rows={8}
-                                    value={summaryConfig.focus_context}
-                                    onChange={(event) => setSummaryConfig((current) => ({ ...current, focus_context: event.target.value }))}
+                                    value={summaryConfig.focusContext}
+                                    onChange={(event) => setSummaryConfig((current) => ({ ...current, focusContext: event.target.value }))}
                                     className="w-full rounded-md border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 py-2 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                                 />
                             </div>
@@ -743,8 +743,8 @@ function RunSetupPage({
                                 <div className="space-y-1">
                                     <label className="text-sm font-medium text-[var(--color-text-secondary)]">Reasoning Effort</label>
                                     <select
-                                        value={summaryConfig.reasoning_effort}
-                                        onChange={(event) => setSummaryConfig((current) => ({ ...current, reasoning_effort: event.target.value }))}
+                                        value={summaryConfig.reasoningEffort}
+                                        onChange={(event) => setSummaryConfig((current) => ({ ...current, reasoningEffort: event.target.value }))}
                                         className="w-full rounded border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                                     >
                                         <option value="low">low</option>
@@ -757,10 +757,10 @@ function RunSetupPage({
                                     <input
                                         type="number"
                                         min={1}
-                                        value={summaryConfig.max_steps}
+                                        value={summaryConfig.maxSteps}
                                         onChange={(event) => setSummaryConfig((current) => ({
                                             ...current,
-                                            max_steps: Math.max(1, Number.parseInt(event.target.value || '1', 10))
+                                            maxSteps: Math.max(1, Number.parseInt(event.target.value || '1', 10))
                                         }))}
                                         className="w-full rounded border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                                     />

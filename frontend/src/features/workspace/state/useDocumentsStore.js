@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-const normaliseCaseId = (value) => String(value ?? '').trim();
+const normaliseRunId = (value) => String(value ?? '').trim();
 
 const coerceDocumentId = (value) => {
     if (typeof value === 'number' && Number.isFinite(value)) {
@@ -34,28 +34,18 @@ const normaliseImportedDocuments = (documents = []) => (
         .filter(Boolean)
 );
 
-const useDocumentsStore = ({ caseId, importedSnapshot = null } = {}) => {
+const useDocumentsStore = ({ runId, importedSnapshot = null } = {}) => {
     const hasImportedSnapshot = Boolean(importedSnapshot);
     const initialImportedDocuments = hasImportedSnapshot
         ? normaliseImportedDocuments(importedSnapshot.documents)
         : [];
-    const initialCaseId = hasImportedSnapshot
-        ? normaliseCaseId(importedSnapshot.caseId)
-        : normaliseCaseId(caseId);
+    const currentRunId = hasImportedSnapshot
+        ? normaliseRunId(importedSnapshot.runId)
+        : normaliseRunId(runId);
 
-    const [currentCaseId, setCurrentCaseId] = useState(initialCaseId);
-    const [documents, setDocuments] = useState(initialImportedDocuments);
+    const [documents] = useState(initialImportedDocuments);
     const [selectedDocument, setSelectedDocument] = useState(initialImportedDocuments[0]?.id ?? null);
-    const [lastError, setLastError] = useState(null);
-    const [usingImportedSnapshot, setUsingImportedSnapshot] = useState(hasImportedSnapshot);
     const documentRef = useRef(null);
-
-    useEffect(() => {
-        if (usingImportedSnapshot) {
-            return;
-        }
-        setCurrentCaseId(normaliseCaseId(caseId));
-    }, [caseId, usingImportedSnapshot]);
 
     useEffect(() => {
         setSelectedDocument((current) => {
@@ -65,21 +55,6 @@ const useDocumentsStore = ({ caseId, importedSnapshot = null } = {}) => {
             return documents[0]?.id ?? null;
         });
     }, [documents]);
-
-    const activateImportedSnapshot = useCallback(({ caseId: snapshotCaseId, documents: snapshotDocuments }) => {
-        const nextDocuments = normaliseImportedDocuments(snapshotDocuments);
-        setCurrentCaseId(normaliseCaseId(snapshotCaseId));
-        setDocuments(nextDocuments);
-        setLastError(null);
-        setUsingImportedSnapshot(true);
-        setSelectedDocument(nextDocuments[0]?.id ?? null);
-    }, []);
-
-    const loadDocuments = useCallback(async () => {
-        const error = new Error('Direct document loading is no longer supported. Load documents through the run setup flow.');
-        setLastError(error);
-        throw error;
-    }, []);
 
     const getCurrentDocument = useCallback(() => {
         const doc = documents.find((entry) => entry.id === selectedDocument);
@@ -93,18 +68,14 @@ const useDocumentsStore = ({ caseId, importedSnapshot = null } = {}) => {
     }, [documents, selectedDocument]);
 
     return useMemo(() => ({
-        caseId: currentCaseId,
+        runId: currentRunId,
         documents,
         selectedDocument,
         setSelectedDocument,
         isLoadingDocuments: false,
-        loadDocuments,
         documentRef,
-        getCurrentDocument,
-        lastError,
-        documentChecklistStatus: documents.length > 0 ? 'ready' : 'empty',
-        activateImportedSnapshot
-    }), [activateImportedSnapshot, currentCaseId, documents, getCurrentDocument, lastError, loadDocuments, selectedDocument]);
+        getCurrentDocument
+    }), [currentRunId, documents, getCurrentDocument, selectedDocument]);
 };
 
 export default useDocumentsStore;

@@ -130,7 +130,7 @@ const RunWorkspaceLayout = ({ runId, title, onBackToReview }) => {
             return <ChecklistPanel isActive={visiblePanes.checklist} readOnly />;
         }
         if (pane === 'summary') {
-            return <SummaryPanel allowGeneration={false} />;
+            return <SummaryPanel />;
         }
         return <DocumentsPanel checklistReadOnly />;
     };
@@ -246,7 +246,7 @@ const RunWorkspace = ({
     onBackToReview
 }) => (
     <WorkspaceStateProvider
-        caseId={initialCaseState?.caseId}
+        runId={initialCaseState?.runId}
         initialCaseState={initialCaseState}
     >
         <RunWorkspaceLayout runId={runId} title={title} onBackToReview={onBackToReview} />

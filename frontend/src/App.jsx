@@ -38,7 +38,7 @@ const App = () => {
 
     const handleStartNewRun = useCallback(async () => {
         const payload = await createRun();
-        const newRunId = String(payload?.runId ?? payload?.run_id ?? '').trim();
+        const newRunId = String(payload?.runId ?? '').trim();
         if (!newRunId) {
             throw new Error('Backend did not return a run ID.');
         }

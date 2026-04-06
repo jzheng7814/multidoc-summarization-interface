@@ -100,7 +100,7 @@ const PostExtractionReviewPage = ({
     onBackToSetup
 }) => (
     <WorkspaceStateProvider
-        caseId={initialCaseState?.caseId}
+        runId={initialCaseState?.runId}
         initialCaseState={initialCaseState}
     >
         <ReviewLayout
