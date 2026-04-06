@@ -158,8 +158,8 @@ class ClusterChecklistRunnerTests(unittest.TestCase):
         self.assertEqual(result.collection.items[0].evidence.end_offset, 6)
 
         stdin_payload = json.loads(fake_process.stdin.buffer.decode("utf-8"))
-        self.assertEqual(stdin_payload["case"]["case_id"], "46210")
-        self.assertEqual(stdin_payload["case"]["case_documents_id"], ["77"])
+        self.assertEqual(stdin_payload["input"]["corpus_id"], "46210")
+        self.assertEqual(stdin_payload["input"]["documents"][0]["document_id"], "77")
         self.assertEqual(stdin_payload["checklist_strategy"], "individual")
         self.assertIn("checklist_spec", stdin_payload)
         self.assertIn("focus_context", stdin_payload)

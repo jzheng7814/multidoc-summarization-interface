@@ -1,104 +1,49 @@
-# Interface Agents Backend Handoff (Checklist + Summary Split)
+# Interface Agents Backend Handoff
 
 Date: 2026-04-05
 
-## 1) Migration Summary
+This repository now uses split agent roots and one canonical controller contract.
 
-Deprecated roots:
-- `/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/...`
-- `/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/...`
-- `/coc/pskynet6/jzheng390/gavel/interface_agent/...` (intermediate)
+## Canonical Entrypoints
+Checklist extraction:
+- `interface_agents/checklist_agent/controller/run_controller.py`
+- `interface_agents/checklist_agent/controller/run_controller_native.py`
+- mode: `slurm_extract_strategy`
 
-Current roots:
-- Checklist agent: `/coc/pskynet6/jzheng390/gavel/interface_agents/checklist_agent/...`
-- Summary agent: `/coc/pskynet6/jzheng390/gavel/interface_agents/summary_agent/...`
+Summary generation:
+- `interface_agents/summary_agent/controller/run_controller.py`
+- mode: `slurm_summarize_agent`
 
-## 2) Canonical Entrypoints
+## Canonical Input Contract
+Both controllers read one JSON object from stdin and require:
+- `input.corpus_id`
+- `input.documents[]`
 
-Checklist (standard):
-- `/coc/pskynet6/jzheng390/gavel/interface_agents/checklist_agent/controller/run_controller.py`
-- mode: `--mode slurm_extract_strategy`
+Each `input.documents[]` entry must include:
+- `document_id`
+- `title`
+- `text`
 
-Checklist (native):
-- `/coc/pskynet6/jzheng390/gavel/interface_agents/checklist_agent/controller/run_controller_native.py`
-- mode: `--mode slurm_extract_strategy`
+Optional document fields:
+- `doc_type`
+- `date`
 
-Summary:
-- `/coc/pskynet6/jzheng390/gavel/interface_agents/summary_agent/controller/run_controller.py`
-- mode: `--mode slurm_summarize_agent`
+Checklist extraction additionally requires:
+- `checklist_strategy`
+- `checklist_spec`
 
-Working directory:
-- `/coc/pskynet6/jzheng390/gavel`
+Summary generation additionally requires:
+- `checklist`
+- `checklist_definitions`
 
-Python:
-- `/coc/pskynet6/jzheng390/miniconda3/envs/gavel-dev/bin/python`
+There are no compatibility aliases for the old single-input envelope names.
 
-## 3) Backend Constant Redirects
+## Canonical Staged-Run Model
+The backend stages `interface_agents/` into a fresh remote run directory for every backend run and launches both checklist and summary controllers from that staged snapshot.
 
-```python
-# Checklist
-CHECKLIST_CONTROLLER = "/coc/pskynet6/jzheng390/gavel/interface_agents/checklist_agent/controller/run_controller.py"
-CHECKLIST_CONTROLLER_NATIVE = "/coc/pskynet6/jzheng390/gavel/interface_agents/checklist_agent/controller/run_controller_native.py"
-CHECKLIST_RUNS_ROOT = "/coc/pskynet6/jzheng390/gavel/interface_agents/checklist_agent/controller/runs"
-
-# Summary
-SUMMARY_CONTROLLER = "/coc/pskynet6/jzheng390/gavel/interface_agents/summary_agent/controller/run_controller.py"
-SUMMARY_RUNS_ROOT = "/coc/pskynet6/jzheng390/gavel/interface_agents/summary_agent/controller/runs"
-```
-
-## 4) Optional Env Pins
-
-Recommended env for backend shell runner:
-- `INTERFACE_AGENT_ENV_FILE=/coc/pskynet6/jzheng390/gavel/interface_agents/checklist_agent/.env`
-- `INTERFACE_SUMMARY_AGENT_ENV_FILE=/coc/pskynet6/jzheng390/gavel/interface_agents/summary_agent/.env`
-- `INTERFACE_CHECKLIST_AGENT_BASE_DIR=/coc/pskynet6/jzheng390/gavel/interface_agents/checklist_agent`
-
-## 5) Smoke Tests
-
-Checklist smoke:
-```bash
-/coc/pskynet6/jzheng390/miniconda3/envs/gavel-dev/bin/python \
-/coc/pskynet6/jzheng390/gavel/interface_agents/checklist_agent/controller/run_controller.py \
---mode smoke --request-id backend_checklist_migration_smoke --ticks 2 --tick-seconds 1
-```
-
-Summary smoke:
-```bash
-/coc/pskynet6/jzheng390/miniconda3/envs/gavel-dev/bin/python \
-/coc/pskynet6/jzheng390/gavel/interface_agents/summary_agent/controller/run_controller.py \
---mode smoke --request-id backend_summary_migration_smoke --ticks 2 --tick-seconds 1
-```
-
-## 6) End-to-End Test Scaffolds
-
-Checklist standard:
-```bash
-cat /path/to/checklist_request.json | \
-/coc/pskynet6/jzheng390/miniconda3/envs/gavel-dev/bin/python \
-/coc/pskynet6/jzheng390/gavel/interface_agents/checklist_agent/controller/run_controller.py \
---mode slurm_extract_strategy --poll-seconds 2 --max-wait-seconds 21600
-```
-
-Checklist native:
-```bash
-cat /path/to/checklist_request.json | \
-/coc/pskynet6/jzheng390/miniconda3/envs/gavel-dev/bin/python \
-/coc/pskynet6/jzheng390/gavel/interface_agents/checklist_agent/controller/run_controller_native.py \
---mode slurm_extract_strategy --poll-seconds 2 --max-wait-seconds 21600
-```
-
-Summary:
-```bash
-cat /path/to/summary_request.json | \
-/coc/pskynet6/jzheng390/miniconda3/envs/gavel-dev/bin/python \
-/coc/pskynet6/jzheng390/gavel/interface_agents/summary_agent/controller/run_controller.py \
---mode slurm_summarize_agent --poll-seconds 2 --max-wait-seconds 21600
-```
-
-## 7) Acceptance Criteria
-
-1. Smoke runs emit `started` then `completed`.
-2. E2E runs emit `request_validated`, `slurm_submitted`, terminal `completed`.
-3. Checklist completion points to `.../interface_agents/checklist_agent/controller/runs/<run_id>/...`.
-4. Summary completion points to `.../interface_agents/summary_agent/controller/runs/<run_id>/...`.
-5. Summary ingestion reads canonical text from `summary_path` JSON field `summary`.
+## Acceptance Criteria
+1. Checklist and summary smoke runs emit `started` and `completed`.
+2. Real runs emit `request_validated`, `slurm_submitted`, and a terminal `completed` event.
+3. Checklist artifacts land under `interface_agents/checklist_agent/controller/runs/<run_id>/` inside the staged snapshot.
+4. Summary artifacts land under `interface_agents/summary_agent/controller/runs/<run_id>/` inside the staged snapshot.
+5. Backend reads final summary text from `summary.json` field `summary`.

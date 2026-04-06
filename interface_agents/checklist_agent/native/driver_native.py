@@ -76,9 +76,9 @@ class NativeDriver:
         if store_path_obj.parent.name != ".":
             self.output_dir = store_path_obj.parent
         else:
-            case_id = self.corpus_path.name if self.corpus_path.is_dir() else "unknown_case"
+            corpus_id = self.corpus_path.name if self.corpus_path.is_dir() else "unknown_corpus"
             model_suffix = model_name.split("/")[-1]
-            self.output_dir = Path(f"output/{model_suffix}/{case_id}")
+            self.output_dir = Path(f"output/{model_suffix}/{corpus_id}")
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         self._load_config()
@@ -114,7 +114,7 @@ class NativeDriver:
             reasoning_effort=self.reasoning_effort,
         )
 
-        self.stats_tracker = StatsTracker(output_dir=str(self.output_dir), case_id=None)
+        self.stats_tracker = StatsTracker(output_dir=str(self.output_dir), corpus_id=None)
         self.raw_responses_path = self.output_dir / "raw_responses.jsonl"
 
         self.current_run_id: Optional[str] = None

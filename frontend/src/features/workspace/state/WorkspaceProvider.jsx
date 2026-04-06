@@ -3,21 +3,10 @@ import useDocumentsStore from './useDocumentsStore';
 import useSummaryStore from './useSummaryStore';
 import useHighlightStore from './useHighlightStore';
 import useChecklistStore from './useChecklistStore';
-import usePromptStore from './usePromptStore';
 
 const WorkspaceStateContext = createContext(null);
-const PROMPT_STORE_DISABLED = {
-    prompt: '',
-    defaultPrompt: '',
-    hasCustomPrompt: false,
-    isLoading: false,
-    error: null,
-    savePrompt: () => {},
-    clearCustomPrompt: () => {},
-    commitPrompt: () => {}
-};
 
-export const WorkspaceStateProvider = ({ children, caseId, initialCaseState = null, enablePromptStore = true }) => {
+export const WorkspaceStateProvider = ({ children, caseId, initialCaseState = null }) => {
     const importedDocumentSnapshot = initialCaseState
         ? {
             caseId: initialCaseState.caseId,
@@ -36,13 +25,11 @@ export const WorkspaceStateProvider = ({ children, caseId, initialCaseState = nu
             items: initialCaseState.items
         }
         : null;
-    const checklist = useChecklistStore({ caseId: documents.caseId, importedSnapshot: importedChecklistSnapshot });
-    const promptStore = usePromptStore({ enabled: enablePromptStore });
-    const prompt = enablePromptStore ? promptStore : PROMPT_STORE_DISABLED;
+    const checklist = useChecklistStore({ importedSnapshot: importedChecklistSnapshot });
 
     const value = useMemo(
-        () => ({ documents, summary, highlight, checklist, prompt }),
-        [documents, summary, highlight, checklist, prompt]
+        () => ({ documents, summary, highlight, checklist }),
+        [documents, summary, highlight, checklist]
     );
 
     return (
@@ -68,7 +55,5 @@ export const useSummary = () => useWorkspaceState().summary;
 export const useHighlight = () => useWorkspaceState().highlight;
 // eslint-disable-next-line react-refresh/only-export-components
 export const useChecklist = () => useWorkspaceState().checklist;
-// eslint-disable-next-line react-refresh/only-export-components
-export const usePrompt = () => useWorkspaceState().prompt;
 
 export default WorkspaceStateProvider;

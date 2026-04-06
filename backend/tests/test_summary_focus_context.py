@@ -13,32 +13,32 @@ from app.services.summary_focus_context import (
 class SummaryFocusContextTests(unittest.TestCase):
     def test_render_template_replaces_placeholders(self):
         rendered = render_summary_focus_context_template(
-            "Case #CASE_TITLE",
-            {"CASE_TITLE": "Example Case"},
+            "Corpus #RUN_TITLE",
+            {"RUN_TITLE": "Example Corpus"},
         )
-        self.assertEqual(rendered, "Case Example Case")
+        self.assertEqual(rendered, "Corpus Example Corpus")
 
     def test_build_focus_context_raises_on_missing_runtime_value(self):
         with self.assertRaises(RuntimeError):
             build_summary_focus_context(
-                case_title=None,
-                request_focus_context="Case title: #CASE_TITLE",
+                run_title=None,
+                request_focus_context="Corpus title: #RUN_TITLE",
             )
 
     def test_build_focus_context_accepts_request_override_without_placeholders(self):
         rendered = build_summary_focus_context(
-            case_title=None,
-            request_focus_context="Only summarize dispositive orders.",
+            run_title=None,
+            request_focus_context="Only summarize the highest-signal developments.",
         )
-        self.assertEqual(rendered, "Only summarize dispositive orders.")
+        self.assertEqual(rendered, "Only summarize the highest-signal developments.")
 
     def test_load_default_summary_focus_context_uses_configured_path(self):
         with TemporaryDirectory() as temp_dir:
             path = Path(temp_dir) / "focus_context.template.txt"
-            path.write_text("Case: #CASE_TITLE", encoding="utf-8")
+            path.write_text("Corpus: #RUN_TITLE", encoding="utf-8")
             settings = SimpleNamespace(cluster_summary_focus_context_template_path=str(path))
             template = load_default_summary_focus_context(settings)
-            self.assertEqual(template, "Case: #CASE_TITLE")
+            self.assertEqual(template, "Corpus: #RUN_TITLE")
 
 
 if __name__ == "__main__":

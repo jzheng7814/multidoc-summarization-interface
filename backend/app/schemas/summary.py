@@ -49,7 +49,7 @@ class SummaryRequest(BaseModel):
         None,
         description=(
             "Optional summary focus context template/text. Supports runtime placeholder "
-            "#CASE_TITLE."
+            "#RUN_TITLE."
         ),
         serialization_alias="focusContext",
         validation_alias=AliasChoices("focusContext", "focus_context"),
@@ -76,18 +76,12 @@ class SummaryRequest(BaseModel):
         validation_alias=AliasChoices("promptConfig", "prompt_config"),
     )
     slurm: Optional[SummarySlurmOptions] = None
-    python_bin: Optional[str] = Field(
-        None,
-        description="Optional python binary override forwarded to the remote controller.",
-        serialization_alias="pythonBin",
-        validation_alias=AliasChoices("pythonBin", "python_bin"),
-    )
     model_config = ConfigDict(extra="forbid", populate_by_name=True, protected_namespaces=())
 
 
 class SummaryJob(BaseModel):
     id: str
-    case_id: str
+    corpus_id: str
     status: SummaryJobStatus
     summary_text: Optional[str] = None
     error: Optional[str] = None

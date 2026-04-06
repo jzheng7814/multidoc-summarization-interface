@@ -12,28 +12,28 @@ from app.services.cluster_focus_context import (
 
 class ClusterFocusContextTests(unittest.TestCase):
     def test_load_cluster_focus_context_returns_non_empty_string(self):
-        value = load_cluster_focus_context("Example Case")
+        value = load_cluster_focus_context("Example Corpus")
         self.assertIsInstance(value, str)
         self.assertTrue(value.strip())
 
-    def test_render_template_replaces_case_title(self):
+    def test_render_template_replaces_run_title(self):
         rendered = render_cluster_focus_context_template(
-            "Target: #CASE_TITLE",
-            {"CASE_TITLE": "Case Name"},
+            "Target: #RUN_TITLE",
+            {"RUN_TITLE": "Example Corpus"},
         )
-        self.assertEqual(rendered, "Target: Case Name")
+        self.assertEqual(rendered, "Target: Example Corpus")
 
-    def test_load_cluster_focus_context_rejects_missing_case_title_for_placeholder(self):
+    def test_load_cluster_focus_context_rejects_missing_run_title_for_placeholder(self):
         with self.assertRaises(RuntimeError):
             load_cluster_focus_context(None)
 
     def test_load_cluster_focus_context_template_uses_configured_path(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             path = Path(temp_dir) / "focus_context.template.txt"
-            path.write_text("Target: #CASE_TITLE", encoding="utf-8")
+            path.write_text("Target: #RUN_TITLE", encoding="utf-8")
             settings = SimpleNamespace(cluster_focus_context_template_path=str(path))
             template = load_cluster_focus_context_template(settings)
-            self.assertEqual(template, "Target: #CASE_TITLE")
+            self.assertEqual(template, "Target: #RUN_TITLE")
 
 
 if __name__ == "__main__":

@@ -19,8 +19,7 @@ import {
 
 const EMPTY_SESSION = {
     runId: '',
-    caseTitle: '',
-    sourceCaseId: '',
+    title: '',
     extractionConfig: null,
     summaryConfig: null,
     documents: [],
@@ -83,8 +82,7 @@ const RunFlowPage = ({ runId }) => {
             const summaryStatus = String(runPayload?.summaryStatus ?? runPayload?.summary_status ?? 'not_started');
             const workflowStage = runPayload?.workflowStage ?? runPayload?.workflow_stage ?? null;
 
-            const caseTitle = String(runPayload?.caseTitle ?? runPayload?.case_title ?? '').trim();
-            const sourceCaseId = String(runPayload?.sourceCaseId ?? runPayload?.source_case_id ?? '').trim();
+            const title = String(runPayload?.title ?? '').trim();
             const extractionConfig = runPayload?.extractionConfig ?? runPayload?.extraction_config ?? null;
             const summaryConfig = runPayload?.summaryConfig ?? runPayload?.summary_config ?? null;
 
@@ -115,8 +113,7 @@ const RunFlowPage = ({ runId }) => {
 
             setSession({
                 runId,
-                caseTitle,
-                sourceCaseId,
+                title,
                 extractionConfig,
                 summaryConfig,
                 documents,
@@ -139,14 +136,12 @@ const RunFlowPage = ({ runId }) => {
         if (!runPayload) {
             return;
         }
-        const caseTitle = String(runPayload?.caseTitle ?? runPayload?.case_title ?? '').trim();
-        const sourceCaseId = String(runPayload?.sourceCaseId ?? runPayload?.source_case_id ?? '').trim();
+        const title = String(runPayload?.title ?? '').trim();
         const extractionConfig = runPayload?.extractionConfig ?? runPayload?.extraction_config ?? null;
         const summaryConfig = runPayload?.summaryConfig ?? runPayload?.summary_config ?? null;
         setSession((current) => ({
             ...current,
-            caseTitle,
-            sourceCaseId,
+            title,
             extractionConfig,
             summaryConfig,
             runData: runPayload
@@ -173,19 +168,17 @@ const RunFlowPage = ({ runId }) => {
             throw new Error('Run metadata is missing. Reload this run and try again.');
         }
         await startRunExtraction(runId, extractionConfig);
-        const caseTitle = String(nextRunData?.caseTitle ?? nextRunData?.case_title ?? session.caseTitle).trim();
-        const sourceCaseId = String(nextRunData?.sourceCaseId ?? nextRunData?.source_case_id ?? session.sourceCaseId).trim();
+        const title = String(nextRunData?.title ?? session.title).trim();
         setGlobalError('');
         setSession((current) => ({
             ...current,
-            caseTitle,
-            sourceCaseId,
+            title,
             extractionConfig,
             summaryConfig,
             runData: nextRunData
         }));
         setStage('extraction_wait');
-    }, [runId, session.caseTitle, session.runData, session.sourceCaseId]);
+    }, [runId, session.runData, session.title]);
 
     const handleExtractionCompleted = useCallback(async () => {
         try {
@@ -194,8 +187,7 @@ const RunFlowPage = ({ runId }) => {
                 fetchRunDocuments(runId),
                 fetchRunChecklist(runId)
             ]);
-            const caseTitle = String(runPayload?.caseTitle ?? runPayload?.case_title ?? '').trim();
-            const sourceCaseId = String(runPayload?.sourceCaseId ?? runPayload?.source_case_id ?? '').trim();
+            const title = String(runPayload?.title ?? '').trim();
             const documents = Array.isArray(documentsPayload) ? documentsPayload : [];
             const categories = Array.isArray(checklistPayload?.categories) ? checklistPayload.categories : [];
             const extractionConfig = runPayload?.extractionConfig ?? runPayload?.extraction_config ?? session.extractionConfig;
@@ -203,8 +195,7 @@ const RunFlowPage = ({ runId }) => {
 
             setSession((current) => ({
                 ...current,
-                caseTitle,
-                sourceCaseId,
+                title,
                 extractionConfig,
                 summaryConfig,
                 documents,
@@ -258,7 +249,6 @@ const RunFlowPage = ({ runId }) => {
     const initialCaseState = useMemo(
         () => buildInitialRunCaseState({
             runId: session.runId,
-            sourceCaseId: session.sourceCaseId,
             documents: session.documents,
             checklistCategories: session.checklistCategories,
             summaryText: session.summaryText
@@ -267,7 +257,6 @@ const RunFlowPage = ({ runId }) => {
             session.checklistCategories,
             session.documents,
             session.runId,
-            session.sourceCaseId,
             session.summaryText
         ]
     );
@@ -324,7 +313,7 @@ const RunFlowPage = ({ runId }) => {
             <ExtractionWaitingPage
                 key={`extract-${session.runId}`}
                 runId={session.runId}
-                caseTitle={session.caseTitle}
+                title={session.title}
                 onCompleted={handleExtractionCompleted}
                 onFailed={handleExtractionFailed}
             />
@@ -336,7 +325,7 @@ const RunFlowPage = ({ runId }) => {
             <PostExtractionReviewPage
                 key={`review-${session.runId}`}
                 runId={session.runId}
-                caseTitle={session.caseTitle}
+                title={session.title}
                 initialCaseState={initialCaseState}
                 onStartSummary={handleStartSummary}
                 onBackToSetup={handleBackToSetup}
@@ -349,7 +338,7 @@ const RunFlowPage = ({ runId }) => {
             <SummaryWaitingPage
                 key={`summary-${session.runId}`}
                 runId={session.runId}
-                caseTitle={session.caseTitle}
+                title={session.title}
                 onCompleted={handleSummaryCompleted}
                 onFailed={handleSummaryFailed}
             />
@@ -360,7 +349,7 @@ const RunFlowPage = ({ runId }) => {
         <RunWorkspace
             key={`workspace-${session.runId}`}
             runId={session.runId}
-            caseTitle={session.caseTitle}
+            title={session.title}
             initialCaseState={initialCaseState}
             onBackToReview={handleBackToReview}
         />

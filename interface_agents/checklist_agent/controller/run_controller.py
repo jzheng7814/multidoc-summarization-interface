@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""SSH-stream controller for smoke and SLURM checklist extraction flows.
-
-Reads a single JSON request from stdin in ``slurm_extract`` mode, then emits
-line-delimited JSON (NDJSON) events to stdout.
-"""
+"""SSH-stream controller for smoke and SLURM checklist extraction flows."""
 
 from __future__ import annotations
 
@@ -201,34 +197,39 @@ def generate_run_id() -> str:
     return f"run_{ts}_{uuid.uuid4().hex[:10]}"
 
 
-def normalize_single_case(payload: Dict[str, Any]) -> Dict[str, Any]:
-    if isinstance(payload.get("case"), dict):
-        case = payload["case"]
-    elif isinstance(payload.get("input_case"), dict):
-        case = payload["input_case"]
-    elif isinstance(payload.get("cases"), list):
-        cases = payload["cases"]
-        if len(cases) != 1:
-            raise ValueError("Only one case per request is supported in v0")
-        if not isinstance(cases[0], dict):
-            raise ValueError("cases[0] must be an object")
-        case = cases[0]
-    else:
-        raise ValueError("Request must provide one case in `case`, `input_case`, or `cases`")
+def normalize_input_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
+    raw_input = payload.get("input")
+    if not isinstance(raw_input, dict):
+        raise ValueError("Request must provide one input object in `input`.")
 
-    if "case_id" not in case and "case_id" in payload:
-        case["case_id"] = payload["case_id"]
+    corpus_id = require_non_empty_string(raw_input.get("corpus_id"), "input.corpus_id")
+    raw_documents = raw_input.get("documents")
+    if not isinstance(raw_documents, list) or not raw_documents:
+        raise ValueError("`input.documents` is required and must contain at least one document.")
 
-    if "case_id" not in case:
-        raise ValueError("Case payload must include `case_id`")
+    documents: List[Dict[str, Any]] = []
+    for idx, raw_document in enumerate(raw_documents):
+        path = f"input.documents[{idx}]"
+        if not isinstance(raw_document, dict):
+            raise ValueError(f"`{path}` must be an object")
+        documents.append(
+            {
+                "document_id": require_non_empty_string(raw_document.get("document_id"), f"{path}.document_id"),
+                "title": require_non_empty_string(raw_document.get("title"), f"{path}.title"),
+                "doc_type": str(raw_document.get("doc_type") or "").strip(),
+                "date": str(raw_document.get("date") or "").strip() or None,
+                "text": require_non_empty_string(raw_document.get("text"), f"{path}.text"),
+            }
+        )
 
-    return case
+    return {
+        "corpus_id": corpus_id,
+        "documents": documents,
+    }
 
 
-def parse_checklist_strategy(request: Dict[str, Any], require_explicit: bool) -> str:
+def parse_checklist_strategy(request: Dict[str, Any]) -> str:
     raw_strategy = request.get("checklist_strategy")
-    if raw_strategy is None and not require_explicit:
-        return "all"
     strategy = str(raw_strategy or "").strip().lower()
     if strategy not in {"all", "individual"}:
         raise ValueError("`checklist_strategy` must be explicitly set to 'all' or 'individual'")
@@ -508,7 +509,7 @@ class Paths:
 
 def build_paths(
     run_id: str,
-    case_id: str,
+    corpus_id: str,
     model_name: str,
     checklist_config: str,
     max_steps: int,
@@ -521,19 +522,19 @@ def build_paths(
     category = config_category(checklist_config)
 
     output_base_dir = f"controller/runs/{run_id}/agent_output"
-    output_dir = BASE_DIR / output_base_dir / model_suffix / case_id / category / config_suffix
+    output_dir = BASE_DIR / output_base_dir / model_suffix / corpus_id / category / config_suffix
     ledger_path = output_dir / "ledger.jsonl"
     agent_checklist_path = output_dir / "checklist.json"
     stats_path = output_dir / "stats.json"
 
-    log_name = f"{case_id}_{category}_{config_suffix}_steps{max_steps}"
+    log_name = f"{corpus_id}_{category}_{config_suffix}_steps{max_steps}"
     if resume:
         log_name += "_resume"
-    agent_log_path = BASE_DIR / "agent_logs" / model_suffix / case_id / f"{log_name}.log"
+    agent_log_path = BASE_DIR / "agent_logs" / model_suffix / corpus_id / f"{log_name}.log"
 
     slurm_log_path = None
     if job_id:
-        slurm_log_path = BASE_DIR / "agent_logs" / f"legal_agent_test_run-{job_id}.out"
+        slurm_log_path = BASE_DIR / "agent_logs" / f"checklist_agent_native_run-{job_id}.out"
 
     return Paths(
         run_dir=run_dir,
@@ -657,15 +658,15 @@ def run_smoke(args: argparse.Namespace) -> int:
 
 def run_preprocess(
     emitter: Emitter,
-    case: Dict[str, Any],
+    input_payload: Dict[str, Any],
     model_name: str,
     paths: Paths,
 ) -> Tuple[str, Path]:
-    case_id = str(case["case_id"])
+    corpus_id = str(input_payload["corpus_id"])
     with paths.input_json.open("w", encoding="utf-8") as f:
-        json.dump([case], f, ensure_ascii=False)
+        json.dump([input_payload], f, ensure_ascii=False)
 
-    emitter.emit("preprocess_started", case_id=case_id, input_file=str(paths.input_json))
+    emitter.emit("preprocess_started", corpus_id=corpus_id, input_file=str(paths.input_json))
     cmd = [
         PYTHON_BIN,
         str(BASE_DIR / "data_processing.py"),
@@ -674,8 +675,8 @@ def run_preprocess(
         str(BASE_DIR / "data"),
         "--model",
         model_name,
-        "--case-ids",
-        case_id,
+        "--corpus-ids",
+        corpus_id,
         "--quiet",
     ]
     proc = run_cmd(cmd, cwd=BASE_DIR)
@@ -685,17 +686,17 @@ def run_preprocess(
             f"{(proc.stderr or proc.stdout).strip()}"
         )
 
-    corpus_path = BASE_DIR / "data" / paths.data_dataset_name / case_id
+    corpus_path = BASE_DIR / "data" / paths.data_dataset_name / corpus_id
     if not corpus_path.exists():
         raise RuntimeError(f"Processed corpus path missing: {corpus_path}")
 
     emitter.emit(
         "preprocess_completed",
-        case_id=case_id,
+        corpus_id=corpus_id,
         dataset_name=paths.data_dataset_name,
         corpus_path=str(corpus_path),
     )
-    return case_id, corpus_path
+    return corpus_id, corpus_path
 
 
 def load_document_map(corpus_path: Path) -> Dict[str, Any]:
@@ -736,7 +737,7 @@ def load_document_map(corpus_path: Path) -> Dict[str, Any]:
 
 def submit_slurm(
     request: Dict[str, Any],
-    case_id: str,
+    corpus_id: str,
     model_name: str,
     checklist_config: str,
     max_steps: int,
@@ -751,7 +752,7 @@ def submit_slurm(
     qos = slurm.get("qos") or "short"
 
     exports = {
-        "CASE_ID": case_id,
+        "CORPUS_ID": corpus_id,
         "MODEL_NAME": model_name,
         "CHECKLIST_CONFIG": checklist_config,
         "MAX_STEPS": str(max_steps),
@@ -1109,184 +1110,6 @@ def build_artifact_bundle(
     }
 
 
-def run_slurm_extract(args: argparse.Namespace) -> int:
-    emitter = Emitter(args.request_id or "unknown_request")
-    try:
-        request = parse_stdin_json()
-        if "run_id" in request:
-            raise ValueError("run_id is controller-generated; do not provide run_id in request")
-        run_id = validate_run_id(generate_run_id())
-
-        case = normalize_single_case(request)
-        case_id = str(case["case_id"])
-        model_name = request.get("model", "unsloth/gpt-oss-20b-BF16")
-        checklist_strategy = parse_checklist_strategy(request, require_explicit=False)
-        if checklist_strategy != "all":
-            raise ValueError(
-                "`slurm_extract` only supports checklist_strategy='all'. "
-                "Use --mode slurm_extract_strategy for checklist_strategy='individual'."
-            )
-        checklist_spec = parse_checklist_spec(request, strategy=checklist_strategy)
-        focus_context = parse_optional_focus_context(request.get("focus_context"), "focus_context")
-        max_steps = require_positive_int(request.get("max_steps", 300), "max_steps")
-        reasoning_effort = require_reasoning_effort(
-            request.get("reasoning_effort", "medium"),
-            "reasoning_effort",
-        )
-        resume = bool(request.get("resume", False))
-        debug = bool(request.get("debug", False))
-
-        run_dir = RUNS_BASE / run_id
-        if run_dir.exists():
-            raise ValueError(f"run_id already exists: {run_dir}")
-        run_dir.mkdir(parents=True, exist_ok=False)
-
-        checklist_configs = materialize_checklist_configs(
-            run_dir,
-            checklist_spec,
-            focus_context=focus_context,
-        )
-        checklist_config = checklist_configs[0]
-
-        paths = build_paths(
-            run_id=run_id,
-            case_id=case_id,
-            model_name=model_name,
-            checklist_config=checklist_config,
-            max_steps=max_steps,
-            resume=resume,
-            job_id=None,
-        )
-
-        emitter = Emitter(run_id, mirror_path=paths.events_path)
-        emitter.emit("started", mode="slurm_extract", pid=os.getpid(), run_id=run_id)
-
-        write_json(paths.request_path, request)
-
-        emitter.emit(
-            "request_validated",
-            run_id=run_id,
-            case_id=case_id,
-            model=model_name,
-            checklist_strategy=checklist_strategy,
-            checklist_config=checklist_config,
-            generated_checklist_configs=checklist_configs,
-            checklist_items_count=len(checklist_spec["items"]),
-            max_steps=max_steps,
-            reasoning_effort=reasoning_effort,
-            focus_context=focus_context,
-            run_dir=str(paths.run_dir),
-        )
-
-        _, corpus_path = run_preprocess(emitter, case, model_name, paths)
-        document_map = load_document_map(corpus_path)
-        emitter.emit("document_map_ready", run_id=run_id, document_count=len(document_map.get("documents", [])))
-
-        output_base_dir = f"controller/runs/{run_id}/agent_output"
-        job_id = submit_slurm(
-            request=request,
-            case_id=case_id,
-            model_name=model_name,
-            checklist_config=checklist_config,
-            max_steps=max_steps,
-            reasoning_effort=reasoning_effort,
-            resume=resume,
-            debug=debug,
-            output_base_dir=output_base_dir,
-            data_dataset_name=paths.data_dataset_name,
-        )
-
-        paths = build_paths(
-            run_id=run_id,
-            case_id=case_id,
-            model_name=model_name,
-            checklist_config=checklist_config,
-            max_steps=max_steps,
-            resume=resume,
-            job_id=job_id,
-        )
-
-        emitter.emit(
-            "slurm_submitted",
-            run_id=run_id,
-            job_id=job_id,
-            output_dir=str(paths.output_dir),
-            ledger_path=str(paths.ledger_path),
-            slurm_log_path=str(paths.slurm_log_path) if paths.slurm_log_path else None,
-        )
-
-        poll_seconds = max(args.poll_seconds, 0.5)
-        max_wait_seconds = max(args.max_wait_seconds, 10)
-        start = time.monotonic()
-        last_state = None
-
-        if paths.ledger_path.exists():
-            st = paths.ledger_path.stat()
-            ledger_pos = st.st_size
-            ledger_identity: Optional[Tuple[int, int]] = (st.st_dev, st.st_ino)
-        else:
-            ledger_pos = 0
-            ledger_identity = None
-        seen_steps: Set[int] = set()
-
-        while True:
-            state = slurm_state(job_id)
-            if state != last_state:
-                emitter.emit("slurm_state", run_id=run_id, job_id=job_id, state=state)
-                last_state = state
-
-            ledger_pos, ledger_identity = emit_new_steps(
-                emitter,
-                paths.ledger_path,
-                ledger_pos,
-                seen_steps,
-                ledger_identity,
-            )
-
-            if state in TERMINAL_STATES:
-                break
-
-            if time.monotonic() - start > max_wait_seconds:
-                run_cmd([slurm_executable("scancel"), job_id])
-                emitter.emit("failed", run_id=run_id, error="Controller timed out waiting for SLURM job", job_id=job_id)
-                return 3
-
-            time.sleep(poll_seconds)
-
-        artifact_bundle = build_artifact_bundle(
-            paths,
-            run_id=run_id,
-            document_map=document_map,
-            corpus_path=corpus_path,
-            extra_metadata={
-                "checklist_strategy": checklist_strategy,
-                "checklist_source": "inline_spec",
-                "checklist_items_count": len(checklist_spec["items"]),
-                "generated_checklist_configs": checklist_configs,
-                "max_steps": max_steps,
-                "reasoning_effort": reasoning_effort,
-                "focus_context": focus_context,
-            },
-        )
-        if last_state == "COMPLETED":
-            emitter.emit("completed", job_id=job_id, state=last_state, **artifact_bundle)
-            return 0
-
-        emitter.emit("failed", job_id=job_id, state=last_state, **artifact_bundle)
-        return 4
-    except Exception as exc:
-        emitter.emit(
-            "failed",
-            error=str(exc),
-            exception_type=type(exc).__name__,
-            traceback=traceback.format_exc(),
-            exit_code=1,
-        )
-        return 1
-    finally:
-        emitter.close()
-
-
 def run_slurm_extract_strategy(args: argparse.Namespace) -> int:
     """Run SLURM extraction with explicit checklist strategy (all vs individual)."""
     emitter = Emitter(args.request_id or "unknown_request")
@@ -1296,19 +1119,14 @@ def run_slurm_extract_strategy(args: argparse.Namespace) -> int:
             raise ValueError("run_id is controller-generated; do not provide run_id in request")
         run_id = validate_run_id(generate_run_id())
 
-        case = normalize_single_case(request)
-        case_id = str(case["case_id"])
+        input_payload = normalize_input_payload(request)
+        corpus_id = str(input_payload["corpus_id"])
         model_name = request.get("model", "unsloth/gpt-oss-20b-BF16")
-        checklist_strategy = parse_checklist_strategy(request, require_explicit=True)
+        checklist_strategy = parse_checklist_strategy(request)
         checklist_spec = parse_checklist_spec(request, strategy=checklist_strategy)
         focus_context = parse_optional_focus_context(request.get("focus_context"), "focus_context")
         resume = bool(request.get("resume", False))
         debug = bool(request.get("debug", False))
-        max_concurrent = int(request.get("max_concurrent", 1))
-        if max_concurrent < 1:
-            raise ValueError("max_concurrent must be >= 1")
-        if max_concurrent != 1:
-            raise ValueError("This controller mode currently supports only max_concurrent=1")
 
         run_max_steps: Optional[int] = None
         run_reasoning_effort: Optional[str] = None
@@ -1366,7 +1184,7 @@ def run_slurm_extract_strategy(args: argparse.Namespace) -> int:
 
         planning_paths = build_paths(
             run_id=run_id,
-            case_id=case_id,
+            corpus_id=corpus_id,
             model_name=model_name,
             checklist_config=checklist_configs[0],
             max_steps=planning_max_steps,
@@ -1384,7 +1202,6 @@ def run_slurm_extract_strategy(args: argparse.Namespace) -> int:
             run_id=run_id,
             checklist_strategy=checklist_strategy,
             jobs_planned=len(checklist_configs),
-            max_concurrent=max_concurrent,
         )
 
         write_json(planning_paths.request_path, request)
@@ -1392,7 +1209,7 @@ def run_slurm_extract_strategy(args: argparse.Namespace) -> int:
         emitter.emit(
             "request_validated",
             run_id=run_id,
-            case_id=case_id,
+            corpus_id=corpus_id,
             model=model_name,
             checklist_strategy=checklist_strategy,
             max_steps=run_max_steps,
@@ -1405,7 +1222,7 @@ def run_slurm_extract_strategy(args: argparse.Namespace) -> int:
             run_dir=str(planning_paths.run_dir),
         )
 
-        _, corpus_path = run_preprocess(emitter, case, model_name, planning_paths)
+        _, corpus_path = run_preprocess(emitter, input_payload, model_name, planning_paths)
         document_map = load_document_map(corpus_path)
         emitter.emit("document_map_ready", run_id=run_id, document_count=len(document_map.get("documents", [])))
 
@@ -1425,7 +1242,7 @@ def run_slurm_extract_strategy(args: argparse.Namespace) -> int:
 
             job_id = submit_slurm(
                 request=request,
-                case_id=case_id,
+                corpus_id=corpus_id,
                 model_name=model_name,
                 checklist_config=checklist_config,
                 max_steps=item_max_steps,
@@ -1438,7 +1255,7 @@ def run_slurm_extract_strategy(args: argparse.Namespace) -> int:
 
             item_paths = build_paths(
                 run_id=run_id,
-                case_id=case_id,
+                corpus_id=corpus_id,
                 model_name=model_name,
                 checklist_config=checklist_config,
                 max_steps=item_max_steps,
@@ -1624,14 +1441,13 @@ def run_slurm_extract_strategy(args: argparse.Namespace) -> int:
             "checklist_source": "inline_spec",
             "checklist_items_count": len(checklist_spec["items"]),
             "generated_checklist_configs": checklist_configs,
-            "case_id": case_id,
+            "corpus_id": corpus_id,
             "model": model_name,
             "max_steps": run_max_steps,
             "reasoning_effort": run_reasoning_effort,
             "item_runtime_settings": item_runtime_settings,
             "resume": resume,
             "debug": debug,
-            "max_concurrent": max_concurrent,
             "focus_context": focus_context,
             "controller_timing": controller_timing,
             "jobs_total": jobs_total,
@@ -1734,7 +1550,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="NDJSON controller for smoke and SLURM extraction")
     parser.add_argument(
         "--mode",
-        choices=["smoke", "slurm_extract", "slurm_extract_strategy"],
+        choices=["smoke", "slurm_extract_strategy"],
         default="smoke",
         help="Controller mode (default: smoke)",
     )
@@ -1773,9 +1589,7 @@ def main() -> int:
     try:
         if args.mode == "smoke":
             return run_smoke(args)
-        if args.mode == "slurm_extract_strategy":
-            return run_slurm_extract_strategy(args)
-        return run_slurm_extract(args)
+        return run_slurm_extract_strategy(args)
     except KeyboardInterrupt:
         request_id = args.request_id or "unknown_request"
         emitter = Emitter(request_id)

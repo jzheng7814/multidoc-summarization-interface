@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { diffWordsWithSpace } from 'diff';
-import { getSummaryJob, startSummaryJob } from '../../../services/apiClient';
 
 const normaliseCaseId = (value) => String(value ?? '').trim();
-const sleep = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 const toPositiveInteger = (value, defaultValue = 0) => {
     const parsed = typeof value === 'number' ? value : Number.parseInt(value, 10);
@@ -362,60 +360,10 @@ const useSummaryStore = ({ caseId, initialSummaryText = '' } = {}) => {
     }, [activePatchId, patchAction]);
 
     const generateAISummary = useCallback(async () => {
-        const targetCaseId = normaliseCaseId(resolvedCaseId);
-        if (!targetCaseId) {
-            const error = new Error('Case ID is required before generating a summary.');
-            setLastSummaryError(error);
-            throw error;
-        }
-
-        setIsGeneratingSummary(true);
-        setLastSummaryError(null);
-
-        try {
-            const startPayload = await startSummaryJob(targetCaseId, {});
-            const startedJob = startPayload?.job ?? null;
-            const startedJobId = startedJob?.id;
-            if (!startedJobId) {
-                throw new Error('Summary job did not return a job ID.');
-            }
-            setSummaryJobId(startedJobId);
-
-            const startedAt = Date.now();
-            const maxWaitMs = 60 * 60 * 1000;
-            while (true) {
-                if (Date.now() - startedAt > maxWaitMs) {
-                    throw new Error('Timed out waiting for summary generation.');
-                }
-
-                const statusPayload = await getSummaryJob(targetCaseId, startedJobId);
-                const job = statusPayload?.job ?? null;
-                const status = job?.status;
-
-                if (status === 'succeeded') {
-                    const nextSummary = typeof job?.summaryText === 'string'
-                        ? job.summaryText
-                        : typeof job?.summary_text === 'string'
-                            ? job.summary_text
-                            : '';
-                    applyAiSummaryUpdate(nextSummary);
-                    return job;
-                }
-
-                if (status === 'failed') {
-                    const message = job?.error || 'Summary generation failed.';
-                    throw new Error(message);
-                }
-
-                await sleep(2000);
-            }
-        } catch (error) {
-            setLastSummaryError(error);
-            throw error;
-        } finally {
-            setIsGeneratingSummary(false);
-        }
-    }, [applyAiSummaryUpdate, resolvedCaseId]);
+        const error = new Error('Direct summary generation is no longer supported from the workspace. Use the run flow.');
+        setLastSummaryError(error);
+        throw error;
+    }, []);
 
     const value = useMemo(() => ({
         summaryText,

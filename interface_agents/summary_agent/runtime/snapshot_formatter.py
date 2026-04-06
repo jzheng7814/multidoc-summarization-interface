@@ -42,14 +42,14 @@ class SummarySnapshotFormatter:
         run_id = snapshot.get("run_id")
         step = snapshot.get("step")
         max_steps = snapshot.get("max_steps")
-        case_id = snapshot.get("case_id")
+        corpus_id = snapshot.get("corpus_id")
         request_id = snapshot.get("request_id")
 
         lines = [
             "# Multi-Document Summary Drafting",
             f"**Run:** {run_id}",
             f"**Request ID:** {request_id}",
-            f"**Case ID:** {case_id}",
+            f"**Corpus ID:** {corpus_id}",
             f"**Step:** {step}/{max_steps}",
             "",
             "## Objective",

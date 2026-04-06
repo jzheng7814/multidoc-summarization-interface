@@ -285,28 +285,35 @@ def parse_optional_focus_context(value: Any, field_path: str) -> Optional[str]:
     return cleaned
 
 
-def normalize_single_case(payload: Dict[str, Any]) -> Dict[str, Any]:
-    if isinstance(payload.get("case"), dict):
-        case = dict(payload["case"])
-    elif isinstance(payload.get("input_case"), dict):
-        case = dict(payload["input_case"])
-    elif isinstance(payload.get("cases"), list):
-        cases = payload["cases"]
-        if len(cases) != 1:
-            raise ValueError("Only one case per request is supported")
-        if not isinstance(cases[0], dict):
-            raise ValueError("cases[0] must be an object")
-        case = dict(cases[0])
-    else:
-        raise ValueError("Request must provide one case in `case`, `input_case`, or single-entry `cases`")
+def normalize_input_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
+    raw_input = payload.get("input")
+    if not isinstance(raw_input, dict):
+        raise ValueError("Request must provide one input object in `input`.")
 
-    if "case_id" not in case and payload.get("case_id") is not None:
-        case["case_id"] = payload["case_id"]
+    corpus_id = require_non_empty_string(raw_input.get("corpus_id"), "input.corpus_id")
+    raw_documents = raw_input.get("documents")
+    if not isinstance(raw_documents, list) or not raw_documents:
+        raise ValueError("`input.documents` is required and must contain at least one document.")
 
-    if "case_id" not in case:
-        raise ValueError("Case payload must include `case_id`")
+    documents: List[Dict[str, Any]] = []
+    for idx, raw_document in enumerate(raw_documents):
+        path = f"input.documents[{idx}]"
+        if not isinstance(raw_document, dict):
+            raise ValueError(f"`{path}` must be an object")
+        documents.append(
+            {
+                "document_id": require_non_empty_string(raw_document.get("document_id"), f"{path}.document_id"),
+                "title": require_non_empty_string(raw_document.get("title"), f"{path}.title"),
+                "doc_type": str(raw_document.get("doc_type") or "").strip(),
+                "date": str(raw_document.get("date") or "").strip() or None,
+                "text": require_non_empty_string(raw_document.get("text"), f"{path}.text"),
+            }
+        )
 
-    return case
+    return {
+        "corpus_id": corpus_id,
+        "documents": documents,
+    }
 
 
 def normalize_checklist(raw: Any) -> Dict[str, Any]:
@@ -382,7 +389,7 @@ def normalize_summary_constraints(raw: Any) -> List[str]:
 def build_paths(
     *,
     run_id: str,
-    case_id: str,
+    corpus_id: str,
     model_name: str,
     max_steps: int,
     resume: bool,
@@ -391,12 +398,12 @@ def build_paths(
     run_dir = RUNS_BASE / run_id
     model_suffix = model_name.split("/")[-1]
     output_base_dir = f"controller/runs/{run_id}/agent_output"
-    output_dir = BASE_DIR / output_base_dir / model_suffix / case_id / "summary_agent"
+    output_dir = BASE_DIR / output_base_dir / model_suffix / corpus_id / "summary_agent"
 
-    log_name = f"{case_id}_summary_agent_steps{max_steps}"
+    log_name = f"{corpus_id}_summary_agent_steps{max_steps}"
     if resume:
         log_name += "_resume"
-    agent_log_path = BASE_DIR / "agent_logs" / model_suffix / case_id / f"{log_name}.log"
+    agent_log_path = BASE_DIR / "agent_logs" / model_suffix / corpus_id / f"{log_name}.log"
 
     slurm_log_path = None
     if job_id:
@@ -425,16 +432,16 @@ def build_paths(
 def run_preprocess(
     emitter: Emitter,
     *,
-    case: Dict[str, Any],
+    input_payload: Dict[str, Any],
     model_name: str,
     paths: Paths,
     python_bin: str,
 ) -> Tuple[str, Path]:
-    case_id = str(case["case_id"])
+    corpus_id = str(input_payload["corpus_id"])
     with paths.input_json.open("w", encoding="utf-8") as f:
-        json.dump([case], f, ensure_ascii=False)
+        json.dump([input_payload], f, ensure_ascii=False)
 
-    emitter.emit("preprocess_started", case_id=case_id, input_file=str(paths.input_json))
+    emitter.emit("preprocess_started", corpus_id=corpus_id, input_file=str(paths.input_json))
     cmd = [
         python_bin,
         str(EXTRACTION_BASE_DIR / "data_processing.py"),
@@ -443,8 +450,8 @@ def run_preprocess(
         str(EXTRACTION_BASE_DIR / "data"),
         "--model",
         model_name,
-        "--case-ids",
-        case_id,
+        "--corpus-ids",
+        corpus_id,
         "--quiet",
     ]
     proc = run_cmd(cmd, cwd=EXTRACTION_BASE_DIR)
@@ -453,17 +460,17 @@ def run_preprocess(
             f"data_processing.py failed (code={proc.returncode}): {(proc.stderr or proc.stdout).strip()}"
         )
 
-    corpus_path = EXTRACTION_BASE_DIR / "data" / paths.data_dataset_name / case_id
+    corpus_path = EXTRACTION_BASE_DIR / "data" / paths.data_dataset_name / corpus_id
     if not corpus_path.exists():
         raise RuntimeError(f"Processed corpus path missing: {corpus_path}")
 
     emitter.emit(
         "preprocess_completed",
-        case_id=case_id,
+        corpus_id=corpus_id,
         dataset_name=paths.data_dataset_name,
         corpus_path=str(corpus_path),
     )
-    return case_id, corpus_path
+    return corpus_id, corpus_path
 
 
 def load_document_map(corpus_path: Path) -> Dict[str, Any]:
@@ -695,7 +702,7 @@ def convert_checklist_offsets_to_sentences(checklist: Dict[str, Any], corpus_pat
 def submit_slurm(
     *,
     request: Dict[str, Any],
-    case_id: str,
+    corpus_id: str,
     model_name: str,
     max_steps: int,
     reasoning_effort: str,
@@ -712,7 +719,7 @@ def submit_slurm(
     qos = slurm.get("qos") or "short"
 
     exports = {
-        "CASE_ID": case_id,
+        "CORPUS_ID": corpus_id,
         "MODEL_NAME": model_name,
         "MAX_STEPS": str(max_steps),
         "REASONING_EFFORT": reasoning_effort,
@@ -829,7 +836,7 @@ def build_artifact_bundle(
     *,
     run_id: str,
     request_id: str,
-    case_id: str,
+    corpus_id: str,
     job_id: str,
     state: str,
     paths: Paths,
@@ -859,7 +866,7 @@ def build_artifact_bundle(
     summary_payload = {
         "run_id": run_id,
         "request_id": request_id,
-        "case_id": case_id,
+        "corpus_id": corpus_id,
         "summary": summary_text,
         "summary_stats": summary_stats,
         "summary_state": summary_state,
@@ -871,7 +878,7 @@ def build_artifact_bundle(
         "request_id": request_id,
         "job_id": job_id,
         "state": state,
-        "case_id": case_id,
+        "corpus_id": corpus_id,
         "model": request.get("model", "unsloth/gpt-oss-20b-BF16"),
         "max_steps": request.get("max_steps"),
         "reasoning_effort": request.get("reasoning_effort"),
@@ -1009,8 +1016,8 @@ def run_slurm_summarize_agent(args: argparse.Namespace) -> int:
         run_id = validate_run_id(generate_run_id())
         request_id = str(request.get("request_id") or run_id)
 
-        case = normalize_single_case(request)
-        case_id = str(case["case_id"])
+        input_payload = normalize_input_payload(request)
+        corpus_id = str(input_payload["corpus_id"])
 
         checklist_offsets = normalize_checklist(request.get("checklist"))
         checklist_definitions = normalize_checklist_definitions(request.get("checklist_definitions"))
@@ -1033,7 +1040,7 @@ def run_slurm_summarize_agent(args: argparse.Namespace) -> int:
         if prompt_config is not None:
             prompt_config = require_non_empty_string(prompt_config, "prompt_config")
 
-        python_bin = str(request.get("python_bin") or args.python_bin)
+        python_bin = str(args.python_bin)
 
         run_dir = RUNS_BASE / run_id
         if run_dir.exists():
@@ -1042,7 +1049,7 @@ def run_slurm_summarize_agent(args: argparse.Namespace) -> int:
 
         paths = build_paths(
             run_id=run_id,
-            case_id=case_id,
+            corpus_id=corpus_id,
             model_name=model_name,
             max_steps=max_steps,
             resume=resume,
@@ -1054,7 +1061,7 @@ def run_slurm_summarize_agent(args: argparse.Namespace) -> int:
 
         normalized_request = {
             "request_id": request_id,
-            "case": case,
+            "input": input_payload,
             "checklist": checklist_offsets,
             "checklist_definitions": checklist_definitions,
             "summary_constraints": summary_constraints,
@@ -1076,7 +1083,7 @@ def run_slurm_summarize_agent(args: argparse.Namespace) -> int:
             "request_validated",
             run_id=run_id,
             request_id=request_id,
-            case_id=case_id,
+            corpus_id=corpus_id,
             model=model_name,
             max_steps=max_steps,
             reasoning_effort=reasoning_effort,
@@ -1088,7 +1095,7 @@ def run_slurm_summarize_agent(args: argparse.Namespace) -> int:
 
         _, corpus_path = run_preprocess(
             emitter,
-            case=case,
+            input_payload=input_payload,
             model_name=model_name,
             paths=paths,
             python_bin=python_bin,
@@ -1109,7 +1116,7 @@ def run_slurm_summarize_agent(args: argparse.Namespace) -> int:
         agent_request = {
             "request_id": request_id,
             "run_id": run_id,
-            "case_id": case_id,
+            "corpus_id": corpus_id,
             "checklist": checklist_sentence_spans,
             "checklist_definitions": checklist_definitions,
             "summary_constraints": summary_constraints,
@@ -1129,7 +1136,7 @@ def run_slurm_summarize_agent(args: argparse.Namespace) -> int:
         output_base_dir = f"controller/runs/{run_id}/agent_output"
         job_id = submit_slurm(
             request=normalized_request,
-            case_id=case_id,
+            corpus_id=corpus_id,
             model_name=model_name,
             max_steps=max_steps,
             reasoning_effort=reasoning_effort,
@@ -1144,7 +1151,7 @@ def run_slurm_summarize_agent(args: argparse.Namespace) -> int:
 
         paths = build_paths(
             run_id=run_id,
-            case_id=case_id,
+            corpus_id=corpus_id,
             model_name=model_name,
             max_steps=max_steps,
             resume=resume,
@@ -1207,7 +1214,7 @@ def run_slurm_summarize_agent(args: argparse.Namespace) -> int:
         artifact_bundle = build_artifact_bundle(
             run_id=run_id,
             request_id=request_id,
-            case_id=case_id,
+            corpus_id=corpus_id,
             job_id=job_id,
             state=state,
             paths=paths,
@@ -1270,7 +1277,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--python-bin",
         default=DEFAULT_PYTHON_BIN,
-        help="Python path used for preprocessing (can also be provided as request.python_bin)",
+        help="Python path used for preprocessing",
     )
     return parser.parse_args()
 

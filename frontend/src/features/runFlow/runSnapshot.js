@@ -32,14 +32,12 @@ function flattenChecklistCategories(categories = []) {
 
 export function buildInitialRunCaseState({
     runId,
-    sourceCaseId,
     documents,
     checklistCategories,
     summaryText = ''
 }) {
-    const caseIdentifier = String(sourceCaseId || runId || '').trim();
     return {
-        caseId: caseIdentifier,
+        caseId: String(runId || '').trim(),
         documents: Array.isArray(documents) ? documents : [],
         checklistCategories: Array.isArray(checklistCategories) ? checklistCategories : [],
         items: flattenChecklistCategories(checklistCategories),

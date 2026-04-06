@@ -11,14 +11,14 @@ _PLACEHOLDER_PATTERN = re.compile(r"#([A-Z][A-Z0-9_]*)")
 
 def build_summary_focus_context(
     *,
-    case_title: Optional[str],
+    run_title: Optional[str],
     request_focus_context: Optional[str],
     settings: Optional[Settings] = None,
 ) -> str:
     template = request_focus_context if request_focus_context is not None else load_default_summary_focus_context(settings)
     values: Dict[str, str] = {}
-    if isinstance(case_title, str) and case_title.strip():
-        values["CASE_TITLE"] = case_title.strip()
+    if isinstance(run_title, str) and run_title.strip():
+        values["RUN_TITLE"] = run_title.strip()
 
     return render_summary_focus_context_template(template, values)
 

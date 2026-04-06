@@ -10,7 +10,7 @@ const PANE_ORDER = ['checklist', 'summary', 'documents'];
 const MIN_SPLIT = 15;
 const MAX_SPLIT = 85;
 
-const RunWorkspaceLayout = ({ runId, caseTitle, onBackToReview }) => {
+const RunWorkspaceLayout = ({ runId, title, onBackToReview }) => {
     const [visiblePanes, setVisiblePanes] = useState({
         checklist: true,
         summary: true,
@@ -190,7 +190,7 @@ const RunWorkspaceLayout = ({ runId, caseTitle, onBackToReview }) => {
                             </span>
                         </div>
                         <p className="text-sm text-[var(--color-text-muted)]">
-                            {caseTitle ? `Case: ${caseTitle}` : 'Review checklist and documents while editing summary drafts.'}
+                            {title ? `Title: ${title}` : 'Review checklist and documents while editing summary drafts.'}
                         </p>
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">
@@ -241,16 +241,15 @@ const RunWorkspaceLayout = ({ runId, caseTitle, onBackToReview }) => {
 
 const RunWorkspace = ({
     runId,
-    caseTitle,
+    title,
     initialCaseState,
     onBackToReview
 }) => (
     <WorkspaceStateProvider
         caseId={initialCaseState?.caseId}
         initialCaseState={initialCaseState}
-        enablePromptStore={false}
     >
-        <RunWorkspaceLayout runId={runId} caseTitle={caseTitle} onBackToReview={onBackToReview} />
+        <RunWorkspaceLayout runId={runId} title={title} onBackToReview={onBackToReview} />
     </WorkspaceStateProvider>
 );
 

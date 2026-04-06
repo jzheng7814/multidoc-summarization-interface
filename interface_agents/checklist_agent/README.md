@@ -1,69 +1,46 @@
-# Interface Agent (Checklist Extraction Runtime)
+# Checklist Agent Runtime
 
-`interface_agents/checklist_agent` is the isolated document-level checklist extraction runtime used in GAVEL.
+`interface_agents/checklist_agent` is the staged extraction runtime used by backend-led checklist runs.
 
-It supports two execution scaffolds:
-- **Custom scaffold** (`agent/`): explicit controller loop + tool JSON parsing.
-- **Native scaffold** (`native/`): GPT-OSS Harmony native tool-calling.
-
-As of March 2026, the production-facing run contract is implemented in
-`controller/run_controller.py` (and reused by `controller/run_controller_native.py`).
+The backend sends inline checklist configuration, the controller preprocesses the document corpus, and the controller launches one or more SLURM-backed checklist worker jobs.
 
 ## What This Module Produces
+For each controller run, the checklist controller writes:
+- `result_payload.json`
+- `checklist.json`
+- `checklist.ndjson`
+- `document_map.json`
+- `manifest.json`
+- `events.ndjson`
 
-For each run/case, the controller writes:
-- `result_payload.json` (authoritative run metadata + checklist + per-item jobs)
-- `checklist.json` (final offset-based checklist)
-- `checklist.ndjson` (stream-friendly checklist rows)
-- `document_map.json` (doc ID mapping)
-- `manifest.json` (artifact index + stats)
-
-Artifacts are stored under:
-- `controller/runs/<run_id>/`
+Artifacts live under:
+- `interface_agents/checklist_agent/controller/runs/<run_id>/`
 
 ## Runtime Layout
-
 ```text
 interface_agents/checklist_agent/
-├── run_agent.py                      # Custom scaffold entrypoint
-├── run_agent.sbatch                  # SLURM launcher for custom scaffold
-├── run_agent_native.sbatch           # SLURM launcher for native scaffold
+├── run_agent.py
+├── run_agent.sbatch
+├── run_agent_native.sbatch
 ├── native/
-│   ├── run_agent_native.py           # Native scaffold entrypoint
-│   ├── driver_native.py              # Native loop + tool wiring
-│   ├── gpt_oss_native_client.py      # Harmony client wrapper
-│   ├── prompts_gpt_oss_native.yaml   # Native developer prompt
+│   ├── run_agent_native.py
+│   ├── driver_native.py
+│   ├── gpt_oss_native_client.py
+│   ├── prompts_gpt_oss_native.yaml
 │   ├── stop_tool.py
 │   └── update_derived_state_tool.py
 ├── agent/
-│   ├── driver.py                     # Custom loop
-│   ├── orchestrator.py               # Custom action planner
-│   ├── snapshot_builder.py
-│   ├── snapshot_formatter.py
-│   └── tools/
 ├── controller/
-│   ├── run_controller.py             # Standard controller
-│   ├── run_controller_native.py      # Native wrapper (same contract, native sbatch)
-│   └── requests/ and runs/           # Runtime inputs/logs/artifacts
+│   ├── run_controller.py
+│   ├── run_controller_native.py
+│   ├── requests/
+│   └── runs/
 ├── state/
-│   ├── store.py
-│   └── schemas.py
 └── config/
-    ├── model_config.yaml
-    ├── prompts_gpt_oss.yaml
-    ├── prompts_qwen.yaml
-    └── checklist_configs/
 ```
 
-## Controller Modes
-
-Path settings for controller and sbatch are loaded from `.env` inside the staged
-`interface_agents/checklist_agent/` directory (see `.env.example`). In the normal backend
-workflow this file is generated automatically for each staged run. Environment variables
-still override `.env`.
-
-### 1) Standard controller
-
+## Controller Entrypoints
+Standard controller:
 ```bash
 cat /path/to/request.json | \
 /coc/pskynet6/jzheng390/miniconda3/envs/gavel-dev/bin/python \
@@ -71,10 +48,7 @@ interface_agents/checklist_agent/controller/run_controller.py \
 --mode slurm_extract_strategy --poll-seconds 2 --max-wait-seconds 21600
 ```
 
-Uses `run_agent.sbatch`.
-
-### 2) Native controller
-
+Native controller:
 ```bash
 cat /path/to/request.json | \
 /coc/pskynet6/jzheng390/miniconda3/envs/gavel-dev/bin/python \
@@ -82,98 +56,89 @@ interface_agents/checklist_agent/controller/run_controller_native.py \
 --mode slurm_extract_strategy --poll-seconds 2 --max-wait-seconds 21600
 ```
 
-Uses `run_agent_native.sbatch`.
+`run_controller_native.py` is a wrapper over `run_controller.py`. The request contract and event schema are identical.
 
-`run_controller_native.py` is a wrapper over `run_controller.py`; contract + event schema are the same.
+## Runtime Configuration
+Path settings are loaded from `.env` inside the staged `interface_agents/checklist_agent/` directory. In the normal backend workflow that file is generated automatically for each staged run. Environment variables still override `.env`.
 
-## Request Contract (Current)
+## Canonical Controller Request Contract
+The controller reads one JSON object from stdin.
 
-The request is JSON on stdin.
-
-### Required high-level fields
-- one case in `case` or `input_case` or single-entry `cases`
-- `checklist_strategy`: `"all"` or `"individual"`
+Required top-level fields:
+- `input`
+- `checklist_strategy`
 - `checklist_spec`
 
+Required `input` fields:
+- `corpus_id`
+- `documents[]`
+
+Each `documents[]` entry must include:
+- `document_id`
+- `title`
+- `text`
+
+Optional document fields:
+- `doc_type`
+- `date`
+
 ### `checklist_strategy = "all"`
-- `checklist_spec.user_instruction` (non-empty string)
-- `checklist_spec.constraints` (array of strings; empty allowed, null disallowed)
-- `checklist_spec.checklist_items` with items:
-  - `key` (non-empty string)
-  - `description` (non-empty string)
-- runtime tuning at top-level:
-  - `max_steps` (>=1)
-  - `reasoning_effort` (`low|medium|high`)
+Required:
+- `checklist_spec.user_instruction`
+- `checklist_spec.constraints`
+- `checklist_spec.checklist_items[]` with `key` and `description`
+- top-level `max_steps`
+- top-level `reasoning_effort`
 
 ### `checklist_strategy = "individual"`
-- `checklist_spec.checklist_items` with items:
-  - `key` (non-empty string)
-  - `description` (non-empty string)
-  - `user_instruction` (non-empty string)
-  - `constraints` (array; empty allowed)
-  - `max_steps` (>=1)
-  - `reasoning_effort` (`low|medium|high`)
-- top-level `max_steps` and `reasoning_effort` are rejected for this mode.
+Required:
+- `checklist_spec.checklist_items[]`
+- each item must include:
+  - `key`
+  - `description`
+  - `user_instruction`
+  - `constraints`
+  - `max_steps`
+  - `reasoning_effort`
 
-### Optional fields
-- `model` (default `unsloth/gpt-oss-20b-BF16`)
-- `focus_context` (optional non-empty string injected per turn)
-- `resume` (bool)
-- `debug` (bool)
-- `max_concurrent` (currently only `1` supported in strategy mode)
+Top-level `max_steps` and `reasoning_effort` are rejected in `individual` mode.
+
+Optional top-level fields:
+- `request_id`
+- `model`
+- `focus_context`
+- `resume`
+- `debug`
+- `slurm.partition`
+- `slurm.qos`
+
+There are no compatibility aliases. The controller accepts only the canonical `input` envelope.
 
 ## Checklist Config Source of Truth
+For backend-led controller runs:
+1. the backend sends inline `checklist_spec`
+2. the controller generates run-local YAML files under `controller/runs/<run_id>/generated_checklists/`
+3. the controller launches each worker job against those generated files
 
-For **controller-driven runs**, checklist config paths are no longer accepted in request payloads.
+The legacy YAML files under `config/checklist_configs/` are still useful for direct CLI runs, but they are not the source of truth for backend-led staged runs.
 
-The controller now:
-1. accepts **inline** `checklist_spec`
-2. generates run-local YAML files under `controller/runs/<run_id>/generated_checklists/`
-3. launches each SLURM job against those generated files
-
-Path-based checklist configs are still usable for direct local CLI runs (`run_agent.py`, `run_agent_native.py`) via `--checklist-config`.
-
-## Native-Specific Notes
-
-Native runtime (`native/driver_native.py`) includes:
-- GPT-OSS Harmony tool schema injection
-- explicit `stop` tool (two-stage stop review)
-- optional run-level `focus_context` prompt injection
-- `update_derived_state` tool for compact working memory
-- compact memory strategy: full tool outputs for most recent K turns (`--k-recent-tool-outputs`, default `5`), summarized older turns
-
-## Evidence and Final Schema
-
-Per-item agent outputs store sentence-span evidence (`source_document_id`, `start_sentence`, `end_sentence`).
-
-Controller-level final output converts this to **character offsets**:
+## Evidence Schema
+Per-item agent outputs use sentence-span evidence. The controller-level final output converts those spans into character offsets:
 - `source_document_id`
 - `start_offset` (inclusive, 0-based)
 - `end_offset` (exclusive, 0-based)
 
-Backend should ingest controller-level outputs (`result_payload.json`, `checklist.json`, etc.), not raw per-item intermediate structures.
+Backend ingestion should always use controller outputs such as `checklist.json` and `result_payload.json`, not raw worker intermediates.
 
-## Recovery and Reruns
-
-- For targeted reruns, issue a single-item request through `run_controller.py` or `run_controller_native.py`.
-- Native recoveries should prefer `run_controller_native.py` for parity with production path.
-
-## Development Notes
-
-### Install
-
+## Direct Runs
+Direct runs still support `--checklist-config` for local experiments:
 ```bash
-pip install -r ../requirements.txt
+python run_agent.py data/<dataset>/<corpus_id> \
+  --checklist-config config/checklist_configs/individual/08_judge_name.yaml
 ```
 
-### Quick checks
+Those direct runs are separate from the backend-led staged contract.
 
-```bash
-/coc/pskynet6/jzheng390/miniconda3/envs/gavel-dev/bin/python -m py_compile \
-interface_agents/checklist_agent/native/driver_native.py
-```
-
-## Related Docs
-
-- Checklist config notes:
-  - `interface_agents/checklist_agent/config/checklist_configs/README.md`
+## Related Files
+- checklist native prompt: `interface_agents/checklist_agent/native/prompts_gpt_oss_native.yaml`
+- direct-run checklist config notes: `interface_agents/checklist_agent/config/checklist_configs/README.md`

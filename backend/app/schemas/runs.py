@@ -52,15 +52,6 @@ class RunDocumentMetadata(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
 
-class RunCreateFromCaseIdRequest(BaseModel):
-    case_id: str = Field(
-        ...,
-        serialization_alias="caseId",
-        validation_alias=AliasChoices("caseId", "case_id"),
-    )
-    model_config = ConfigDict(extra="forbid", populate_by_name=True)
-
-
 class ExtractionChecklistSpecItem(BaseModel):
     key: str = Field(..., min_length=1)
     description: str = Field(..., min_length=1)
@@ -145,16 +136,7 @@ class RunCreateResponse(BaseModel):
         serialization_alias="sourceType",
         validation_alias=AliasChoices("sourceType", "source_type"),
     )
-    source_case_id: Optional[str] = Field(
-        None,
-        serialization_alias="sourceCaseId",
-        validation_alias=AliasChoices("sourceCaseId", "source_case_id"),
-    )
-    case_title: str = Field(
-        ...,
-        serialization_alias="caseTitle",
-        validation_alias=AliasChoices("caseTitle", "case_title"),
-    )
+    title: str
     created_at: datetime = Field(
         ...,
         serialization_alias="createdAt",

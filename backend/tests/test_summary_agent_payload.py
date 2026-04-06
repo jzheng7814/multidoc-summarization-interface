@@ -54,8 +54,8 @@ class SummaryAgentPayloadTests(unittest.TestCase):
         )
 
         payload = build_summary_agent_request_payload(
-            case_id="46110",
-            case_title="United States v. Example",
+            corpus_id="run_46110",
+            run_title="Example Corpus",
             request_id="summary_46110_req",
             documents=docs,
             checklist_collection=checklist,
@@ -65,8 +65,8 @@ class SummaryAgentPayloadTests(unittest.TestCase):
         )
 
         self.assertEqual(payload["request_id"], "summary_46110_req")
-        self.assertEqual(payload["case"]["case_id"], "46110")
-        self.assertEqual(payload["case"]["case_documents_id"], ["155313"])
+        self.assertEqual(payload["input"]["corpus_id"], "run_46110")
+        self.assertEqual(payload["input"]["documents"][0]["document_id"], "155313")
         self.assertEqual(payload["model"], "unsloth/gpt-oss-20b-BF16")
         self.assertEqual(payload["max_steps"], 200)
         self.assertEqual(payload["reasoning_effort"], "medium")
@@ -77,7 +77,7 @@ class SummaryAgentPayloadTests(unittest.TestCase):
             ["Keep objective.", "Use plain narrative paragraphs."],
         )
         self.assertIn("focus_context", payload)
-        self.assertIn("United States v. Example", payload["focus_context"])
+        self.assertIn("Example Corpus", payload["focus_context"])
 
         # Canonical checklist payload includes all definition keys.
         self.assertIn("Filing_Date", payload["checklist"])

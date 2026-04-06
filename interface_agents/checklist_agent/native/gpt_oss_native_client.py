@@ -85,6 +85,7 @@ class GPTOSSNativeClient:
             "tensor_parallel_size": self.tensor_parallel_size,
             "dtype": self.dtype,
             "gpu_memory_utilization": self.gpu_memory_utilization,
+            "disable_custom_all_reduce": True,
             "trust_remote_code": True,
             "max_model_len": 131072,
         }

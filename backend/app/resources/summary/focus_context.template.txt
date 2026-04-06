@@ -1,6 +1,6 @@
-Case scope:
-- Target case title: #CASE_TITLE
+Run scope:
+- Target run title: #RUN_TITLE
 
-Use this run to produce a precise, litigation-grade narrative summary for the target case only.
-Prioritize material procedural posture, dispositive rulings, and timeline-critical developments.
-Avoid drifting into background law or unrelated referenced matters unless they directly change the target case outcome.
+Use this run to produce a precise narrative summary for the target subject only.
+Prioritize the highest-signal developments, decisions, and timeline-critical updates in the corpus.
+Avoid drifting into background material or unrelated referenced matters unless they directly change the target subject.

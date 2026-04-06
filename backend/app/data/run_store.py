@@ -13,8 +13,7 @@ from app.schemas.documents import Document
 class StoredRun:
     id: str
     source_type: str
-    source_case_id: Optional[str]
-    case_title: str
+    title: str
     created_at: str
     workflow_stage: str
     extraction_config: Dict[str, Any]
@@ -49,8 +48,7 @@ class RunStore(Protocol):
         *,
         run_id: str,
         source_type: str,
-        source_case_id: Optional[str],
-        case_title: str,
+        title: str,
         created_at: str,
         workflow_stage: str,
         documents: List[Document],
@@ -72,8 +70,7 @@ class SqlRunStore:
         *,
         run_id: str,
         source_type: str,
-        source_case_id: Optional[str],
-        case_title: str,
+        title: str,
         created_at: str,
         workflow_stage: str,
         documents: List[Document],
@@ -88,8 +85,7 @@ class SqlRunStore:
             record = RunRecord(
                 id=run_id,
                 source_type=source_type,
-                source_case_id=source_case_id,
-                case_title=case_title,
+                title=title,
                 created_at=created_at,
                 workflow_stage=workflow_stage,
                 extraction_config_json=self._dump_json(extraction_config),
@@ -108,16 +104,8 @@ class SqlRunStore:
                         type=doc.type,
                         description=doc.description,
                         source=doc.source,
-                        court=doc.court,
-                        state=doc.state,
                         ecf_number=doc.ecf_number,
-                        file_url=doc.file_url,
-                        external_url=doc.external_url,
-                        clearinghouse_link=doc.clearinghouse_link,
-                        text_url=doc.text_url,
                         date=doc.date,
-                        date_is_estimate=doc.date_is_estimate,
-                        date_not_available=doc.date_not_available,
                         is_docket=bool(doc.is_docket),
                         content=doc.content,
                     )
@@ -149,16 +137,8 @@ class SqlRunStore:
                     type=doc.type,
                     description=doc.description,
                     source=doc.source,
-                    court=doc.court,
-                    state=doc.state,
                     ecf_number=doc.ecf_number,
-                    file_url=doc.file_url,
-                    external_url=doc.external_url,
-                    clearinghouse_link=doc.clearinghouse_link,
-                    text_url=doc.text_url,
                     date=doc.date,
-                    date_is_estimate=doc.date_is_estimate,
-                    date_not_available=doc.date_not_available,
                     is_docket=bool(doc.is_docket),
                     content=doc.content,
                 )
@@ -168,8 +148,7 @@ class SqlRunStore:
             return StoredRun(
                 id=record.id,
                 source_type=record.source_type,
-                source_case_id=record.source_case_id,
-                case_title=record.case_title,
+                title=record.title,
                 created_at=record.created_at,
                 workflow_stage=record.workflow_stage,
                 extraction_config=self._load_json(record.extraction_config_json),

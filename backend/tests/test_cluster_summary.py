@@ -52,7 +52,7 @@ class ClusterSummaryRunnerTests(unittest.TestCase):
             return local_path
 
         with patch.object(runner, "_rsync_pull_file", side_effect=_fake_pull):
-            result = runner._result_from_completed_event(completed_data, case_id="46110")
+            result = runner._result_from_completed_event(completed_data, corpus_id="46110")
 
         self.assertEqual(result.run_id, "run_1")
         self.assertEqual(result.job_id, "123")
@@ -89,7 +89,7 @@ class ClusterSummaryRunnerTests(unittest.TestCase):
             return local_path
 
         with patch.object(runner, "_rsync_pull_file", side_effect=_fake_pull):
-            result = runner._result_from_completed_event(completed_data, case_id="46110")
+            result = runner._result_from_completed_event(completed_data, corpus_id="46110")
 
         self.assertEqual(result.summary_text, "Result payload summary text")
 

@@ -8,14 +8,19 @@ from app.schemas.summary import SummaryRequest
 from app.services.summary_focus_context import build_summary_focus_context
 
 
-def build_summary_agent_case_payload(case_id: str, documents: Sequence[Any]) -> Dict[str, Any]:
+def build_summary_agent_input_payload(corpus_id: str, documents: Sequence[Any]) -> Dict[str, Any]:
     return {
-        "case_id": str(case_id),
-        "case_documents_text": [doc.content or "" for doc in documents],
-        "case_documents_title": [doc.title for doc in documents],
-        "case_documents_doc_type": [doc.type or "" for doc in documents],
-        "case_documents_id": [str(doc.id) for doc in documents],
-        "case_documents_date": [doc.date for doc in documents],
+        "corpus_id": str(corpus_id),
+        "documents": [
+            {
+                "document_id": str(doc.id),
+                "title": doc.title,
+                "doc_type": doc.type or "",
+                "date": doc.date,
+                "text": doc.content or "",
+            }
+            for doc in documents
+        ],
     }
 
 
@@ -68,8 +73,8 @@ def build_summary_agent_checklist_payload(
 
 def build_summary_agent_request_payload(
     *,
-    case_id: str,
-    case_title: Optional[str],
+    corpus_id: str,
+    run_title: Optional[str],
     request_id: str,
     documents: Sequence[Any],
     checklist_collection: EvidenceCollection,
@@ -78,14 +83,14 @@ def build_summary_agent_request_payload(
     settings: Settings,
 ) -> Dict[str, Any]:
     focus_context = build_summary_focus_context(
-        case_title=case_title,
+        run_title=run_title,
         request_focus_context=request.focus_context,
         settings=settings,
     )
 
     payload: Dict[str, Any] = {
         "request_id": request_id,
-        "case": build_summary_agent_case_payload(case_id, documents),
+        "input": build_summary_agent_input_payload(corpus_id, documents),
         "checklist_definitions": dict(checklist_definitions),
         "checklist": build_summary_agent_checklist_payload(checklist_collection, checklist_definitions),
         "model": request.model or settings.cluster_summary_model_name,
@@ -127,8 +132,5 @@ def build_summary_agent_request_payload(
         slurm["qos"] = qos
     if slurm:
         payload["slurm"] = slurm
-
-    if isinstance(request.python_bin, str) and request.python_bin.strip():
-        payload["python_bin"] = request.python_bin.strip()
 
     return payload

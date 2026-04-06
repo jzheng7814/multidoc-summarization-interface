@@ -122,7 +122,7 @@ class NativeSummaryDriver:
         self.prompt_config_path = prompt_config_path
 
         self.request_id = str(request_payload.get("request_id") or "summary_request")
-        self.case_id = str(request_payload.get("case_id") or "unknown_case")
+        self.corpus_id = str(request_payload.get("corpus_id") or "unknown_corpus")
         self.checklist = request_payload.get("checklist") or {}
         self.checklist_definitions = request_payload.get("checklist_definitions") or {}
         self.summary_constraints = request_payload.get("summary_constraints") or list(DEFAULT_SUMMARY_CONSTRAINTS)
@@ -133,7 +133,7 @@ class NativeSummaryDriver:
 
         summary_state_path_obj = Path(summary_state_path)
         self.output_dir = summary_state_path_obj.parent if summary_state_path_obj.parent.name != "." else Path(
-            f"output/{model_name.split('/')[-1]}/{self.case_id}/summary_agent"
+            f"output/{model_name.split('/')[-1]}/{self.corpus_id}/summary_agent"
         )
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -158,7 +158,7 @@ class NativeSummaryDriver:
             reasoning_effort=self.reasoning_effort,
         )
 
-        self.stats_tracker = StatsTracker(output_dir=str(self.output_dir), case_id=None)
+        self.stats_tracker = StatsTracker(output_dir=str(self.output_dir), corpus_id=None)
         self.raw_responses_path = self.output_dir / "raw_responses.jsonl"
 
         self.current_run_id: Optional[str] = None
@@ -375,7 +375,7 @@ class NativeSummaryDriver:
         return {
             "run_id": self.current_run_id,
             "request_id": self.request_id,
-            "case_id": self.case_id,
+            "corpus_id": self.corpus_id,
             "step": self.current_step,
             "max_steps": self.max_steps,
             "checklist": self.checklist,
@@ -669,7 +669,7 @@ class NativeSummaryDriver:
         results = {
             "run_id": self.current_run_id,
             "request_id": self.request_id,
-            "case_id": self.case_id,
+            "corpus_id": self.corpus_id,
             "total_steps": self.current_step,
             "summary": final_text,
             "summary_state": final_state,

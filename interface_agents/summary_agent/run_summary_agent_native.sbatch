@@ -7,8 +7,9 @@
 #SBATCH --gres=gpu:a40:4
 #SBATCH --partition="nlprx-lab"
 #SBATCH --qos="short"
+#SBATCH --exclude=conroy
 #SBATCH --output=agent_logs/%x-%j.out
-#SBATCH --exclude=gundam,dendrite,puma,xaea-12,spot,hk47,consu,nestor,chappie,spd-13,sonny,heistotron,uniblab,perseverance,qt-1,cheetah
+#SBATCH --exclude=gundam,dendrite,puma,xaea-12,spot,hk47,consu,nestor,chappie,spd-13,sonny,heistotron,uniblab,perseverance,qt-1,cheetah,clippy
 
 echo "========================================="
 echo "START TIME: $(date)"
@@ -36,7 +37,7 @@ export HUGGINGFACE_HUB_CACHE="${INTERFACE_SUMMARY_AGENT_HUGGINGFACE_HUB_CACHE:-$
 export TRANSFORMERS_CACHE="${INTERFACE_SUMMARY_AGENT_TRANSFORMERS_CACHE:-${TRANSFORMERS_CACHE:-${HUGGINGFACE_HUB_CACHE}}}"
 export PATH="$(dirname "${PYTHON_BIN}"):${PATH}"
 
-case_id=${CASE_ID:-"45696"}
+corpus_id=${CORPUS_ID:-"45696"}
 model_name=${MODEL_NAME:-"unsloth/gpt-oss-20b-BF16"}
 max_steps=${MAX_STEPS:-"200"}
 reasoning_effort=${REASONING_EFFORT:-"medium"}
@@ -55,8 +56,8 @@ fi
 
 model_suffix=$(echo "$model_name" | awk -F'/' '{print $NF}')
 
-CORPUS_PATH="${EXTRACTION_BASE_DIR}/data/${data_dir}/${case_id}"
-OUTPUT_DIR="${BASE_DIR}/${output_base_dir}/${model_suffix}/${case_id}/summary_agent"
+CORPUS_PATH="${EXTRACTION_BASE_DIR}/data/${data_dir}/${corpus_id}"
+OUTPUT_DIR="${BASE_DIR}/${output_base_dir}/${model_suffix}/${corpus_id}/summary_agent"
 
 mkdir -p "$OUTPUT_DIR"
 mkdir -p "${BASE_DIR}/agent_logs"
@@ -65,11 +66,11 @@ mkdir -p "${HUGGINGFACE_HUB_CACHE}"
 if [[ "$debug" == "true" ]]; then
   log_path="${OUTPUT_DIR}/debug.log"
 else
-  log_name="${case_id}_summary_agent_steps${max_steps}"
+  log_name="${corpus_id}_summary_agent_steps${max_steps}"
   if [[ "$resume" == "true" ]]; then
     log_name="${log_name}_resume"
   fi
-  log_path="${BASE_DIR}/agent_logs/${model_suffix}/${case_id}/${log_name}.log"
+  log_path="${BASE_DIR}/agent_logs/${model_suffix}/${corpus_id}/${log_name}.log"
   mkdir -p "$(dirname "$log_path")"
 fi
 
@@ -77,7 +78,7 @@ echo ""
 echo "========================================="
 echo "Summary Agent Native Configuration"
 echo "========================================="
-echo "Case ID: ${case_id}"
+echo "Corpus ID: ${corpus_id}"
 echo "Model: ${model_name}"
 echo "Max Steps: ${max_steps}"
 echo "Reasoning Effort: ${reasoning_effort}"

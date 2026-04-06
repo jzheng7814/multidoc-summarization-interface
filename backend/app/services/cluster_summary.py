@@ -42,9 +42,9 @@ class ClusterSummaryRunner:
     async def run(
         self,
         backend_run_id: str,
-        case_id: str,
+        corpus_id: str,
         *,
-        case_title: Optional[str],
+        run_title: Optional[str],
         documents: Sequence[Document],
         checklist_collection: EvidenceCollection,
         checklist_definitions: Mapping[str, str],
@@ -52,15 +52,15 @@ class ClusterSummaryRunner:
         progress_callback: Optional[ProgressCallback] = None,
     ) -> ClusterSummaryResult:
         if not documents:
-            raise RuntimeError(f"No documents are available for case '{case_id}'.")
+            raise RuntimeError(f"No documents are available for corpus '{corpus_id}'.")
         if not checklist_definitions:
             raise RuntimeError("Checklist definitions are empty; cannot build summary-agent request.")
 
-        request_id = f"summary_{case_id}_{uuid.uuid4().hex[:12]}"
+        request_id = f"summary_{corpus_id}_{uuid.uuid4().hex[:12]}"
 
         controller_request = build_summary_agent_request_payload(
-            case_id=case_id,
-            case_title=case_title,
+            corpus_id=corpus_id,
+            run_title=run_title,
             request_id=request_id,
             documents=documents,
             checklist_collection=checklist_collection,
@@ -89,7 +89,7 @@ class ClusterSummaryRunner:
         await process.stdin.drain()
         process.stdin.close()
 
-        stderr_task = asyncio.create_task(self._stream_stderr(case_id, request_id, process.stderr))
+        stderr_task = asyncio.create_task(self._stream_stderr(corpus_id, request_id, process.stderr))
         terminal_event_type: Optional[str] = None
         terminal_data: Dict[str, Any] = {}
 
@@ -104,7 +104,7 @@ class ClusterSummaryRunner:
 
                 event_type = parsed["event_type"]
                 event_data = parsed["data"]
-                self._emit_controller_event(case_id, request_id, parsed)
+                self._emit_controller_event(corpus_id, request_id, parsed)
 
                 if progress_callback is not None:
                     try:
@@ -112,7 +112,7 @@ class ClusterSummaryRunner:
                     except Exception as exc:  # pylint: disable=broad-except
                         producer.warning(
                             "Summary progress callback failed",
-                            {"case_id": case_id, "request_id": request_id, "error": str(exc)},
+                            {"corpus_id": corpus_id, "request_id": request_id, "error": str(exc)},
                         )
 
                 if event_type in {"completed", "failed"}:
@@ -138,11 +138,11 @@ class ClusterSummaryRunner:
                     f"(exit_code={return_code}, request_id={request_id})."
                 )
 
-            result = await asyncio.to_thread(self._result_from_completed_event, terminal_data, case_id)
+            result = await asyncio.to_thread(self._result_from_completed_event, terminal_data, corpus_id)
             producer.info(
                 "Summary controller run completed",
                 {
-                    "case_id": case_id,
+                    "corpus_id": corpus_id,
                     "request_id": request_id,
                     "run_id": result.run_id,
                     "job_id": result.job_id,
@@ -157,7 +157,7 @@ class ClusterSummaryRunner:
                 except asyncio.CancelledError:
                     pass
 
-    async def _stream_stderr(self, case_id: str, request_id: str, stderr: asyncio.StreamReader) -> None:
+    async def _stream_stderr(self, corpus_id: str, request_id: str, stderr: asyncio.StreamReader) -> None:
         while True:
             line = await stderr.readline()
             if not line:
@@ -167,7 +167,7 @@ class ClusterSummaryRunner:
                 continue
             producer.warning(
                 "Summary controller stderr",
-                {"case_id": case_id, "request_id": request_id, "message": message},
+                {"corpus_id": corpus_id, "request_id": request_id, "message": message},
             )
 
     def _parse_controller_stdout_line(self, raw_line: bytes) -> Optional[Dict[str, Any]]:
@@ -202,11 +202,11 @@ class ClusterSummaryRunner:
             "data": data,
         }
 
-    def _emit_controller_event(self, case_id: str, request_id: str, payload: Dict[str, Any]) -> None:
+    def _emit_controller_event(self, corpus_id: str, request_id: str, payload: Dict[str, Any]) -> None:
         event_type = payload["event_type"]
         event_data = payload["data"]
         log_payload = {
-            "case_id": case_id,
+            "corpus_id": corpus_id,
             "request_id": request_id,
             "controller_request_id": payload.get("request_id"),
             "seq": payload.get("seq"),
@@ -232,7 +232,7 @@ class ClusterSummaryRunner:
             return state.strip()
         return "unknown summary controller error"
 
-    def _result_from_completed_event(self, completed_data: Dict[str, Any], case_id: str) -> ClusterSummaryResult:
+    def _result_from_completed_event(self, completed_data: Dict[str, Any], corpus_id: str) -> ClusterSummaryResult:
         run_id = self._require_non_empty_string(completed_data.get("run_id"), "run_id")
         job_id = self._require_non_empty_string(completed_data.get("job_id"), "job_id")
         result_payload_path = PurePosixPath(
@@ -257,9 +257,9 @@ class ClusterSummaryRunner:
             if not isinstance(completion_stats, dict):
                 completion_stats = {}
 
-            summary_text = self._extract_summary_text(summary_payload, result_payload, case_id).strip()
+            summary_text = self._extract_summary_text(summary_payload, result_payload, corpus_id).strip()
             if not summary_text:
-                raise RuntimeError(f"Summary output for case_id '{case_id}' was empty.")
+                raise RuntimeError(f"Summary output for corpus_id '{corpus_id}' was empty.")
 
             return ClusterSummaryResult(
                 summary_text=summary_text,
@@ -271,7 +271,7 @@ class ClusterSummaryRunner:
                 summary_path=str(summary_path),
             )
 
-    def _extract_summary_text(self, summary_payload: Any, result_payload: Any, case_id: str) -> str:
+    def _extract_summary_text(self, summary_payload: Any, result_payload: Any, corpus_id: str) -> str:
         if isinstance(summary_payload, dict):
             summary_value = summary_payload.get("summary")
             if summary_value is not None:
@@ -287,7 +287,7 @@ class ClusterSummaryRunner:
                     return text
 
         raise RuntimeError(
-            f"Summary artifacts did not include a non-empty summary for case_id '{case_id}'. "
+            f"Summary artifacts did not include a non-empty summary for corpus_id '{corpus_id}'. "
             "Expected 'summary_path' JSON field 'summary' or result_payload.summary."
         )
 
@@ -350,12 +350,12 @@ def validate_cluster_summary_runtime_prerequisites() -> None:
     config_errors: List[str] = []
 
     required_text_fields = {
-        "LEGAL_CASE_CLUSTER_SSH_HOST": settings.cluster_ssh_host,
-        "LEGAL_CASE_CLUSTER_REMOTE_STAGE_ROOT": settings.cluster_remote_stage_root,
-        "LEGAL_CASE_CLUSTER_REMOTE_PYTHON_PATH": settings.cluster_remote_python_path,
-        "LEGAL_CASE_CLUSTER_REMOTE_HF_CACHE_DIR": settings.cluster_remote_hf_cache_dir,
-        "LEGAL_CASE_CLUSTER_REMOTE_SLURM_BIN_DIR": settings.cluster_remote_slurm_bin_dir,
-        "LEGAL_CASE_CLUSTER_SUMMARY_REMOTE_CONTROLLER_SCRIPT": settings.cluster_summary_remote_controller_script,
+        "MULTI_DOCUMENT_CLUSTER_SSH_HOST": settings.cluster_ssh_host,
+        "MULTI_DOCUMENT_CLUSTER_REMOTE_STAGE_ROOT": settings.cluster_remote_stage_root,
+        "MULTI_DOCUMENT_CLUSTER_REMOTE_PYTHON_PATH": settings.cluster_remote_python_path,
+        "MULTI_DOCUMENT_CLUSTER_REMOTE_HF_CACHE_DIR": settings.cluster_remote_hf_cache_dir,
+        "MULTI_DOCUMENT_CLUSTER_REMOTE_SLURM_BIN_DIR": settings.cluster_remote_slurm_bin_dir,
+        "MULTI_DOCUMENT_CLUSTER_SUMMARY_REMOTE_CONTROLLER_SCRIPT": settings.cluster_summary_remote_controller_script,
     }
     for env_name, value in required_text_fields.items():
         if not isinstance(value, str) or not value.strip():
@@ -367,7 +367,7 @@ def validate_cluster_summary_runtime_prerequisites() -> None:
 
     if not settings.cluster_summary_remote_controller_script.startswith("interface_agents/"):
         config_errors.append(
-            "LEGAL_CASE_CLUSTER_SUMMARY_REMOTE_CONTROLLER_SCRIPT must be a path under interface_agents/."
+            "MULTI_DOCUMENT_CLUSTER_SUMMARY_REMOTE_CONTROLLER_SCRIPT must be a path under interface_agents/."
         )
 
     try:
@@ -382,9 +382,9 @@ def validate_cluster_summary_runtime_prerequisites() -> None:
 
 async def run_cluster_summary(
     backend_run_id: str,
-    case_id: str,
+    corpus_id: str,
     *,
-    case_title: Optional[str],
+    run_title: Optional[str],
     documents: Sequence[Document],
     checklist_collection: EvidenceCollection,
     checklist_definitions: Mapping[str, str],
@@ -393,8 +393,8 @@ async def run_cluster_summary(
 ) -> ClusterSummaryResult:
     return await _RUNNER.run(
         backend_run_id,
-        case_id,
-        case_title=case_title,
+        corpus_id,
+        run_title=run_title,
         documents=documents,
         checklist_collection=checklist_collection,
         checklist_definitions=checklist_definitions,

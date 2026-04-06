@@ -31,7 +31,7 @@ function buildStatusLabel(stage, dotCount) {
 
 const SummaryWaitingPage = ({
     runId,
-    caseTitle,
+    title,
     onCompleted,
     onFailed
 }) => {
@@ -110,7 +110,7 @@ const SummaryWaitingPage = ({
                     <div>
                         <h1 className="text-xl font-semibold">Running Summarization</h1>
                         <p className="text-sm text-[var(--color-text-muted)] mt-1">
-                            {caseTitle ? `Case: ${caseTitle}` : 'Summary run is in progress.'}
+                            {title ? `Title: ${title}` : 'Summary run is in progress.'}
                         </p>
                     </div>
                     <span className="rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-panel-alt)] px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)]">

@@ -17,7 +17,7 @@ class SpoofEnginesTests(unittest.IsolatedAsyncioTestCase):
             fixture_dir = Path(temp_dir)
             self._write_json(
                 fixture_dir / "request.json",
-                {"case": {"case_id": "46110", "case_documents_id": ["99"]}},
+                {"input": {"corpus_id": "46110", "documents": [{"document_id": "99"}]}},
             )
             self._write_events(
                 fixture_dir / "events.ndjson",
@@ -55,7 +55,7 @@ class SpoofEnginesTests(unittest.IsolatedAsyncioTestCase):
             fixture_dir = Path(temp_dir)
             self._write_json(
                 fixture_dir / "request.json",
-                {"case": {"case_id": "46110", "case_documents_id": ["77"]}},
+                {"input": {"corpus_id": "46110", "documents": [{"document_id": "77"}]}},
             )
             self._write_events(
                 fixture_dir / "events.ndjson",
@@ -118,7 +118,7 @@ class SpoofEnginesTests(unittest.IsolatedAsyncioTestCase):
             fixture_dir = Path(temp_dir)
             self._write_json(
                 fixture_dir / "request.json",
-                {"case": {"case_id": "46110", "case_documents_id": ["77"]}},
+                {"input": {"corpus_id": "46110", "documents": [{"document_id": "77"}]}},
             )
             self._write_events(
                 fixture_dir / "events.ndjson",
@@ -150,8 +150,8 @@ class SpoofEnginesTests(unittest.IsolatedAsyncioTestCase):
             result = await engine.run(
                 SummaryRunInput(
                     backend_run_id="backend_run_3",
-                    case_id="46110",
-                    case_title="Example Run",
+                    corpus_id="46110",
+                    run_title="Example Run",
                     documents=[
                         Document(
                             id=77,
@@ -159,16 +159,8 @@ class SpoofEnginesTests(unittest.IsolatedAsyncioTestCase):
                             type=None,
                             description=None,
                             source=None,
-                            court=None,
-                            state=None,
                             ecf_number=None,
-                            file_url=None,
-                            external_url=None,
-                            clearinghouse_link=None,
-                            text_url=None,
                             date=None,
-                            date_is_estimate=None,
-                            date_not_available=None,
                             is_docket=False,
                             content="Canonical text",
                         )

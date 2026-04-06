@@ -8,7 +8,6 @@ from pydantic import ValidationError
 from app.schemas.checklists import EvidenceCategoryCollection
 from app.schemas.documents import UploadDocumentsManifest
 from app.schemas.runs import (
-    RunCreateFromCaseIdRequest,
     RunCreateResponse,
     RunDefaultConfigResponse,
     RunDocumentPayload,
@@ -30,11 +29,6 @@ async def create_empty_run() -> RunCreateResponse:
     return run_service.create_empty_run()
 
 
-@router.post("/from-case-id", response_model=RunCreateResponse)
-async def create_run_from_case_id(request: RunCreateFromCaseIdRequest) -> RunCreateResponse:
-    return run_service.create_run_from_case_id(request.case_id)
-
-
 @router.post("/upload-documents", response_model=RunCreateResponse)
 async def create_run_from_upload(
     manifest: str = Form(...),
@@ -46,11 +40,6 @@ async def create_run_from_upload(
         raise HTTPException(status_code=422, detail="Invalid upload manifest payload.") from exc
 
     return await run_service.create_run_from_upload(manifest_payload, files)
-
-
-@router.post("/{run_id}/from-case-id", response_model=RunCreateResponse)
-async def update_run_from_case_id(run_id: str, request: RunCreateFromCaseIdRequest) -> RunCreateResponse:
-    return run_service.update_run_from_case_id(run_id, request.case_id)
 
 
 @router.post("/{run_id}/upload-documents", response_model=RunCreateResponse)

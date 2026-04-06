@@ -14,18 +14,25 @@ class StatsTracker:
     Tracks token usage statistics for LLM calls.
     Supports persistence and resume functionality.
     """
-    
-    def __init__(self, output_dir: str, case_id: Optional[str] = None):
+
+    def __init__(
+        self,
+        output_dir: str,
+        corpus_id: Optional[str] = None,
+        case_id: Optional[str] = None,
+    ):
         """
         Initialize the stats tracker.
-        
+
         Args:
             output_dir: Directory to save stats file
-            case_id: Optional case ID for organizing outputs
+            corpus_id: Optional corpus ID for organizing outputs
+            case_id: Legacy alias for corpus_id
         """
+        resolved_id = corpus_id or case_id
         self.output_dir = Path(output_dir)
-        if case_id:
-            self.output_dir = self.output_dir / case_id
+        if resolved_id:
+            self.output_dir = self.output_dir / resolved_id
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
         self.stats_file = self.output_dir / "stats.json"

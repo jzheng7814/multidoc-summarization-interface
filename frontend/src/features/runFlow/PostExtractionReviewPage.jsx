@@ -4,7 +4,7 @@ import DocumentsPanel from '../workspace/DocumentsPanel';
 import ChecklistPanel from '../workspace/components/ChecklistPage';
 import WorkspaceStateProvider, { useChecklist, useHighlight } from '../workspace/state/WorkspaceProvider';
 
-const ReviewLayout = ({ runId, caseTitle, onStartSummary, onBackToSetup }) => {
+const ReviewLayout = ({ runId, title, onStartSummary, onBackToSetup }) => {
     const { setInteractionMode } = useHighlight();
     const { categories } = useChecklist();
     const [isPersisting, setIsPersisting] = useState(false);
@@ -49,7 +49,7 @@ const ReviewLayout = ({ runId, caseTitle, onStartSummary, onBackToSetup }) => {
                             Confirm the extracted checklist contains all synthesis-critical information. Summary is locked until you start summarization.
                         </p>
                         <p className="text-xs text-[var(--color-text-secondary)] mt-1">
-                            {caseTitle ? `Case: ${caseTitle}` : ''} {caseTitle ? ' · ' : ''}Run ID: {runId}
+                            {title ? `Title: ${title}` : ''} {title ? ' · ' : ''}Run ID: {runId}
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -94,7 +94,7 @@ const ReviewLayout = ({ runId, caseTitle, onStartSummary, onBackToSetup }) => {
 
 const PostExtractionReviewPage = ({
     runId,
-    caseTitle,
+    title,
     initialCaseState,
     onStartSummary,
     onBackToSetup
@@ -102,11 +102,10 @@ const PostExtractionReviewPage = ({
     <WorkspaceStateProvider
         caseId={initialCaseState?.caseId}
         initialCaseState={initialCaseState}
-        enablePromptStore={false}
     >
         <ReviewLayout
             runId={runId}
-            caseTitle={caseTitle}
+            title={title}
             onStartSummary={onStartSummary}
             onBackToSetup={onBackToSetup}
         />

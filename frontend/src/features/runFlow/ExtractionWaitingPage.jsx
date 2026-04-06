@@ -34,7 +34,7 @@ function buildStatusLabel(stage, dotCount) {
 
 const ExtractionWaitingPage = ({
     runId,
-    caseTitle,
+    title,
     onCompleted,
     onFailed
 }) => {
@@ -112,7 +112,7 @@ const ExtractionWaitingPage = ({
                     <div>
                         <h1 className="text-xl font-semibold">Running Extraction</h1>
                         <p className="text-sm text-[var(--color-text-muted)] mt-1">
-                            {caseTitle ? `Case: ${caseTitle}` : 'Extraction run is in progress.'}
+                            {title ? `Title: ${title}` : 'Extraction run is in progress.'}
                         </p>
                     </div>
                     <span className="rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface-panel-alt)] px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)]">

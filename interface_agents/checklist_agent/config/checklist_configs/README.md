@@ -75,7 +75,7 @@ Validation behavior is enforced directly in `controller/run_controller.py`.
 ## Output Layout (Direct Agent Runs)
 
 ```text
-output/{model_suffix}/{case_id}/{category}/{config_name}/
+output/{model_suffix}/{corpus_id}/{category}/{config_name}/
 ├── checklist.json
 ├── ledger.jsonl
 └── stats.json

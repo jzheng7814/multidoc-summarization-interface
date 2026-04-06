@@ -92,16 +92,16 @@ def load_spoof_request_payload(fixture_dir: Path) -> Dict[str, Any]:
     return payload
 
 
-def validate_fixture_case(case_id: str, request_payload: Mapping[str, Any], *, label: str) -> None:
-    case_payload = request_payload.get("case")
-    if not isinstance(case_payload, dict):
-        raise RuntimeError(f"{label} request payload is missing case object.")
-    fixture_case_id = str(case_payload.get("case_id") or "").strip()
-    if not fixture_case_id:
-        raise RuntimeError(f"{label} request payload is missing case.case_id.")
-    if fixture_case_id != str(case_id).strip():
+def validate_fixture_corpus(corpus_id: str, request_payload: Mapping[str, Any], *, label: str) -> None:
+    input_payload = request_payload.get("input")
+    if not isinstance(input_payload, dict):
+        raise RuntimeError(f"{label} request payload is missing input object.")
+    fixture_corpus_id = str(input_payload.get("corpus_id") or "").strip()
+    if not fixture_corpus_id:
+        raise RuntimeError(f"{label} request payload is missing input.corpus_id.")
+    if fixture_corpus_id != str(corpus_id).strip():
         raise RuntimeError(
-            f"{label} case_id mismatch. Requested '{case_id}', fixture contains '{fixture_case_id}'."
+            f"{label} corpus_id mismatch. Requested '{corpus_id}', fixture contains '{fixture_corpus_id}'."
         )
 
 
@@ -111,15 +111,22 @@ def validate_fixture_document_ids(
     *,
     label: str,
 ) -> None:
-    case_payload = request_payload.get("case")
-    if not isinstance(case_payload, dict):
-        raise RuntimeError(f"{label} request payload is missing case object.")
+    input_payload = request_payload.get("input")
+    if not isinstance(input_payload, dict):
+        raise RuntimeError(f"{label} request payload is missing input object.")
 
-    raw_fixture_ids = case_payload.get("case_documents_id")
-    if not isinstance(raw_fixture_ids, list) or not raw_fixture_ids:
-        raise RuntimeError(f"{label} request payload is missing case.case_documents_id.")
+    raw_documents = input_payload.get("documents")
+    if not isinstance(raw_documents, list) or not raw_documents:
+        raise RuntimeError(f"{label} request payload is missing input.documents.")
 
-    fixture_ids = [str(value).strip() for value in raw_fixture_ids]
+    fixture_ids = []
+    for index, entry in enumerate(raw_documents):
+        if not isinstance(entry, dict):
+            raise RuntimeError(f"{label} input.documents[{index}] must be an object.")
+        document_id = str(entry.get("document_id") or "").strip()
+        if not document_id:
+            raise RuntimeError(f"{label} input.documents[{index}] is missing document_id.")
+        fixture_ids.append(document_id)
     current_ids = [str(value).strip() for value in document_ids]
     if Counter(fixture_ids) != Counter(current_ids):
         raise RuntimeError(

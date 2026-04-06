@@ -136,7 +136,7 @@ const SummaryPanel = ({ allowGeneration = true }) => {
         <div className="flex-1 h-full min-h-0 bg-[var(--color-surface-panel)] flex flex-col overflow-hidden border-l border-[var(--color-border)]">
             <div className="border-b border-[var(--color-border)] p-4 space-y-3 bg-[var(--color-surface-panel)]">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Case Summary</h2>
+                    <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Summary</h2>
                     <div className="flex items-center space-x-2">
                         {!summaryText && isEditMode && (
                             <span className="text-xs text-[var(--color-text-muted)] italic">(Generate disabled in edit mode)</span>
@@ -206,7 +206,7 @@ const SummaryPanel = ({ allowGeneration = true }) => {
                                 ref={summaryRef}
                                 value={summaryText}
                                 onChange={(event) => setSummaryText(event.target.value)}
-                                placeholder="Write your case summary here..."
+                                placeholder="Write your summary here..."
                                 className="w-full h-full min-h-0 resize-none border border-[var(--color-input-border)] rounded-md px-3 py-2 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] overflow-auto bg-[var(--color-input-bg)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)]"
                             />
                         ) : (

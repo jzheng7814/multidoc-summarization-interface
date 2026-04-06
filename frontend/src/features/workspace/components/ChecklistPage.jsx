@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { useChecklist, useDocuments, useHighlight } from '../state/WorkspaceProvider';
-import { buildDocumentLookup } from '../caseState';
+import { buildDocumentLookup } from '../documentLookup';
 
 const ACTIVE_CHECKLIST_STATUSES = new Set(['pending', 'queued', 'preprocessing', 'waiting_resources', 'running', 'finalizing']);
 

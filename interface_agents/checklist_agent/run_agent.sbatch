@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=legal_agent_test_run
+#SBATCH --job-name=checklist_agent_run
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=32
@@ -8,10 +8,10 @@
 #SBATCH --partition="nlprx-lab"
 #SBATCH --qos="short"
 #SBATCH --output=agent_logs/%x-%j.out
-#SBATCH --exclude=gundam,dendrite,puma,xaea-12,spot,hk47,consu,nestor,chappie,spd-13,sonny,heistotron,uniblab,perseverance,qt-1,cheetah
+#SBATCH --exclude=gundam,dendrite,puma,xaea-12,spot,hk47,consu,nestor,chappie,spd-13,sonny,heistotron,uniblab,perseverance,qt-1,cheetah,clippy
 
 # Example launch:
-# sbatch --export=ALL,CASE_ID="45696",\
+# sbatch --export=ALL,CORPUS_ID="45696",\
 #        MODEL_NAME="Qwen/Qwen3-8B",\
 #        CHECKLIST_CONFIG="config/checklist_configs/all/all_26_items.yaml",\
 #        MAX_STEPS="100",\
@@ -52,7 +52,7 @@ export PATH="$(dirname "${PYTHON_BIN}"):${PATH}"
 # ----------------------------------------------------------------------
 # Agent parameters (from environment or sensible defaults)
 # ----------------------------------------------------------------------
-case_id=${CASE_ID:-"45696"}
+corpus_id=${CORPUS_ID:-"45696"}
 model_name=${MODEL_NAME:-"Qwen/Qwen3-8B"}
 checklist_config=${CHECKLIST_CONFIG:-"config/checklist_configs/all/all_26_items.yaml"}
 max_steps=${MAX_STEPS:-"1000"}
@@ -83,8 +83,8 @@ fi
 # ----------------------------------------------------------------------
 # Base directories
 # ----------------------------------------------------------------------
-CORPUS_PATH="${BASE_DIR}/data/${data_dir}/${case_id}"
-OUTPUT_DIR="${BASE_DIR}/${output_base_dir}/${model_suffix}/${case_id}/${config_category}/${config_suffix}"
+CORPUS_PATH="${BASE_DIR}/data/${data_dir}/${corpus_id}"
+OUTPUT_DIR="${BASE_DIR}/${output_base_dir}/${model_suffix}/${corpus_id}/${config_category}/${config_suffix}"
 
 # ----------------------------------------------------------------------
 # Create necessary directories
@@ -102,11 +102,11 @@ if [[ "$debug" == "true" ]]; then
     echo "Debug mode: Log will be saved to output directory"
 else
     # In normal mode, save log to agent_logs directory
-    log_name="${case_id}_${config_category}_${config_suffix}_steps${max_steps}"
+    log_name="${corpus_id}_${config_category}_${config_suffix}_steps${max_steps}"
     if [[ "$resume" == "true" ]]; then
         log_name="${log_name}_resume"
     fi
-    log_path="${BASE_DIR}/agent_logs/${model_suffix}/${case_id}/${log_name}.log"
+    log_path="${BASE_DIR}/agent_logs/${model_suffix}/${corpus_id}/${log_name}.log"
     mkdir -p "$(dirname "$log_path")"
 fi
 
@@ -115,9 +115,9 @@ fi
 # ----------------------------------------------------------------------
 echo ""
 echo "========================================="
-echo "Legal Agent Configuration"
+echo "Checklist Agent Configuration"
 echo "========================================="
-echo "Case ID: ${case_id}"
+echo "Corpus ID: ${corpus_id}"
 echo "Model: ${model_name}"
 echo "Checklist Config: ${checklist_config}"
 echo "Config Category: ${config_category}"
@@ -146,7 +146,7 @@ if [[ "$debug" == "true" ]]; then
 fi
 
 # ----------------------------------------------------------------------
-# Change to the legal_agents directory
+# Change to the checklist-agent directory
 # ----------------------------------------------------------------------
 cd "$BASE_DIR"
 

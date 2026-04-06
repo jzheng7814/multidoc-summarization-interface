@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { loadDocuments as loadCaseDocuments } from '../../../services/documentService';
-import { fetchChecklistStatus } from '../../../services/apiClient';
 
 const normaliseCaseId = (value) => String(value ?? '').trim();
-const ACTIVE_CHECKLIST_STATUSES = new Set(['pending', 'queued', 'preprocessing', 'waiting_resources', 'running', 'finalizing']);
 
 const coerceDocumentId = (value) => {
     if (typeof value === 'number' && Number.isFinite(value)) {
@@ -47,178 +44,67 @@ const useDocumentsStore = ({ caseId, importedSnapshot = null } = {}) => {
         : normaliseCaseId(caseId);
 
     const [currentCaseId, setCurrentCaseId] = useState(initialCaseId);
-    const [remoteDocuments, setRemoteDocuments] = useState(initialImportedDocuments);
-    const [selectedDocument, setSelectedDocument] = useState(null);
-    const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
+    const [documents, setDocuments] = useState(initialImportedDocuments);
+    const [selectedDocument, setSelectedDocument] = useState(initialImportedDocuments[0]?.id ?? null);
     const [lastError, setLastError] = useState(null);
-    const [documentChecklistStatus, setDocumentChecklistStatus] = useState(
-        hasImportedSnapshot ? (initialImportedDocuments.length > 0 ? 'ready' : 'empty') : 'idle'
-    );
     const [usingImportedSnapshot, setUsingImportedSnapshot] = useState(hasImportedSnapshot);
     const documentRef = useRef(null);
 
-    const loadDocuments = useCallback(async (requestedCaseId = currentCaseId) => {
-        const resolvedCaseId = normaliseCaseId(requestedCaseId);
-        if (!resolvedCaseId) {
-            const error = new Error('Case ID is required to load documents.');
-            setLastError(error);
-            setRemoteDocuments([]);
-            setDocumentChecklistStatus('error');
-            throw error;
-        }
-        setIsLoadingDocuments(true);
-        setLastError(null);
-        setDocumentChecklistStatus('pending');
-        setUsingImportedSnapshot(false);
-
-        try {
-            const { documents: loadedDocs, checklistStatus } = await loadCaseDocuments(resolvedCaseId);
-            const resolvedChecklistStatus = checklistStatus ?? (loadedDocs.length > 0 ? 'ready' : 'empty');
-            setRemoteDocuments(loadedDocs);
-            setCurrentCaseId(resolvedCaseId);
-            setDocumentChecklistStatus(resolvedChecklistStatus);
-            return {
-                caseId: resolvedCaseId,
-                documents: loadedDocs,
-                checklistStatus: resolvedChecklistStatus
-            };
-        } catch (error) {
-            console.error('Failed to load documents from backend.', error);
-            setRemoteDocuments([]);
-            setLastError(error);
-            setDocumentChecklistStatus('error');
-            throw error;
-        } finally {
-            setIsLoadingDocuments(false);
-        }
-    }, [currentCaseId]);
-
-    const activateImportedSnapshot = useCallback(({ caseId: snapshotCaseId, documents }) => {
-        const nextCaseId = normaliseCaseId(snapshotCaseId);
-        const nextDocuments = normaliseImportedDocuments(documents);
-        setCurrentCaseId(nextCaseId);
-        setRemoteDocuments(nextDocuments);
-        setDocumentChecklistStatus(nextDocuments.length > 0 ? 'ready' : 'empty');
-        setLastError(null);
-        setIsLoadingDocuments(false);
-        setUsingImportedSnapshot(true);
-        setSelectedDocument((current) => {
-            if (current != null && nextDocuments.some((doc) => doc.id === current)) {
-                return current;
-            }
-            return nextDocuments.length > 0 ? nextDocuments[0].id : null;
-        });
-    }, []);
-
     useEffect(() => {
         if (usingImportedSnapshot) {
             return;
         }
-        const resolved = normaliseCaseId(caseId);
-        setCurrentCaseId(resolved);
+        setCurrentCaseId(normaliseCaseId(caseId));
     }, [caseId, usingImportedSnapshot]);
 
     useEffect(() => {
-        if (usingImportedSnapshot) {
-            return;
-        }
-        loadDocuments(currentCaseId).catch(() => {});
-    }, [currentCaseId, loadDocuments, usingImportedSnapshot]);
-
-    useEffect(() => {
-        if (usingImportedSnapshot) {
-            return undefined;
-        }
-        if (!ACTIVE_CHECKLIST_STATUSES.has(documentChecklistStatus)) {
-            return undefined;
-        }
-
-        let cancelled = false;
-        const POLL_INTERVAL_MS = 2000;
-        let pollTimeoutId = null;
-
-        const pollForChecklistStatus = async () => {
-            try {
-                const response = await fetchChecklistStatus(currentCaseId);
-                if (cancelled) {
-                    return;
-                }
-                const status = response?.checklistStatus ?? response?.checklist_status ?? 'pending';
-                setDocumentChecklistStatus(status || 'pending');
-                if (!ACTIVE_CHECKLIST_STATUSES.has(status || 'pending')) {
-                    return;
-                }
-            } catch (error) {
-                if (!cancelled) {
-                    console.error('Checklist status polling failed', error);
-                }
-            }
-
-            if (!cancelled) {
-                pollTimeoutId = window.setTimeout(pollForChecklistStatus, POLL_INTERVAL_MS);
-            }
-        };
-
-        pollForChecklistStatus();
-
-        return () => {
-            cancelled = true;
-            if (pollTimeoutId) {
-                window.clearTimeout(pollTimeoutId);
-            }
-        };
-    }, [currentCaseId, documentChecklistStatus, usingImportedSnapshot]);
-
-    useEffect(() => {
         setSelectedDocument((current) => {
-            if (current != null && remoteDocuments.some((doc) => doc.id === current)) {
+            if (current != null && documents.some((doc) => doc.id === current)) {
                 return current;
             }
-            return remoteDocuments.length > 0 ? remoteDocuments[0].id : null;
+            return documents[0]?.id ?? null;
         });
-    }, [remoteDocuments]);
+    }, [documents]);
+
+    const activateImportedSnapshot = useCallback(({ caseId: snapshotCaseId, documents: snapshotDocuments }) => {
+        const nextDocuments = normaliseImportedDocuments(snapshotDocuments);
+        setCurrentCaseId(normaliseCaseId(snapshotCaseId));
+        setDocuments(nextDocuments);
+        setLastError(null);
+        setUsingImportedSnapshot(true);
+        setSelectedDocument(nextDocuments[0]?.id ?? null);
+    }, []);
+
+    const loadDocuments = useCallback(async () => {
+        const error = new Error('Direct document loading is no longer supported. Load documents through the run setup flow.');
+        setLastError(error);
+        throw error;
+    }, []);
 
     const getCurrentDocument = useCallback(() => {
-        if (isLoadingDocuments) {
-            return 'Loading documents...';
-        }
-        const doc = remoteDocuments.find((d) => d.id === selectedDocument);
+        const doc = documents.find((entry) => entry.id === selectedDocument);
         if (doc) {
             return doc.content;
         }
-        if (remoteDocuments.length === 0) {
-            return lastError
-                ? 'Failed to load documents. Please check the case ID and try again.'
-                : 'No documents available.';
+        if (documents.length === 0) {
+            return 'No documents loaded.';
         }
         return 'No document selected';
-    }, [remoteDocuments, isLoadingDocuments, lastError, selectedDocument]);
+    }, [documents, selectedDocument]);
 
-    const value = useMemo(() => ({
+    return useMemo(() => ({
         caseId: currentCaseId,
-        documents: remoteDocuments,
+        documents,
         selectedDocument,
         setSelectedDocument,
-        isLoadingDocuments,
+        isLoadingDocuments: false,
         loadDocuments,
         documentRef,
         getCurrentDocument,
         lastError,
-        documentChecklistStatus,
+        documentChecklistStatus: documents.length > 0 ? 'ready' : 'empty',
         activateImportedSnapshot
-    }), [
-        currentCaseId,
-        getCurrentDocument,
-        isLoadingDocuments,
-        loadDocuments,
-        remoteDocuments,
-        selectedDocument,
-        lastError,
-        documentChecklistStatus,
-        activateImportedSnapshot
-    ]);
-
-    return value;
+    }), [activateImportedSnapshot, currentCaseId, documents, getCurrentDocument, lastError, loadDocuments, selectedDocument]);
 };
 
 export default useDocumentsStore;

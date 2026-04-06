@@ -21,7 +21,7 @@ constraints:
 #   - "For settlement terms, check both main text and exhibits"
 
 # Checklist items to extract
-# Definitions from item_specific_info_improved.json
+# Historical definitions note removed; this file is for direct local runs only
 checklist_items:
   Filing_Date:
     description: "The calendar date on which the lawsuit was first filed/initiated with the court."

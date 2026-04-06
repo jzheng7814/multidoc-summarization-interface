@@ -1,161 +1,86 @@
 #!/usr/bin/env python3
-"""
-Data processing script for converting legal case documents to agent-compatible format.
-Processes cases from the multi_lexsum format into individual case directories.
-"""
+"""Convert controller input corpora into agent-compatible document directories."""
 
-import json
-import os
-import re
 import argparse
+import json
+import re
+import sys
 from pathlib import Path
-from typing import Dict, List, Any, Optional
-from datetime import datetime
-import shutil
+from typing import Any, Dict, List, Optional
 
 import pysbd
 
-# Add parent directory to path
-import sys
 sys.path.insert(0, str(Path(__file__).parent))
 
 from agent.tokenizer import TokenizerWrapper
 
 
-class LegalDataProcessor:
-    """
-    Processes legal case data from multi_lexsum format to agent-compatible format.
-    """
-    
+class CorpusDataProcessor:
+    """Convert one or more input corpora into the checklist agent's local data format."""
+
     def __init__(
         self,
         input_file: str,
         output_dir: str = "data",
         model_name: str = "Qwen/Qwen3-8B",
-        verbose: bool = True
+        verbose: bool = True,
     ):
-        """
-        Initialize the data processor.
-        
-        Args:
-            input_file: Path to input JSON file containing cases
-            output_dir: Base output directory for processed data
-            model_name: Model name for tokenizer (default: Qwen/Qwen3-8B)
-            verbose: Whether to print progress
-        """
         self.input_file = Path(input_file)
         self.output_dir = Path(output_dir)
         self.verbose = verbose
-        
-        # Extract dataset name from input file
         self.dataset_name = self.input_file.stem
-        
-        # Initialize tokenizer
+
         self.tokenizer = TokenizerWrapper(model_name)
         if self.verbose:
             print(f"Initialized tokenizer for {model_name}")
             print(f"Tokenizer backend: {self.tokenizer._backend}")
 
-        # Deterministic sentence segmenter.
         self.segmenter = pysbd.Segmenter(language="en", clean=False, char_span=True)
-        
-        # Statistics
         self.stats = {
-            "total_cases": 0,
-            "processed_cases": 0,
+            "total_corpora": 0,
+            "processed_corpora": 0,
             "total_documents": 0,
             "total_sentences": 0,
             "total_tokens": 0,
-            "errors": []
+            "errors": [],
         }
-    
+
     def load_data(self) -> List[Dict[str, Any]]:
-        """
-        Load the input JSON data.
-        
-        Returns:
-            List of case dictionaries
-        """
         if not self.input_file.exists():
             raise FileNotFoundError(f"Input file not found: {self.input_file}")
-        
-        with open(self.input_file, 'r', encoding='utf-8') as f:
+
+        with self.input_file.open("r", encoding="utf-8") as f:
             data = json.load(f)
-        
+
         if not isinstance(data, list):
-            raise ValueError("Expected list of cases in input file")
-        
-        self.stats["total_cases"] = len(data)
-        
+            raise ValueError("Expected list of input corpora in input file")
+
+        self.stats["total_corpora"] = len(data)
         if self.verbose:
-            print(f"Loaded {len(data)} cases from {self.input_file}")
-        
+            print(f"Loaded {len(data)} corpora from {self.input_file}")
         return data
-    
+
     def sanitize_filename(self, text: str, max_length: int = 50) -> str:
-        """
-        Sanitize text for use as filename.
-        
-        Args:
-            text: Text to sanitize
-            max_length: Maximum length of filename
-            
-        Returns:
-            Sanitized filename
-        """
-        # Remove special characters and replace spaces
-        sanitized = re.sub(r'[^\w\s-]', '', text)
-        sanitized = re.sub(r'[-\s]+', '_', sanitized)
-        
-        # Convert to lowercase and truncate
+        sanitized = re.sub(r"[^\w\s-]", "", text)
+        sanitized = re.sub(r"[-\s]+", "_", sanitized)
         sanitized = sanitized.lower()[:max_length]
-        
-        # Remove trailing underscores
-        sanitized = sanitized.rstrip('_')
-        
+        sanitized = sanitized.rstrip("_")
         return sanitized or "document"
-    
+
     def create_document_filename(self, doc_type: str, index: int, title: str = "") -> str:
-        """
-        Create a filename for a document.
-        
-        Args:
-            doc_type: Document type
-            index: Document index
-            title: Optional document title
-            
-        Returns:
-            Filename for the document
-        """
-        # Sanitize document type
         doc_type_clean = self.sanitize_filename(doc_type, 20)
-        
-        # Create base filename
         filename = f"{doc_type_clean}_{index:03d}"
-        
-        # Add sanitized title if available and short
         if title:
             title_clean = self.sanitize_filename(title, 20)
             if title_clean and title_clean != doc_type_clean:
                 filename = f"{filename}_{title_clean}"
-        
         return f"{filename}.txt"
 
     def build_sentence_index(self, text: str) -> List[Dict[str, Any]]:
-        """
-        Split text into deterministic sentence records with 1-indexed IDs.
-
-        Args:
-            text: Full document text
-
-        Returns:
-            List of sentence records [{sentence_id, text, start_char, end_char}]
-        """
         spans = self.segmenter.segment(text)
         sentences = []
-
         for idx, span in enumerate(spans, start=1):
-            sentence_text = text[span.start:span.end]
+            sentence_text = text[span.start : span.end]
             sentences.append(
                 {
                     "sentence_id": idx,
@@ -164,347 +89,218 @@ class LegalDataProcessor:
                     "end_char": span.end,
                 }
             )
-
         return sentences
-    
-    def process_case(self, case: Dict[str, Any], output_base: Path) -> bool:
-        """
-        Process a single case.
-        
-        Args:
-            case: Case dictionary
-            output_base: Base output directory
-            
-        Returns:
-            True if successful, False otherwise
-        """
+
+    def process_corpus(self, corpus: Dict[str, Any], output_base: Path) -> bool:
         try:
-            case_id = str(case.get("case_id", "unknown"))
-            
-            # Create case directory
-            case_dir = output_base / case_id
-            case_dir.mkdir(parents=True, exist_ok=True)
-            
-            # Get document data
-            texts = case.get("case_documents_text", [])
-            titles = case.get("case_documents_title", [])
-            doc_types = case.get("case_documents_doc_type", [])
-            dates = case.get("case_documents_date", [])
-            doc_ids = case.get("case_documents_id", [])
-            
-            # Validate data consistency
-            num_docs = len(texts)
-            if not all(len(lst) == num_docs for lst in [titles, doc_types]):
-                raise ValueError(f"Inconsistent document list lengths for case {case_id}")
-            
-            # Ensure all lists have same length (pad if necessary)
-            if len(dates) < num_docs:
-                dates.extend([None] * (num_docs - len(dates)))
-            if len(doc_ids) < num_docs:
-                doc_ids.extend([f"doc_{i:03d}" for i in range(len(doc_ids), num_docs)])
-            
-            # Process each document
+            corpus_id = str(corpus.get("corpus_id", "unknown"))
+            corpus_dir = output_base / corpus_id
+            corpus_dir.mkdir(parents=True, exist_ok=True)
+
+            raw_documents = corpus.get("documents")
+            if not isinstance(raw_documents, list) or not raw_documents:
+                raise ValueError(f"Corpus {corpus_id} is missing a non-empty documents array")
+
+            documents: List[Dict[str, Any]] = []
+            for index, raw_document in enumerate(raw_documents):
+                if not isinstance(raw_document, dict):
+                    raise ValueError(f"Corpus {corpus_id} document {index} must be an object")
+                documents.append(raw_document)
+
             documents_metadata = []
             total_tokens = 0
             total_sentences = 0
-            
-            for i, text in enumerate(texts):
-                # Get document info
-                title = titles[i] if i < len(titles) else f"Document {i+1}"
 
-                doc_type = doc_types[i] if i < len(doc_types) else "Unknown"
-                doc_type = doc_type or "Unknown" # fix for None values
+            for i, document in enumerate(documents):
+                text = str(document.get("text") or "")
+                title = str(document.get("title") or f"Document {i + 1}").strip() or f"Document {i + 1}"
+                doc_type = str(document.get("doc_type") or "Unknown").strip() or "Unknown"
+                date = str(document.get("date") or "").strip() or None
+                doc_id = str(document.get("document_id") or f"doc_{i:03d}").strip() or f"doc_{i:03d}"
 
-                date = dates[i] if i < len(dates) else None
-                doc_id = str(doc_ids[i]) if i < len(doc_ids) else f"doc_{i:03d}"
-                
-                # Create filename
-                if title:
-                    filename = self.create_document_filename(doc_type, i+1, title)
-                else:
-                    filename = self.create_document_filename(doc_type, i+1, "Untitled Document")
-                
-                # Save document text
-                doc_path = case_dir / filename
-                with open(doc_path, 'w', encoding='utf-8') as f:
+                filename = self.create_document_filename(doc_type, i + 1, title)
+                doc_path = corpus_dir / filename
+                with doc_path.open("w", encoding="utf-8") as f:
                     f.write(text)
 
-                # Build and persist sentence index sidecar.
                 sentence_records = self.build_sentence_index(text)
                 sentence_count = len(sentence_records)
                 total_sentences += sentence_count
                 sentence_index_filename = f"{filename}.sentences.json"
-                sentence_index_path = case_dir / sentence_index_filename
-                with open(sentence_index_path, "w", encoding="utf-8") as f:
+                sentence_index_path = corpus_dir / sentence_index_filename
+                with sentence_index_path.open("w", encoding="utf-8") as f:
                     json.dump({"doc_id": doc_id, "sentences": sentence_records}, f, ensure_ascii=False, indent=2)
-                
-                # Calculate token count with our tokenizer
+
                 token_count = self.tokenizer.count_tokens(text)
                 total_tokens += token_count
-                
-                # Add to metadata
+
                 doc_metadata = {
                     "filename": filename,
-                    "title": title if title else "Untitled Document",
+                    "title": title,
                     "doc_type": doc_type,
                     "sentence_count": sentence_count,
                     "sentence_index_file": sentence_index_filename,
                     "token_count": token_count,
-                    "doc_id": doc_id
+                    "doc_id": doc_id,
                 }
-                
                 if date:
                     doc_metadata["date"] = date
-                
                 documents_metadata.append(doc_metadata)
-                
                 self.stats["total_documents"] += 1
-            
-            # Create case metadata
-            case_metadata = {
-                "case_id": case_id,
-                "document_count": num_docs,
+
+            corpus_metadata = {
+                "corpus_id": corpus_id,
+                "document_count": len(documents),
                 "total_sentences": total_sentences,
                 "total_tokens": total_tokens,
-                "documents": documents_metadata
+                "documents": documents_metadata,
             }
-            
-            # Add optional fields if present
-            if "filing_date" in case:
-                case_metadata["filing_date"] = case["filing_date"]
-            if "case_url" in case:
-                case_metadata["case_url"] = case["case_url"]
-            if "case_type" in case:
-                case_metadata["case_type"] = case["case_type"]
-            
-            # Save metadata
-            metadata_path = case_dir / "metadata.json"
-            with open(metadata_path, 'w', encoding='utf-8') as f:
-                json.dump(case_metadata, f, indent=2)
-            
+
+            metadata_path = corpus_dir / "metadata.json"
+            with metadata_path.open("w", encoding="utf-8") as f:
+                json.dump(corpus_metadata, f, indent=2)
+
             self.stats["total_tokens"] += total_tokens
             self.stats["total_sentences"] += total_sentences
-            self.stats["processed_cases"] += 1
-            
+            self.stats["processed_corpora"] += 1
+
             if self.verbose:
                 print(
-                    f"✓ Processed case {case_id}: {num_docs} documents, "
+                    f"✓ Processed corpus {corpus_id}: {len(documents)} documents, "
                     f"{total_sentences:,} sentences, {total_tokens:,} tokens"
                 )
-            
             return True
-            
-        except Exception as e:
-            error_msg = f"Error processing case {case.get('case_id', 'unknown')}: {str(e)}"
+        except Exception as exc:  # pylint: disable=broad-except
+            error_msg = f"Error processing corpus {corpus.get('corpus_id', 'unknown')}: {exc}"
             self.stats["errors"].append(error_msg)
             if self.verbose:
                 print(f"✗ {error_msg}")
             return False
-    
-    def process_all(self, case_ids: Optional[List[str]] = None, dry_run: bool = False) -> Dict[str, Any]:
-        """
-        Process all cases or specific case IDs.
-        
-        Args:
-            case_ids: Optional list of case IDs to process (None for all)
-            dry_run: If True, don't actually write files
-            
-        Returns:
-            Processing statistics
-        """
-        # Load data
-        cases = self.load_data()
-        
-        # Filter cases if specific IDs provided
-        if case_ids:
-            cases = [c for c in cases if str(c.get("case_id")) in case_ids]
+
+    def process_all(self, corpus_ids: Optional[List[str]] = None, dry_run: bool = False) -> Dict[str, Any]:
+        corpora = self.load_data()
+
+        if corpus_ids:
+            corpora = [corpus for corpus in corpora if str(corpus.get("corpus_id")) in corpus_ids]
             if self.verbose:
-                print(f"Processing {len(cases)} specific cases")
-        
-        # Create output directory
+                print(f"Processing {len(corpora)} specific corpora")
+
         output_base = self.output_dir / self.dataset_name
-        
         if not dry_run:
             output_base.mkdir(parents=True, exist_ok=True)
-        
+
         if self.verbose:
             print(f"Output directory: {output_base}")
             if dry_run:
                 print("DRY RUN - No files will be written")
             print("-" * 60)
-        
-        # Process each case
-        for i, case in enumerate(cases, 1):
-            if self.verbose and len(cases) > 1:
-                print(f"\n[{i}/{len(cases)}] Processing case {case.get('case_id')}...")
-            
+
+        for index, corpus in enumerate(corpora, start=1):
+            if self.verbose and len(corpora) > 1:
+                print(f"\n[{index}/{len(corpora)}] Processing corpus {corpus.get('corpus_id')}...")
+
             if not dry_run:
-                self.process_case(case, output_base)
-            else:
-                # Dry run - just count tokens
-                texts = case.get("case_documents_text", [])
-                total_tokens = sum(self.tokenizer.count_tokens(text) for text in texts)
-                self.stats["total_tokens"] += total_tokens
-                self.stats["total_documents"] += len(texts)
-                self.stats["processed_cases"] += 1
-                
-                if self.verbose:
-                    print(f"  Would process: {len(texts)} documents, {total_tokens:,} tokens")
-        
-        # Print summary
+                self.process_corpus(corpus, output_base)
+                continue
+
+            raw_documents = corpus.get("documents") or []
+            texts = [str(doc.get("text") or "") for doc in raw_documents if isinstance(doc, dict)]
+            total_tokens = sum(self.tokenizer.count_tokens(text) for text in texts)
+            self.stats["total_tokens"] += total_tokens
+            self.stats["total_documents"] += len(texts)
+            self.stats["processed_corpora"] += 1
+            if self.verbose:
+                print(f"  Would process: {len(texts)} documents, {total_tokens:,} tokens")
+
         if self.verbose:
             self.print_summary()
-        
         return self.stats
-    
-    def print_summary(self):
-        """Print processing summary."""
+
+    def print_summary(self) -> None:
         print("\n" + "=" * 60)
         print("Processing Summary")
         print("=" * 60)
-        print(f"Total cases: {self.stats['total_cases']}")
-        print(f"Processed cases: {self.stats['processed_cases']}")
+        print(f"Total corpora: {self.stats['total_corpora']}")
+        print(f"Processed corpora: {self.stats['processed_corpora']}")
         print(f"Total documents: {self.stats['total_documents']}")
         print(f"Total sentences: {self.stats['total_sentences']:,}")
         print(f"Total tokens: {self.stats['total_tokens']:,}")
-        
-        if self.stats['processed_cases'] > 0:
-            avg_docs = self.stats['total_documents'] / self.stats['processed_cases']
-            avg_tokens = self.stats['total_tokens'] / self.stats['processed_cases']
-            print(f"Average documents per case: {avg_docs:.1f}")
-            print(f"Average tokens per case: {avg_tokens:,.0f}")
-        
-        if self.stats['errors']:
+
+        if self.stats["processed_corpora"] > 0:
+            avg_docs = self.stats["total_documents"] / self.stats["processed_corpora"]
+            avg_tokens = self.stats["total_tokens"] / self.stats["processed_corpora"]
+            print(f"Average documents per corpus: {avg_docs:.1f}")
+            print(f"Average tokens per corpus: {avg_tokens:,.0f}")
+
+        if self.stats["errors"]:
             print(f"\nErrors encountered: {len(self.stats['errors'])}")
-            for error in self.stats['errors'][:5]:
+            for error in self.stats["errors"][:5]:
                 print(f"  - {error}")
-            if len(self.stats['errors']) > 5:
+            if len(self.stats["errors"]) > 5:
                 print(f"  ... and {len(self.stats['errors']) - 5} more")
-    
+
     def validate_output(self, output_base: Path) -> bool:
-        """
-        Validate the processed output.
-        
-        Args:
-            output_base: Base output directory
-            
-        Returns:
-            True if valid, False otherwise
-        """
         if not output_base.exists():
             print(f"Output directory does not exist: {output_base}")
             return False
-        
-        # Check each case directory
-        case_dirs = [d for d in output_base.iterdir() if d.is_dir()]
-        
-        for case_dir in case_dirs:
-            # Check for metadata
-            metadata_file = case_dir / "metadata.json"
+
+        corpus_dirs = [directory for directory in output_base.iterdir() if directory.is_dir()]
+        for corpus_dir in corpus_dirs:
+            metadata_file = corpus_dir / "metadata.json"
             if not metadata_file.exists():
-                print(f"Missing metadata.json in {case_dir}")
+                print(f"Missing metadata.json in {corpus_dir}")
                 return False
-            
-            # Load and validate metadata
+
             try:
-                with open(metadata_file, 'r') as f:
+                with metadata_file.open("r", encoding="utf-8") as f:
                     metadata = json.load(f)
-                
-                # Check required fields
-                required = ["case_id", "documents", "document_count", "total_sentences", "total_tokens"]
+
+                required = ["corpus_id", "documents", "document_count", "total_sentences", "total_tokens"]
                 for field in required:
                     if field not in metadata:
                         print(f"Missing field '{field}' in {metadata_file}")
                         return False
-                
-                # Check document files exist
+
                 for doc in metadata["documents"]:
-                    doc_file = case_dir / doc["filename"]
+                    doc_file = corpus_dir / doc["filename"]
                     if not doc_file.exists():
                         print(f"Missing document file: {doc_file}")
                         return False
-                    sentence_index_file = case_dir / doc["sentence_index_file"]
+                    sentence_index_file = corpus_dir / doc["sentence_index_file"]
                     if not sentence_index_file.exists():
                         print(f"Missing sentence index file: {sentence_index_file}")
                         return False
-                        
-            except Exception as e:
-                print(f"Error validating {metadata_file}: {e}")
+            except Exception as exc:  # pylint: disable=broad-except
+                print(f"Error validating {metadata_file}: {exc}")
                 return False
-        
-        print(f"✓ Validation successful: {len(case_dirs)} cases validated")
+
+        print(f"✓ Validation successful: {len(corpus_dirs)} corpora validated")
         return True
 
 
-def main():
-    """Main entry point."""
-    parser = argparse.ArgumentParser(
-        description="Process legal case documents for agent scaffold"
-    )
-    
-    parser.add_argument(
-        "input_file",
-        help="Path to input JSON file containing cases"
-    )
-    
-    parser.add_argument(
-        "--output-dir",
-        default="data",
-        help="Base output directory (default: data)"
-    )
-    
-    parser.add_argument(
-        "--model",
-        default="Qwen/Qwen3-8B",
-        help="Model for tokenizer (default: Qwen/Qwen3-8B)"
-    )
-    
-    parser.add_argument(
-        "--case-ids",
-        nargs="+",
-        help="Specific case IDs to process"
-    )
-    
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Perform dry run without writing files"
-    )
-    
-    parser.add_argument(
-        "--validate",
-        action="store_true",
-        help="Validate output after processing"
-    )
-    
-    parser.add_argument(
-        "--quiet",
-        action="store_true",
-        help="Suppress verbose output"
-    )
-    
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Process input corpora for checklist-agent runtime")
+    parser.add_argument("input_file", help="Path to input JSON file containing controller input corpora")
+    parser.add_argument("--output-dir", default="data", help="Base output directory (default: data)")
+    parser.add_argument("--model", default="Qwen/Qwen3-8B", help="Model for tokenizer (default: Qwen/Qwen3-8B)")
+    parser.add_argument("--corpus-ids", nargs="+", help="Specific corpus IDs to process")
+    parser.add_argument("--dry-run", action="store_true", help="Perform dry run without writing files")
+    parser.add_argument("--validate", action="store_true", help="Validate output after processing")
+    parser.add_argument("--quiet", action="store_true", help="Suppress verbose output")
     args = parser.parse_args()
-    
-    # Create processor
-    processor = LegalDataProcessor(
+
+    processor = CorpusDataProcessor(
         input_file=args.input_file,
         output_dir=args.output_dir,
         model_name=args.model,
-        verbose=not args.quiet
+        verbose=not args.quiet,
     )
-    
-    # Process cases
-    stats = processor.process_all(
-        case_ids=args.case_ids,
-        dry_run=args.dry_run
-    )
-    
-    # Validate if requested
+    stats = processor.process_all(corpus_ids=args.corpus_ids, dry_run=args.dry_run)
+
     if args.validate and not args.dry_run:
         output_base = Path(args.output_dir) / processor.dataset_name
         processor.validate_output(output_base)
-    
-    # Return exit code based on errors
+
     sys.exit(0 if not stats["errors"] else 1)
 
 

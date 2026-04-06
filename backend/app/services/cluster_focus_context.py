@@ -9,10 +9,10 @@ from app.core.config import Settings, get_settings
 _PLACEHOLDER_PATTERN = re.compile(r"#([A-Z][A-Z0-9_]*)")
 
 
-def load_cluster_focus_context(case_title: Optional[str], settings: Optional[Settings] = None) -> str:
+def load_cluster_focus_context(run_title: Optional[str], settings: Optional[Settings] = None) -> str:
     template = load_cluster_focus_context_template(settings)
     values = {
-        "CASE_TITLE": str(case_title).strip() if isinstance(case_title, str) else "",
+        "RUN_TITLE": str(run_title).strip() if isinstance(run_title, str) else "",
     }
     return render_cluster_focus_context_template(template, values)
 

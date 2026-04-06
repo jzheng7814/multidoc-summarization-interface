@@ -12,7 +12,7 @@ from app.services.spoof_replay import (
     replay_spoof_events,
     require_completed_terminal_event,
     resolve_spoof_fixture_dir,
-    validate_fixture_case,
+    validate_fixture_corpus,
     validate_fixture_document_ids,
 )
 
@@ -23,12 +23,13 @@ class ChecklistExtractionEngine(Protocol):
     async def run(
         self,
         backend_run_id: str,
-        case_id: str,
+        corpus_id: str,
         documents: List[DocumentReference],
         progress_callback: Optional[Callable[[str, Dict[str, Any]], None]] = None,
         *,
         checklist_spec: Optional[Dict[str, Any]] = None,
         focus_context: Optional[str] = None,
+        run_title: Optional[str] = None,
     ) -> ClusterExtractionResult:
         ...
 
@@ -39,20 +40,22 @@ class ClusterChecklistExtractionEngine:
     async def run(
         self,
         backend_run_id: str,
-        case_id: str,
+        corpus_id: str,
         documents: List[DocumentReference],
         progress_callback: Optional[Callable[[str, Dict[str, Any]], None]] = None,
         *,
         checklist_spec: Optional[Dict[str, Any]] = None,
         focus_context: Optional[str] = None,
+        run_title: Optional[str] = None,
     ) -> ClusterExtractionResult:
         return await run_cluster_extraction(
             backend_run_id,
-            case_id,
+            corpus_id,
             documents,
             progress_callback=progress_callback,
             checklist_spec=checklist_spec,
             focus_context=focus_context,
+            run_title=run_title,
         )
 
 
@@ -65,16 +68,17 @@ class SpoofChecklistExtractionEngine:
     async def run(
         self,
         backend_run_id: str,
-        case_id: str,
+        corpus_id: str,
         documents: List[DocumentReference],
         progress_callback: Optional[Callable[[str, Dict[str, Any]], None]] = None,
         *,
         checklist_spec: Optional[Dict[str, Any]] = None,
         focus_context: Optional[str] = None,
+        run_title: Optional[str] = None,
     ) -> ClusterExtractionResult:
         fixture_dir = resolve_spoof_fixture_dir(self._settings.cluster_spoof_extraction_fixture_dir)
         request_payload = load_spoof_request_payload(fixture_dir)
-        validate_fixture_case(case_id, request_payload, label="Spoof extraction fixture")
+        validate_fixture_corpus(corpus_id, request_payload, label="Spoof extraction fixture")
         validate_fixture_document_ids(
             [document.id for document in documents],
             request_payload,

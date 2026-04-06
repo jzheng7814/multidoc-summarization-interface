@@ -13,8 +13,7 @@ class RunRecord(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
     source_type: Mapped[str] = mapped_column(String, nullable=False)
-    source_case_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
-    case_title: Mapped[str] = mapped_column(String, nullable=False)
+    title: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[str] = mapped_column(String, nullable=False)
 
     extraction_config_json: Mapped[str] = mapped_column(Text, nullable=False)
@@ -60,16 +59,8 @@ class RunDocument(Base):
     type: Mapped[str | None] = mapped_column(String, nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     source: Mapped[str | None] = mapped_column(String, nullable=True)
-    court: Mapped[str | None] = mapped_column(String, nullable=True)
-    state: Mapped[str | None] = mapped_column(String, nullable=True)
     ecf_number: Mapped[str | None] = mapped_column(String, nullable=True)
-    file_url: Mapped[str | None] = mapped_column(String, nullable=True)
-    external_url: Mapped[str | None] = mapped_column(String, nullable=True)
-    clearinghouse_link: Mapped[str | None] = mapped_column(String, nullable=True)
-    text_url: Mapped[str | None] = mapped_column(String, nullable=True)
     date: Mapped[str | None] = mapped_column(String, nullable=True)
-    date_is_estimate: Mapped[bool | None] = mapped_column(nullable=True)
-    date_not_available: Mapped[bool | None] = mapped_column(nullable=True)
     is_docket: Mapped[bool] = mapped_column(nullable=False, default=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
 

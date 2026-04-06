@@ -39,15 +39,11 @@ async function safeJson(response) {
     }
 }
 
-export async function fetchDocuments(caseId) {
-    return request(`/cases/${caseId}/documents`);
-}
-
-export async function uploadDocuments(uploadPayload) {
-    const caseName = String(uploadPayload?.caseName || '').trim();
+function appendUploadFormData(formData, uploadPayload) {
+    const title = String(uploadPayload?.title ?? '').trim();
     const documents = Array.isArray(uploadPayload?.documents) ? uploadPayload.documents : [];
-    if (!caseName) {
-        throw new Error('Case name is required for upload.');
+    if (!title) {
+        throw new Error('A title is required for upload.');
     }
     if (!documents.length) {
         throw new Error('At least one document is required for upload.');
@@ -74,20 +70,15 @@ export async function uploadDocuments(uploadPayload) {
         };
     });
 
-    const formData = new FormData();
     formData.append(
         'manifest',
         JSON.stringify({
-            caseName,
+            title,
             documents: manifestDocuments
         })
     );
     documents.forEach((entry) => {
         formData.append('files', entry.file, entry.file.name);
-    });
-    return request('/cases/upload-documents', {
-        method: 'POST',
-        body: formData
     });
 }
 
@@ -98,120 +89,18 @@ export async function createRun() {
     });
 }
 
-export async function createRunFromCaseId(caseId) {
-    const normalized = String(caseId || '').trim();
-    if (!normalized) {
-        throw new Error('Case ID is required.');
-    }
-    return request('/runs/from-case-id', {
-        method: 'POST',
-        body: JSON.stringify({ caseId: normalized })
-    });
-}
-
 export async function createRunFromUpload(uploadPayload) {
-    const caseName = String(uploadPayload?.caseName || '').trim();
-    const documents = Array.isArray(uploadPayload?.documents) ? uploadPayload.documents : [];
-    if (!caseName) {
-        throw new Error('Case name is required for upload.');
-    }
-    if (!documents.length) {
-        throw new Error('At least one document is required for upload.');
-    }
-
-    const manifestDocuments = documents.map((entry, index) => {
-        const file = entry?.file;
-        if (!file) {
-            throw new Error(`Document #${index + 1} is missing an uploaded file.`);
-        }
-        const name = String(entry?.name || '').trim();
-        const date = String(entry?.date || '').trim();
-        const type = String(entry?.type || '').trim();
-        const typeOther = String(entry?.typeOther || '').trim();
-        if (!name || !date || !type) {
-            throw new Error(`Document #${index + 1} must include name, date, and type.`);
-        }
-        return {
-            name,
-            date,
-            type,
-            typeOther: type === 'Other' ? typeOther : undefined,
-            fileName: file.name
-        };
-    });
-
     const formData = new FormData();
-    formData.append(
-        'manifest',
-        JSON.stringify({
-            caseName,
-            documents: manifestDocuments
-        })
-    );
-    documents.forEach((entry) => {
-        formData.append('files', entry.file, entry.file.name);
-    });
-
+    appendUploadFormData(formData, uploadPayload);
     return request('/runs/upload-documents', {
         method: 'POST',
         body: formData
     });
 }
 
-export async function updateRunFromCaseId(runId, caseId) {
-    const normalized = String(caseId || '').trim();
-    if (!normalized) {
-        throw new Error('Case ID is required.');
-    }
-    return request(`/runs/${runId}/from-case-id`, {
-        method: 'POST',
-        body: JSON.stringify({ caseId: normalized })
-    });
-}
-
 export async function updateRunFromUpload(runId, uploadPayload) {
-    const caseName = String(uploadPayload?.caseName || '').trim();
-    const documents = Array.isArray(uploadPayload?.documents) ? uploadPayload.documents : [];
-    if (!caseName) {
-        throw new Error('Case name is required for upload.');
-    }
-    if (!documents.length) {
-        throw new Error('At least one document is required for upload.');
-    }
-
-    const manifestDocuments = documents.map((entry, index) => {
-        const file = entry?.file;
-        if (!file) {
-            throw new Error(`Document #${index + 1} is missing an uploaded file.`);
-        }
-        const name = String(entry?.name || '').trim();
-        const date = String(entry?.date || '').trim();
-        const type = String(entry?.type || '').trim();
-        const typeOther = String(entry?.typeOther || '').trim();
-        if (!name || !date || !type) {
-            throw new Error(`Document #${index + 1} must include name, date, and type.`);
-        }
-        return {
-            name,
-            date,
-            type,
-            typeOther: type === 'Other' ? typeOther : undefined,
-            fileName: file.name
-        };
-    });
-
     const formData = new FormData();
-    formData.append(
-        'manifest',
-        JSON.stringify({
-            caseName,
-            documents: manifestDocuments
-        })
-    );
-    documents.forEach((entry) => {
-        formData.append('files', entry.file, entry.file.name);
-    });
-
+    appendUploadFormData(formData, uploadPayload);
     return request(`/runs/${runId}/upload-documents`, {
         method: 'POST',
         body: formData
@@ -288,35 +177,6 @@ export async function startRunSummary(runId, summaryConfig = null) {
 
 export async function fetchRunSummaryStatus(runId) {
     return request(`/runs/${runId}/summary/status`);
-}
-
-export async function startSummaryJob(caseId, body) {
-    return request(`/cases/${caseId}/summary`, {
-        method: 'POST',
-        body: JSON.stringify(body)
-    });
-}
-
-export async function getSummaryJob(caseId, jobId) {
-    return request(`/cases/${caseId}/summary/${jobId}`);
-}
-
-export async function fetchChecklist(caseId) {
-    return request(`/cases/${caseId}/checklist`);
-}
-
-export async function startChecklistExtraction(caseId) {
-    return request(`/cases/${caseId}/checklist/start`, {
-        method: 'POST'
-    });
-}
-
-export async function fetchChecklistStatus(caseId) {
-    return request(`/cases/${caseId}/checklist/status`);
-}
-
-export async function fetchSummaryPrompt() {
-    return request('/cases/summary/prompt');
 }
 
 export function getApiBaseUrl() {

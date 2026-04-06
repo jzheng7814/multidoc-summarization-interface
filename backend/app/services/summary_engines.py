@@ -15,7 +15,7 @@ from app.services.spoof_replay import (
     replay_spoof_events,
     require_completed_terminal_event,
     resolve_spoof_fixture_dir,
-    validate_fixture_case,
+    validate_fixture_corpus,
     validate_fixture_document_ids,
 )
 
@@ -25,8 +25,8 @@ ProgressCallback = Callable[[str, Dict[str, Any]], None]
 @dataclass(frozen=True)
 class SummaryRunInput:
     backend_run_id: str
-    case_id: str
-    case_title: Optional[str]
+    corpus_id: str
+    run_title: Optional[str]
     documents: Sequence[Document]
     checklist_collection: EvidenceCollection
     checklist_definitions: Mapping[str, str]
@@ -54,8 +54,8 @@ class ClusterSummaryGenerationEngine:
     ) -> ClusterSummaryResult:
         return await run_cluster_summary(
             run_input.backend_run_id,
-            run_input.case_id,
-            case_title=run_input.case_title,
+            run_input.corpus_id,
+            run_title=run_input.run_title,
             documents=run_input.documents,
             checklist_collection=run_input.checklist_collection,
             checklist_definitions=run_input.checklist_definitions,
@@ -77,7 +77,7 @@ class SpoofSummaryGenerationEngine:
     ) -> ClusterSummaryResult:
         fixture_dir = resolve_spoof_fixture_dir(self._settings.cluster_spoof_summary_fixture_dir)
         request_payload = load_spoof_request_payload(fixture_dir)
-        validate_fixture_case(run_input.case_id, request_payload, label="Spoof summary fixture")
+        validate_fixture_corpus(run_input.corpus_id, request_payload, label="Spoof summary fixture")
         validate_fixture_document_ids(
             [document.id for document in run_input.documents],
             request_payload,
@@ -109,7 +109,7 @@ class SpoofSummaryGenerationEngine:
         if not job_id:
             raise RuntimeError("Spoof summary fixture is missing job_id in terminal event and result payload.")
 
-        summary_text = runner._extract_summary_text(summary_payload, result_payload, run_input.case_id).strip()  # pylint: disable=protected-access
+        summary_text = runner._extract_summary_text(summary_payload, result_payload, run_input.corpus_id).strip()  # pylint: disable=protected-access
         summary_stats = result_payload.get("completion_stats")
         if not isinstance(summary_stats, dict):
             summary_stats = summary_payload.get("summary_stats")

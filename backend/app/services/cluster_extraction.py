@@ -51,12 +51,13 @@ class ClusterChecklistRunner:
     async def run(
         self,
         backend_run_id: str,
-        case_id: str,
+        corpus_id: str,
         documents: List[DocumentReference],
         progress_callback: Optional[ProgressCallback] = None,
         *,
         checklist_spec: Optional[Dict[str, Any]] = None,
         focus_context: Optional[str] = None,
+        run_title: Optional[str] = None,
     ) -> ClusterExtractionResult:
         if not documents:
             return ClusterExtractionResult(
@@ -69,13 +70,14 @@ class ClusterChecklistRunner:
                 checklist_ndjson_path=None,
             )
 
-        request_id = f"cluster_{case_id}_{uuid.uuid4().hex[:12]}"
+        request_id = f"cluster_{corpus_id}_{uuid.uuid4().hex[:12]}"
         request_payload = self._build_controller_request(
-            case_id,
+            corpus_id,
             request_id,
             documents,
             checklist_spec=checklist_spec,
             focus_context=focus_context,
+            run_title=run_title,
         )
         stage_paths = await asyncio.to_thread(self._stage_manager.prepare_stage, backend_run_id)
         remote_command = self._stage_manager.build_remote_command(
@@ -88,7 +90,7 @@ class ClusterChecklistRunner:
             "Starting cluster controller run",
             {
                 "backend_run_id": backend_run_id,
-                "case_id": case_id,
+                "corpus_id": corpus_id,
                 "request_id": request_id,
                 "ssh_host": self._settings.cluster_ssh_host,
                 "stage_dir": str(stage_paths.run_dir),
@@ -113,7 +115,7 @@ class ClusterChecklistRunner:
         await process.stdin.drain()
         process.stdin.close()
 
-        stderr_task = asyncio.create_task(self._stream_stderr(case_id, request_id, process.stderr))
+        stderr_task = asyncio.create_task(self._stream_stderr(corpus_id, request_id, process.stderr))
         terminal_event_type: Optional[str] = None
         terminal_data: Dict[str, Any] = {}
 
@@ -128,14 +130,14 @@ class ClusterChecklistRunner:
 
                 event_type = parsed["event_type"]
                 event_data = parsed["data"]
-                self._emit_controller_event(case_id, request_id, parsed)
+                self._emit_controller_event(corpus_id, request_id, parsed)
                 if progress_callback is not None:
                     try:
                         progress_callback(event_type, dict(event_data))
                     except Exception as exc:  # pylint: disable=broad-except
                         producer.warning(
                             "Cluster progress callback failed",
-                            {"case_id": case_id, "request_id": request_id, "error": str(exc)},
+                            {"corpus_id": corpus_id, "request_id": request_id, "error": str(exc)},
                         )
 
                 if event_type in {"completed", "failed"}:
@@ -173,7 +175,7 @@ class ClusterChecklistRunner:
             producer.info(
                 "Cluster controller run completed",
                 {
-                    "case_id": case_id,
+                    "corpus_id": corpus_id,
                     "request_id": request_id,
                     "extracted_items": len(collection.items),
                     "job_id": terminal_data.get("job_id"),
@@ -196,7 +198,7 @@ class ClusterChecklistRunner:
                 except asyncio.CancelledError:
                     pass
 
-    async def _stream_stderr(self, case_id: str, request_id: str, stderr: asyncio.StreamReader) -> None:
+    async def _stream_stderr(self, corpus_id: str, request_id: str, stderr: asyncio.StreamReader) -> None:
         while True:
             line = await stderr.readline()
             if not line:
@@ -207,7 +209,7 @@ class ClusterChecklistRunner:
             producer.warning(
                 "Cluster controller stderr",
                 {
-                    "case_id": case_id,
+                    "corpus_id": corpus_id,
                     "request_id": request_id,
                     "message": message,
                 },
@@ -245,11 +247,11 @@ class ClusterChecklistRunner:
             "data": data,
         }
 
-    def _emit_controller_event(self, case_id: str, request_id: str, payload: Dict[str, Any]) -> None:
+    def _emit_controller_event(self, corpus_id: str, request_id: str, payload: Dict[str, Any]) -> None:
         event_type = payload["event_type"]
         data = payload["data"]
         event_payload = {
-            "case_id": case_id,
+            "corpus_id": corpus_id,
             "request_id": request_id,
             "controller_request_id": payload.get("request_id"),
             "seq": payload.get("seq"),
@@ -296,7 +298,7 @@ class ClusterChecklistRunner:
                 "error": data.get("error") or data.get("message"),
             }
         keys_of_interest = (
-            "case_id",
+            "corpus_id",
             "document_count",
             "dataset_name",
             "model",
@@ -320,12 +322,13 @@ class ClusterChecklistRunner:
 
     def _build_controller_request(
         self,
-        case_id: str,
+        corpus_id: str,
         request_id: str,
         documents: List[DocumentReference],
         *,
         checklist_spec: Optional[Dict[str, Any]] = None,
         focus_context: Optional[str] = None,
+        run_title: Optional[str] = None,
     ) -> Dict[str, Any]:
         resolved_docs = self._resolve_documents(documents)
         checklist_strategy = self._settings.cluster_checklist_strategy
@@ -333,16 +336,21 @@ class ClusterChecklistRunner:
             self._settings.cluster_checklist_spec_path,
             strategy=checklist_strategy,
         )
-        resolved_focus_context = focus_context or load_cluster_focus_context(str(case_id))
+        resolved_focus_context = focus_context or load_cluster_focus_context(run_title)
         request: Dict[str, Any] = {
             "request_id": request_id,
-            "case": {
-                "case_id": str(case_id),
-                "case_documents_text": [doc.text for doc in resolved_docs],
-                "case_documents_title": [doc.title for doc in resolved_docs],
-                "case_documents_doc_type": [doc.doc_type for doc in resolved_docs],
-                "case_documents_id": [str(doc.id) for doc in resolved_docs],
-                "case_documents_date": [doc.date for doc in resolved_docs],
+            "input": {
+                "corpus_id": str(corpus_id),
+                "documents": [
+                    {
+                        "document_id": str(doc.id),
+                        "title": doc.title,
+                        "doc_type": doc.doc_type,
+                        "date": doc.date,
+                        "text": doc.text,
+                    }
+                    for doc in resolved_docs
+                ],
             },
             "model": self._settings.cluster_model_name,
             "checklist_strategy": checklist_strategy,
@@ -755,12 +763,12 @@ def validate_cluster_runtime_prerequisites() -> None:
     config_errors: List[str] = []
 
     required_text_fields = {
-        "LEGAL_CASE_CLUSTER_SSH_HOST": settings.cluster_ssh_host,
-        "LEGAL_CASE_CLUSTER_REMOTE_STAGE_ROOT": settings.cluster_remote_stage_root,
-        "LEGAL_CASE_CLUSTER_REMOTE_PYTHON_PATH": settings.cluster_remote_python_path,
-        "LEGAL_CASE_CLUSTER_REMOTE_HF_CACHE_DIR": settings.cluster_remote_hf_cache_dir,
-        "LEGAL_CASE_CLUSTER_REMOTE_SLURM_BIN_DIR": settings.cluster_remote_slurm_bin_dir,
-        "LEGAL_CASE_CLUSTER_REMOTE_CONTROLLER_SCRIPT": settings.cluster_remote_controller_script,
+        "MULTI_DOCUMENT_CLUSTER_SSH_HOST": settings.cluster_ssh_host,
+        "MULTI_DOCUMENT_CLUSTER_REMOTE_STAGE_ROOT": settings.cluster_remote_stage_root,
+        "MULTI_DOCUMENT_CLUSTER_REMOTE_PYTHON_PATH": settings.cluster_remote_python_path,
+        "MULTI_DOCUMENT_CLUSTER_REMOTE_HF_CACHE_DIR": settings.cluster_remote_hf_cache_dir,
+        "MULTI_DOCUMENT_CLUSTER_REMOTE_SLURM_BIN_DIR": settings.cluster_remote_slurm_bin_dir,
+        "MULTI_DOCUMENT_CLUSTER_REMOTE_CONTROLLER_SCRIPT": settings.cluster_remote_controller_script,
     }
     for env_name, value in required_text_fields.items():
         if not isinstance(value, str) or not value.strip():
@@ -772,7 +780,7 @@ def validate_cluster_runtime_prerequisites() -> None:
 
     if not settings.cluster_remote_controller_script.startswith("interface_agents/"):
         config_errors.append(
-            "LEGAL_CASE_CLUSTER_REMOTE_CONTROLLER_SCRIPT must be a path under interface_agents/."
+            "MULTI_DOCUMENT_CLUSTER_REMOTE_CONTROLLER_SCRIPT must be a path under interface_agents/."
         )
 
     try:
@@ -787,18 +795,20 @@ def validate_cluster_runtime_prerequisites() -> None:
 
 async def run_cluster_extraction(
     backend_run_id: str,
-    case_id: str,
+    corpus_id: str,
     documents: List[DocumentReference],
     progress_callback: Optional[ProgressCallback] = None,
     *,
     checklist_spec: Optional[Dict[str, Any]] = None,
     focus_context: Optional[str] = None,
+    run_title: Optional[str] = None,
 ) -> ClusterExtractionResult:
     return await _RUNNER.run(
         backend_run_id,
-        case_id,
+        corpus_id,
         documents,
         progress_callback=progress_callback,
         checklist_spec=checklist_spec,
         focus_context=focus_context,
+        run_title=run_title,
     )

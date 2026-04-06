@@ -60,13 +60,12 @@ class AppConfig(BaseModel):
 
 
 class Settings(BaseSettings):
-    app_name: str = "legal-case-backend"
+    app_name: str = "multi-document-backend"
     environment: str = "development"
     use_mock_llm: bool = False
     config_path: str = "config/app.config.json"
     database_url: str
     openai_api_key: Optional[str] = None
-    clearinghouse_api_key: Optional[str] = None
     checklist_start_enabled: bool = True
     cluster_run_mode: Literal["remote", "spoof"] = "remote"
     cluster_spoof_event_delay_seconds: float = 0.0
@@ -108,7 +107,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
-        env_prefix="LEGAL_CASE_",
+        env_prefix="MULTI_DOCUMENT_",
         extra="ignore",
     )
 

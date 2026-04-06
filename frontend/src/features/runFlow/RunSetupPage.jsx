@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Download, Plus, Trash2, Upload, X } from 'lucide-react';
 
-import { updateRunFromCaseId, updateRunFromUpload } from '../../services/apiClient';
+import { updateRunFromUpload } from '../../services/apiClient';
 
 const DOCUMENT_TYPE_OPTIONS = [
     'Complaint',
@@ -137,9 +137,7 @@ function RunSetupPage({
     onRunDataUpdated,
     onStartExtraction
 }) {
-    const [intakeMode, setIntakeMode] = useState('caseId');
-    const [caseId, setCaseId] = useState('');
-    const [uploadCaseName, setUploadCaseName] = useState('');
+    const [uploadTitle, setUploadTitle] = useState('');
     const [uploadedDocuments, setUploadedDocuments] = useState([]);
 
     const [isAddingDocument, setIsAddingDocument] = useState(false);
@@ -174,11 +172,8 @@ function RunSetupPage({
         if (isCreatingRun) {
             return false;
         }
-        if (intakeMode === 'caseId') {
-            return caseId.trim().length > 0;
-        }
-        return uploadCaseName.trim().length > 0 && uploadedDocuments.length > 0;
-    }, [isCreatingRun, intakeMode, caseId, uploadCaseName, uploadedDocuments.length]);
+        return uploadTitle.trim().length > 0 && uploadedDocuments.length > 0;
+    }, [isCreatingRun, uploadTitle, uploadedDocuments.length]);
 
     useEffect(() => {
         if (!initialRunData) {
@@ -269,12 +264,10 @@ function RunSetupPage({
         setExtractionConfigError('');
         setSummaryConfigError('');
         try {
-            const payload = intakeMode === 'caseId'
-                ? await updateRunFromCaseId(runId, caseId.trim())
-                : await updateRunFromUpload(runId, {
-                    caseName: uploadCaseName,
-                    documents: uploadedDocuments
-                });
+            const payload = await updateRunFromUpload(runId, {
+                title: uploadTitle,
+                documents: uploadedDocuments
+            });
 
             setRunData(payload);
             onRunDataUpdated?.(payload);
@@ -443,103 +436,62 @@ function RunSetupPage({
                         )}
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <button
-                            type="button"
-                            onClick={() => setIntakeMode('caseId')}
-                            className={`px-3 py-1.5 text-sm rounded border ${
-                                intakeMode === 'caseId'
-                                    ? 'border-[var(--color-accent)] text-[var(--color-accent)]'
-                                    : 'border-[var(--color-border)] text-[var(--color-text-muted)]'
-                            }`}
-                        >
-                            Case ID
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setIntakeMode('upload')}
-                            className={`px-3 py-1.5 text-sm rounded border ${
-                                intakeMode === 'upload'
-                                    ? 'border-[var(--color-accent)] text-[var(--color-accent)]'
-                                    : 'border-[var(--color-border)] text-[var(--color-text-muted)]'
-                            }`}
-                        >
-                            Manual Upload
-                        </button>
-                    </div>
-
-                    {intakeMode === 'caseId' ? (
+                    <div className="space-y-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-[var(--color-text-secondary)]" htmlFor="case-id-input">
-                                Case ID
+                            <label className="text-sm font-medium text-[var(--color-text-secondary)]" htmlFor="upload-title">
+                                Run Title
                             </label>
                             <input
-                                id="case-id-input"
+                                id="upload-title"
                                 type="text"
-                                value={caseId}
-                                onChange={(event) => setCaseId(event.target.value)}
-                                placeholder="Enter case ID"
+                                value={uploadTitle}
+                                onChange={(event) => setUploadTitle(event.target.value)}
+                                placeholder="Enter a title for this document set"
                                 className="w-full px-3 py-2 border border-[var(--color-input-border)] rounded-md bg-[var(--color-input-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                             />
                         </div>
-                    ) : (
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-[var(--color-text-secondary)]" htmlFor="upload-case-name">
-                                    Case Name
-                                </label>
-                                <input
-                                    id="upload-case-name"
-                                    type="text"
-                                    value={uploadCaseName}
-                                    onChange={(event) => setUploadCaseName(event.target.value)}
-                                    placeholder="Enter case name"
-                                    className="w-full px-3 py-2 border border-[var(--color-input-border)] rounded-md bg-[var(--color-input-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
-                                />
-                            </div>
 
-                            <div className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface-panel-alt)] p-3">
-                                <div className="mb-2 text-sm font-medium text-[var(--color-text-secondary)]">Documents</div>
-                                {uploadedDocuments.length === 0 ? (
-                                    <div className="mb-3 rounded border-2 border-dashed border-[var(--color-border-strong)] bg-[var(--color-surface-panel)] px-3 py-6 text-center text-sm text-[var(--color-text-muted)]">
-                                        No documents added yet.
-                                    </div>
-                                ) : (
-                                    <div className="mb-3 space-y-2">
-                                        {uploadedDocuments.map((document) => (
-                                            <div key={document.id} className="flex items-start gap-3 rounded border border-[var(--color-border)] bg-[var(--color-surface-panel)] px-3 py-2">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleRemoveDocument(document.id)}
-                                                    className="mt-0.5 text-[var(--color-text-muted)] hover:text-[var(--color-danger)]"
-                                                    aria-label={`Remove ${document.name}`}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
-                                                <div className="min-w-0">
-                                                    <div className="text-sm font-semibold">{document.name}</div>
-                                                    <div className="text-xs text-[var(--color-text-secondary)] mt-0.5">
-                                                        {document.date} · {resolveDocumentTypeLabel(document)}
-                                                    </div>
-                                                    <div className="text-xs text-[var(--color-text-muted)] mt-0.5 truncate">
-                                                        {document.file?.name}
-                                                    </div>
+                        <div className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface-panel-alt)] p-3">
+                            <div className="mb-2 text-sm font-medium text-[var(--color-text-secondary)]">Documents</div>
+                            {uploadedDocuments.length === 0 ? (
+                                <div className="mb-3 rounded border-2 border-dashed border-[var(--color-border-strong)] bg-[var(--color-surface-panel)] px-3 py-6 text-center text-sm text-[var(--color-text-muted)]">
+                                    No documents added yet.
+                                </div>
+                            ) : (
+                                <div className="mb-3 space-y-2">
+                                    {uploadedDocuments.map((document) => (
+                                        <div key={document.id} className="flex items-start gap-3 rounded border border-[var(--color-border)] bg-[var(--color-surface-panel)] px-3 py-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveDocument(document.id)}
+                                                className="mt-0.5 text-[var(--color-text-muted)] hover:text-[var(--color-danger)]"
+                                                aria-label={`Remove ${document.name}`}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                            <div className="min-w-0">
+                                                <div className="text-sm font-semibold">{document.name}</div>
+                                                <div className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                                                    {document.date} · {resolveDocumentTypeLabel(document)}
+                                                </div>
+                                                <div className="text-xs text-[var(--color-text-muted)] mt-0.5 truncate">
+                                                    {document.file?.name}
                                                 </div>
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
-                                <button
-                                    type="button"
-                                    onClick={handleStartAddDocument}
-                                    className="w-full flex items-center justify-center gap-2 rounded border-2 border-[var(--color-accent-soft)] bg-[var(--color-surface-panel)] px-3 py-2 text-sm font-medium text-[var(--color-accent)] hover:border-[var(--color-accent)]"
-                                >
-                                    <Plus className="h-4 w-4" />
-                                    Add Document
-                                </button>
-                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            <button
+                                type="button"
+                                onClick={handleStartAddDocument}
+                                className="w-full flex items-center justify-center gap-2 rounded border-2 border-[var(--color-accent-soft)] bg-[var(--color-surface-panel)] px-3 py-2 text-sm font-medium text-[var(--color-accent)] hover:border-[var(--color-accent)]"
+                            >
+                                <Plus className="h-4 w-4" />
+                                Add Document
+                            </button>
                         </div>
-                    )}
+                    </div>
 
                     <button
                         type="button"
@@ -556,7 +508,7 @@ function RunSetupPage({
 
                     {runData && (
                         <div className="rounded border border-[var(--color-border)] bg-[var(--color-surface-panel-alt)] p-3 text-sm text-[var(--color-text-secondary)]">
-                            <div>Case Title: <span className="font-medium text-[var(--color-text-primary)]">{runData.caseTitle || runData.case_title}</span></div>
+                            <div>Run Title: <span className="font-medium text-[var(--color-text-primary)]">{runData.title}</span></div>
                             <div className="mt-1">Documents loaded: {runDocuments.length}</div>
                         </div>
                     )}

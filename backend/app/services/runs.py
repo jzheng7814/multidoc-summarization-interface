@@ -36,12 +36,6 @@ from app.services.checklist_engines import get_checklist_extraction_engine
 from app.services.cluster_checklist_spec import validate_cluster_checklist_spec_payload
 from app.services.cluster_focus_context import load_cluster_focus_context_template, render_cluster_focus_context_template
 from app.services.cluster_queue import get_cluster_run_lock
-from app.services.clearinghouse import (
-    ClearinghouseClient,
-    ClearinghouseError,
-    ClearinghouseNotConfigured,
-    ClearinghouseNotFound,
-)
 from app.services.summary_engines import SummaryRunInput, get_summary_generation_engine
 from app.services.summary_focus_context import load_default_summary_focus_context, render_summary_focus_context_template
 
@@ -79,8 +73,7 @@ _MANUAL_UPLOAD_DOCUMENT_TYPE_SET = set(MANUAL_UPLOAD_DOCUMENT_TYPES)
 def create_run_from_documents(
     *,
     source_type: str,
-    source_case_id: Optional[str],
-    case_title: str,
+    title: str,
     documents: Sequence[Document],
 ) -> RunCreateResponse:
     run_id = str(uuid.uuid4())
@@ -91,8 +84,7 @@ def create_run_from_documents(
     _run_store.create_run(
         run_id=run_id,
         source_type=source_type,
-        source_case_id=source_case_id,
-        case_title=case_title,
+        title=title,
         created_at=created_at,
         workflow_stage="setup",
         documents=list(documents),
@@ -106,70 +98,35 @@ def create_run_from_documents(
 def create_empty_run() -> RunCreateResponse:
     return create_run_from_documents(
         source_type="new_run",
-        source_case_id=None,
-        case_title="Untitled Run",
+        title="Untitled Run",
         documents=[],
     )
 
 
-def create_run_from_case_id(case_id: str) -> RunCreateResponse:
-    normalized = str(case_id).strip()
-    if not normalized:
-        raise HTTPException(status_code=400, detail="case_id is required.")
-
-    docs, case_title = _fetch_documents_from_clearinghouse(normalized)
-    return create_run_from_documents(
-        source_type="case_id",
-        source_case_id=normalized,
-        case_title=case_title,
-        documents=docs,
-    )
-
-
 async def create_run_from_upload(manifest: UploadDocumentsManifest, files: List[UploadFile]) -> RunCreateResponse:
-    case_title = manifest.case_name.strip()
-    if not case_title:
-        raise HTTPException(status_code=400, detail="Case name is required.")
+    title = manifest.title.strip()
+    if not title:
+        raise HTTPException(status_code=400, detail="Run title is required.")
     documents = await _parse_uploaded_documents(manifest, files)
     return create_run_from_documents(
         source_type="manual_upload",
-        source_case_id=None,
-        case_title=case_title,
+        title=title,
         documents=documents,
     )
-
-
-def update_run_from_case_id(run_id: str, case_id: str) -> RunCreateResponse:
-    run = _require_run(run_id)
-    _assert_run_not_active(run)
-    normalized = str(case_id).strip()
-    if not normalized:
-        raise HTTPException(status_code=400, detail="case_id is required.")
-
-    docs, case_title = _fetch_documents_from_clearinghouse(normalized)
-    _replace_run_documents(
-        run,
-        source_type="case_id",
-        source_case_id=normalized,
-        case_title=case_title,
-        documents=docs,
-    )
-    return get_run(run_id)
 
 
 async def update_run_from_upload(run_id: str, manifest: UploadDocumentsManifest, files: List[UploadFile]) -> RunCreateResponse:
     run = _require_run(run_id)
     _assert_run_not_active(run)
 
-    case_title = manifest.case_name.strip()
-    if not case_title:
-        raise HTTPException(status_code=400, detail="Case name is required.")
+    title = manifest.title.strip()
+    if not title:
+        raise HTTPException(status_code=400, detail="Run title is required.")
     documents = await _parse_uploaded_documents(manifest, files)
     _replace_run_documents(
         run,
         source_type="manual_upload",
-        source_case_id=None,
-        case_title=case_title,
+        title=title,
         documents=documents,
     )
     return get_run(run_id)
@@ -299,7 +256,7 @@ async def start_extraction(run_id: str, background_tasks: BackgroundTasks, confi
 
 async def _run_extraction_job(run_id: str) -> None:
     if settings.cluster_checklist_strategy != "individual":
-        message = "Run-centric extraction configuration requires LEGAL_CASE_CLUSTER_CHECKLIST_STRATEGY=individual."
+        message = "Run-centric extraction configuration requires MULTI_DOCUMENT_CLUSTER_CHECKLIST_STRATEGY=individual."
         _run_store.update_extraction_state(
             run_id,
             status="failed",
@@ -313,10 +270,9 @@ async def _run_extraction_job(run_id: str) -> None:
     extraction_config = _parse_extraction_config(run.extraction_config)
 
     doc_refs = _documents_to_references(run.documents)
-    case_identifier = run.source_case_id or run.id
     focus_context = render_cluster_focus_context_template(
         extraction_config.focus_context,
-        {"CASE_TITLE": run.case_title},
+        {"RUN_TITLE": run.title},
     )
     checklist_spec = extraction_config.checklist_spec.model_dump(mode="json", by_alias=False)
 
@@ -340,11 +296,12 @@ async def _run_extraction_job(run_id: str) -> None:
             engine = get_checklist_extraction_engine()
             result = await engine.run(
                 run_id,
-                case_identifier,
+                run.id,
                 doc_refs,
                 progress_callback=lambda event_type, data: _handle_extraction_progress(run_id, event_type, data),
                 checklist_spec=checklist_spec,
                 focus_context=focus_context,
+                run_title=run.title,
             )
             latest_run = _require_run(run_id)
             _run_store.store_extraction_result(
@@ -417,7 +374,7 @@ async def _run_summary_job(run_id: str) -> None:
     }
     focus_context = render_summary_focus_context_template(
         summary_config.focus_context,
-        {"CASE_TITLE": run.case_title.strip()},
+        {"RUN_TITLE": run.title.strip()},
     )
     summary_request = SummaryRequest(
         focus_context=focus_context,
@@ -445,8 +402,8 @@ async def _run_summary_job(run_id: str) -> None:
             engine = get_summary_generation_engine()
             run_input = SummaryRunInput(
                 backend_run_id=run_id,
-                case_id=run.source_case_id or run.id,
-                case_title=run.case_title,
+                corpus_id=run.id,
+                run_title=run.title,
                 documents=run.documents,
                 checklist_collection=checklist_collection,
                 checklist_definitions=checklist_definitions,
@@ -735,28 +692,6 @@ def _handle_summary_progress(run_id: str, event_type: str, data: Dict[str, Any])
     )
 
 
-def _fetch_documents_from_clearinghouse(case_id: str) -> tuple[List[Document], str]:
-    api_key = settings.clearinghouse_api_key
-    if not api_key:
-        raise HTTPException(status_code=503, detail="Clearinghouse API key has not been configured on the server.")
-
-    client = ClearinghouseClient(api_key=api_key)
-    try:
-        docs, case_title = client.fetch_case_documents(case_id)
-    except ClearinghouseNotConfigured as exc:
-        raise HTTPException(status_code=503, detail="Clearinghouse API key has not been configured on the server.") from exc
-    except ClearinghouseNotFound as exc:
-        raise HTTPException(status_code=404, detail=f"Case '{case_id}' was not found on Clearinghouse.") from exc
-    except ClearinghouseError as exc:
-        raise HTTPException(
-            status_code=502,
-            detail="Failed to retrieve documents from Clearinghouse. Please try again later.",
-        ) from exc
-
-    title = (case_title or "").strip() or f"Case {case_id}"
-    return _sort_documents(list(docs)), title
-
-
 async def _parse_uploaded_documents(manifest: UploadDocumentsManifest, files: List[UploadFile]) -> List[Document]:
     if not files:
         raise HTTPException(status_code=400, detail="At least one .txt document must be uploaded.")
@@ -841,7 +776,7 @@ def _default_extraction_config() -> Dict[str, Any]:
     strategy = settings.cluster_checklist_strategy
     if strategy != "individual":
         raise RuntimeError(
-            "Run-centric extraction configuration requires LEGAL_CASE_CLUSTER_CHECKLIST_STRATEGY=individual."
+            "Run-centric extraction configuration requires MULTI_DOCUMENT_CLUSTER_CHECKLIST_STRATEGY=individual."
         )
 
     from app.services.cluster_checklist_spec import load_cluster_checklist_spec
@@ -909,8 +844,7 @@ def _to_run_response(run: StoredRun) -> RunCreateResponse:
     return RunCreateResponse(
         run_id=run.id,
         source_type=run.source_type,
-        source_case_id=run.source_case_id,
-        case_title=run.case_title,
+        title=run.title,
         created_at=run.created_at,
         extraction_status=run.extraction_status,
         summary_status=run.summary_status,
@@ -971,15 +905,13 @@ def _replace_run_documents(
     run: StoredRun,
     *,
     source_type: str,
-    source_case_id: Optional[str],
-    case_title: str,
+    title: str,
     documents: Sequence[Document],
 ) -> None:
     _run_store.create_run(
         run_id=run.id,
         source_type=source_type,
-        source_case_id=source_case_id,
-        case_title=case_title,
+        title=title,
         created_at=run.created_at,
         workflow_stage="setup",
         documents=list(documents),

@@ -18,7 +18,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run native GPT-OSS tool-calling summary generation",
     )
-    parser.add_argument("corpus_path", help="Path to the processed document corpus for one case")
+    parser.add_argument("corpus_path", help="Path to the processed document corpus for one run input")
     parser.add_argument(
         "--request-json",
         required=True,

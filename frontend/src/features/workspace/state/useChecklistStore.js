@@ -1,15 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { fetchChecklist } from '../../../services/apiClient';
-
-const normaliseCaseId = (value) => String(value ?? '').trim();
-
-const requireCaseId = (value) => {
-    const trimmed = normaliseCaseId(value);
-    if (!trimmed) {
-        throw new Error('Case ID is required to fetch checklist data.');
-    }
-    return trimmed;
-};
+import { useCallback, useMemo, useState } from 'react';
 
 const parseDocumentId = (value) => {
     if (value == null) {
@@ -17,47 +6,6 @@ const parseDocumentId = (value) => {
     }
     const parsed = Number.parseInt(value, 10);
     return Number.isNaN(parsed) ? null : parsed;
-};
-
-const normaliseCategories = (payload) => {
-    if (!payload) {
-        return [];
-    }
-    const categories = Array.isArray(payload?.categories) ? payload.categories : [];
-    return categories.map((category) => ({
-        id: category.id,
-        label: category.label,
-        color: category.color,
-        values: Array.isArray(category.values)
-            ? category.values.map((value) => ({
-                id: value.id,
-                value: value.value ?? '',
-                text: value.text ?? value.value ?? '',
-                documentId: parseDocumentId(value.documentId ?? value.document_id),
-                startOffset: value.startOffset ?? value.start_offset ?? null,
-                endOffset: value.endOffset ?? value.end_offset ?? null
-            }))
-            : []
-    }));
-};
-
-const flattenCategories = (categories = []) => {
-    const items = [];
-    categories.forEach((category) => {
-        const values = Array.isArray(category.values) ? category.values : [];
-        values.forEach((value) => {
-            items.push({
-                id: value.id,
-                categoryId: category.id,
-                value: value.value ?? '',
-                text: value.text ?? value.value ?? '',
-                documentId: parseDocumentId(value.documentId ?? value.document_id),
-                startOffset: value.startOffset ?? value.start_offset ?? null,
-                endOffset: value.endOffset ?? value.end_offset ?? null
-            });
-        });
-    });
-    return items;
 };
 
 const buildCategories = (meta = [], items = []) =>
@@ -87,7 +35,7 @@ const normaliseCategoryMeta = (categories = []) => (
     }))
 );
 
-const useChecklistStore = ({ caseId, importedSnapshot = null } = {}) => {
+const useChecklistStore = ({ importedSnapshot = null } = {}) => {
     const hasImportedSnapshot = Boolean(importedSnapshot);
     const initialCategoryMeta = hasImportedSnapshot
         ? normaliseCategoryMeta(importedSnapshot.categories)
@@ -98,51 +46,6 @@ const useChecklistStore = ({ caseId, importedSnapshot = null } = {}) => {
 
     const [categoryMeta, setCategoryMeta] = useState(initialCategoryMeta);
     const [items, setItems] = useState(initialItems);
-    const [isLoading, setIsLoading] = useState(!hasImportedSnapshot);
-    const [error, setError] = useState(null);
-    const [usingImportedSnapshot, setUsingImportedSnapshot] = useState(hasImportedSnapshot);
-    const suppressNextHydrationRef = useRef(false);
-
-    const resolvedCaseId = useMemo(() => normaliseCaseId(caseId), [caseId]);
-
-    const hydrateResponse = useCallback((response) => {
-        if (!response) {
-            setCategoryMeta([]);
-            setItems([]);
-            return;
-        }
-        const categories = normaliseCategories(response);
-        setCategoryMeta(categories.map((category) => ({
-            id: category.id,
-            label: category.label,
-            color: category.color
-        })));
-        setItems(flattenCategories(categories));
-    }, []);
-
-    const refreshChecklist = useCallback(async () => {
-        if (usingImportedSnapshot) {
-            setIsLoading(false);
-            return null;
-        }
-        setIsLoading(true);
-        setError(null);
-        try {
-            const targetCaseId = requireCaseId(resolvedCaseId);
-            const response = await fetchChecklist(targetCaseId);
-            if (suppressNextHydrationRef.current) {
-                suppressNextHydrationRef.current = false;
-                return response;
-            }
-            hydrateResponse(response);
-            return response;
-        } catch (err) {
-            setError(err);
-            return null;
-        } finally {
-            setIsLoading(false);
-        }
-    }, [hydrateResponse, resolvedCaseId, usingImportedSnapshot]);
 
     const addItem = useCallback(async (payload) => {
         const trimmedValue = payload?.text?.trim();
@@ -194,31 +97,13 @@ const useChecklistStore = ({ caseId, importedSnapshot = null } = {}) => {
     }, []);
 
     const replaceItems = useCallback((nextItems) => {
-        setUsingImportedSnapshot(true);
-        setIsLoading(false);
-        setError(null);
         setItems(Array.isArray(nextItems) ? nextItems : []);
     }, []);
 
     const activateImportedSnapshot = useCallback(({ categories, items: importedItems }) => {
         setCategoryMeta(normaliseCategoryMeta(categories));
         setItems(Array.isArray(importedItems) ? importedItems : []);
-        setIsLoading(false);
-        setError(null);
-        setUsingImportedSnapshot(true);
     }, []);
-
-    const suppressNextServerHydration = useCallback(() => {
-        suppressNextHydrationRef.current = true;
-    }, []);
-
-    useEffect(() => {
-        if (usingImportedSnapshot) {
-            setIsLoading(false);
-            return;
-        }
-        void refreshChecklist();
-    }, [refreshChecklist, usingImportedSnapshot]);
 
     const categories = useMemo(() => buildCategories(categoryMeta, items), [categoryMeta, items]);
 
@@ -258,15 +143,15 @@ const useChecklistStore = ({ caseId, importedSnapshot = null } = {}) => {
     return {
         categories,
         items,
-        isLoading,
-        error,
-        refreshChecklist,
+        isLoading: false,
+        error: null,
+        refreshChecklist: async () => null,
         addItem,
         deleteItem,
         updateItem,
         replaceItems,
         activateImportedSnapshot,
-        suppressNextServerHydration,
+        suppressNextServerHydration: () => {},
         highlightsByDocument
     };
 };

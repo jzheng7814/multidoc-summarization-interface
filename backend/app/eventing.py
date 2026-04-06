@@ -31,7 +31,7 @@ class Event:
     producer: str
     description: str
     payload: Optional[Dict[str, Any]] = None
-    case_id: Optional[str] = None
+    corpus_id: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         data = {
@@ -41,8 +41,8 @@ class Event:
             "description": self.description,
             "payload": self.payload,
         }
-        if self.case_id is not None:
-            data["case_id"] = self.case_id
+        if self.corpus_id is not None:
+            data["corpus_id"] = self.corpus_id
         return data
 
 
@@ -86,9 +86,9 @@ class ConsoleEventConsumer(BaseEventConsumer):
         payload = ""
         if event.payload:
             payload = f" {json.dumps(event.payload, default=str)}"
-        case_hint = f" case_id={event.case_id}" if event.case_id else ""
+        corpus_hint = f" corpus_id={event.corpus_id}" if event.corpus_id else ""
         sys.stdout.write(
-            f"{event.timestamp} {event.visibility.name} {event.producer}{case_hint}: {event.description}{payload}\n"
+            f"{event.timestamp} {event.visibility.name} {event.producer}{corpus_hint}: {event.description}{payload}\n"
         )
         sys.stdout.flush()
 
@@ -232,7 +232,7 @@ class EventProducer:
             producer=self._name,
             description=description,
             payload=payload,
-            case_id=get_event_case_id(),
+            corpus_id=get_event_corpus_id(),
         )
         self._manager.submit(event)
 
@@ -256,19 +256,19 @@ def _current_timestamp() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-_EVENT_CASE_ID: ContextVar[Optional[str]] = ContextVar("event_case_id", default=None)
+_EVENT_CORPUS_ID: ContextVar[Optional[str]] = ContextVar("event_corpus_id", default=None)
 
 
-def bind_event_case_id(case_id: str) -> Token:
-    return _EVENT_CASE_ID.set(case_id)
+def bind_event_corpus_id(corpus_id: str) -> Token:
+    return _EVENT_CORPUS_ID.set(corpus_id)
 
 
-def reset_event_case_id(token: Token) -> None:
-    _EVENT_CASE_ID.reset(token)
+def reset_event_corpus_id(token: Token) -> None:
+    _EVENT_CORPUS_ID.reset(token)
 
 
-def get_event_case_id() -> Optional[str]:
-    return _EVENT_CASE_ID.get()
+def get_event_corpus_id() -> Optional[str]:
+    return _EVENT_CORPUS_ID.get()
 
 
 @lru_cache(maxsize=1)
