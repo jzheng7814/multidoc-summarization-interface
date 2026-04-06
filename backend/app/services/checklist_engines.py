@@ -22,6 +22,7 @@ class ChecklistExtractionEngine(Protocol):
 
     async def run(
         self,
+        backend_run_id: str,
         case_id: str,
         documents: List[DocumentReference],
         progress_callback: Optional[Callable[[str, Dict[str, Any]], None]] = None,
@@ -37,6 +38,7 @@ class ClusterChecklistExtractionEngine:
 
     async def run(
         self,
+        backend_run_id: str,
         case_id: str,
         documents: List[DocumentReference],
         progress_callback: Optional[Callable[[str, Dict[str, Any]], None]] = None,
@@ -45,6 +47,7 @@ class ClusterChecklistExtractionEngine:
         focus_context: Optional[str] = None,
     ) -> ClusterExtractionResult:
         return await run_cluster_extraction(
+            backend_run_id,
             case_id,
             documents,
             progress_callback=progress_callback,
@@ -61,6 +64,7 @@ class SpoofChecklistExtractionEngine:
 
     async def run(
         self,
+        backend_run_id: str,
         case_id: str,
         documents: List[DocumentReference],
         progress_callback: Optional[Callable[[str, Dict[str, Any]], None]] = None,

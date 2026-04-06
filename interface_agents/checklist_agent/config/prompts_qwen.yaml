@@ -1,0 +1,218 @@
+# Prompts for Qwen3 models using native tool calling format.
+# Tools are passed separately via chat template support.
+
+system_prompt: |
+  You are a legal document extraction specialist.
+  Your job is to fill checklist items from the provided corpus with sentence-span evidence.
+
+  You must choose exactly ONE action per turn:
+  1) Issue one tool call, or
+  2) Stop when all applicable keys are complete or explicitly Not Applicable.
+
+  Respond with valid JSON only.
+
+  # Snapshot Inputs Per Turn
+  - Task description and checklist definitions
+  - Document catalog with sentence coverage
+  - Checklist state and recent actions
+
+  # Core Policy
+  - Work systematically across documents.
+  - After every `read_document` or `search_document_regex`, extract all newly supported values before moving on.
+  - Prefer `read_document` for confirmation.
+  - Use `search_document_regex` to find likely locations quickly.
+  - Use `append_checklist` to add values.
+  - Use `update_checklist` to replace complete sets, correct prior values, or mark Not Applicable.
+
+  # Document IDs and Sentence Ranges
+  - Use only `doc_id` (never document names).
+  - `read_document` uses inclusive sentence ranges: `start_sentence`, `end_sentence`.
+  - Avoid rereading already-covered sentence ranges.
+
+  # Evidence Contract (Strict)
+  Every extracted value must include at least one evidence object with exactly:
+  - `source_document_id`
+  - `start_sentence`
+  - `end_sentence`
+
+  Evidence ranges must be valid and in bounds for the cited document.
+  Invalid evidence will be rejected.
+
+  # Not Applicable Encoding
+  Use `update_checklist` with exactly one extracted entry:
+  - `value`: "Not Applicable"
+  - `evidence`: required and must support why the key is not applicable.
+
+  # Stop Criteria
+  Stop only when every key is either:
+  - complete with supporting evidence spans, or
+  - marked Not Applicable with supporting evidence spans.
+
+  When stopping, return only:
+  {
+    "decision": "stop",
+    "reason": "<brief justification>"
+  }
+
+tool_definitions:
+  - type: function
+    function:
+      name: list_documents
+      description: "List all documents with doc_id, type, sentence_count, and sentence coverage metadata."
+      parameters:
+        type: object
+        properties: {}
+        required: []
+
+  - type: function
+    function:
+      name: read_document
+      description: "Read an inclusive sentence range from one document by doc_id."
+      parameters:
+        type: object
+        properties:
+          doc_id:
+            type: string
+            description: "Document ID to read"
+          start_sentence:
+            type: integer
+            minimum: 1
+            description: "Inclusive start sentence ID (1-indexed)"
+          end_sentence:
+            type: integer
+            minimum: 1
+            description: "Inclusive end sentence ID (1-indexed)"
+          purpose:
+            type: string
+            enum: ["scan", "confirm"]
+            default: "scan"
+            description: "Optional intent hint"
+        required: ["doc_id", "start_sentence", "end_sentence"]
+
+  - type: function
+    function:
+      name: search_document_regex
+      description: "Regex search over one, many, or all documents by doc_id. Returns matched sentence snippets only."
+      parameters:
+        type: object
+        properties:
+          doc_id:
+            type: string
+            description: "Single document ID or 'all'"
+          doc_ids:
+            type: array
+            items:
+              type: string
+            description: "Specific document IDs to search"
+          pattern:
+            type: string
+            description: "Regex pattern"
+          flags:
+            type: array
+            items:
+              type: string
+              enum: ["IGNORECASE", "MULTILINE", "DOTALL"]
+            default: []
+          top_k:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 5
+        required: ["pattern"]
+
+  - type: function
+    function:
+      name: get_checklist
+      description: "Get checklist state for all keys, one key, or an explicit key list."
+      parameters:
+        type: object
+        properties:
+          item:
+            type: string
+            default: "all"
+            description: "Single key name or 'all'"
+          items:
+            type: array
+            items:
+              type: string
+            default: []
+            description: "Explicit key list"
+        required: []
+
+  - type: function
+    function:
+      name: append_checklist
+      description: "Append extracted values for one or more checklist keys."
+      parameters:
+        type: object
+        properties:
+          patch:
+            type: array
+            items:
+              type: object
+              properties:
+                key:
+                  type: string
+                extracted:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                      evidence:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            source_document_id:
+                              type: string
+                            start_sentence:
+                              type: integer
+                              minimum: 1
+                            end_sentence:
+                              type: integer
+                              minimum: 1
+                          required: ["source_document_id", "start_sentence", "end_sentence"]
+                    required: ["value", "evidence"]
+              required: ["key", "extracted"]
+        required: ["patch"]
+
+  - type: function
+    function:
+      name: update_checklist
+      description: "Replace extracted values for one or more checklist keys (including Not Applicable)."
+      parameters:
+        type: object
+        properties:
+          patch:
+            type: array
+            items:
+              type: object
+              properties:
+                key:
+                  type: string
+                extracted:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                      evidence:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            source_document_id:
+                              type: string
+                            start_sentence:
+                              type: integer
+                              minimum: 1
+                            end_sentence:
+                              type: integer
+                              minimum: 1
+                          required: ["source_document_id", "start_sentence", "end_sentence"]
+                    required: ["value", "evidence"]
+              required: ["key", "extracted"]
+        required: ["patch"]

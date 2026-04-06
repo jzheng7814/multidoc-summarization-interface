@@ -39,3 +39,13 @@ scratch/
 scratch/*
 
 *.db
+
+# interface_agents runtime artifacts
+interface_agents/**/.env
+interface_agents/**/agent_logs/
+interface_agents/**/data/
+interface_agents/**/controller/runs/*
+!interface_agents/**/controller/runs/.gitkeep
+interface_agents/**/controller/requests/*
+!interface_agents/**/controller/requests/.gitkeep
+interface_agents/**/.pytest_cache/

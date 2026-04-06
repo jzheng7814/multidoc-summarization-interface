@@ -4,19 +4,24 @@ from pathlib import PurePosixPath
 from unittest.mock import patch
 
 from app.services.cluster_summary import ClusterSummaryRunner
+from app.services.remote_stage import RemoteStageManager, build_remote_stage_paths
 
 
 class ClusterSummaryRunnerTests(unittest.TestCase):
     def test_build_remote_command_uses_summary_agent_mode(self):
-        runner = ClusterSummaryRunner()
-        runner._settings.cluster_remote_python_path = "/path/python"
-        runner._settings.cluster_summary_remote_controller_script = "controller.py"
-        runner._settings.cluster_poll_seconds = 2
-        runner._settings.cluster_max_wait_seconds = 60
+        manager = RemoteStageManager()
+        manager._settings.cluster_remote_python_path = "/path/python"
+        manager._settings.cluster_poll_seconds = 2
+        manager._settings.cluster_max_wait_seconds = 60
 
-        command = runner._build_remote_command("/remote/repo")
+        command = manager.build_remote_command(
+            build_remote_stage_paths("/remote/stages", "backend_run_1"),
+            controller_script="interface_agents/summary_agent/controller/run_controller.py",
+            mode="slurm_summarize_agent",
+        )
         self.assertIn("--mode slurm_summarize_agent", command)
-        self.assertIn("controller.py", command)
+        self.assertIn("interface_agents/summary_agent/controller/run_controller.py", command)
+        self.assertIn("/remote/stages/backend_run_1", command)
 
     def test_result_from_completed_event_prefers_summary_path(self):
         runner = ClusterSummaryRunner()

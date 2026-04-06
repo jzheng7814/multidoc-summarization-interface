@@ -1,6 +1,7 @@
 import asyncio
 import json
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from app.schemas.documents import DocumentReference
@@ -122,7 +123,7 @@ class ClusterChecklistRunnerTests(unittest.TestCase):
 
         runner = ClusterChecklistRunner()
         runner._settings.cluster_ssh_host = "headnode"
-        runner._settings.cluster_remote_repo_dir = "/tmp/gavel"
+        runner._settings.cluster_remote_stage_root = "/tmp/stages"
         runner._settings.cluster_remote_python_path = "/tmp/python"
         runner._settings.cluster_remote_controller_script = "controller.py"
         runner._settings.cluster_poll_seconds = 2
@@ -139,16 +140,22 @@ class ClusterChecklistRunnerTests(unittest.TestCase):
 
         with (
             patch("app.services.cluster_extraction.asyncio.create_subprocess_exec", _fake_create_subprocess_exec),
-            patch("app.services.cluster_extraction.get_case_title", return_value="Example Case Title"),
+            patch.object(
+                runner._stage_manager,
+                "prepare_stage",
+                return_value=SimpleNamespace(run_dir="/remote/stage"),
+            ) as mocked_prepare_stage,
+            patch.object(runner._stage_manager, "build_remote_command", return_value="remote command"),
         ):
-            collection = asyncio.run(runner.run("46210", documents))
+            result = asyncio.run(runner.run("backend_run_1", "46210", documents))
 
-        self.assertEqual(len(collection.items), 1)
-        self.assertEqual(collection.items[0].bin_id, "Appeal")
-        self.assertEqual(collection.items[0].value, "Appeal filed")
-        self.assertEqual(collection.items[0].evidence.document_id, 77)
-        self.assertEqual(collection.items[0].evidence.start_offset, 0)
-        self.assertEqual(collection.items[0].evidence.end_offset, 6)
+        mocked_prepare_stage.assert_called_once_with("backend_run_1")
+        self.assertEqual(len(result.collection.items), 1)
+        self.assertEqual(result.collection.items[0].bin_id, "Appeal")
+        self.assertEqual(result.collection.items[0].value, "Appeal filed")
+        self.assertEqual(result.collection.items[0].evidence.document_id, 77)
+        self.assertEqual(result.collection.items[0].evidence.start_offset, 0)
+        self.assertEqual(result.collection.items[0].evidence.end_offset, 6)
 
         stdin_payload = json.loads(fake_process.stdin.buffer.decode("utf-8"))
         self.assertEqual(stdin_payload["case"]["case_id"], "46210")
@@ -247,20 +254,25 @@ class ClusterChecklistRunnerTests(unittest.TestCase):
 
         with (
             patch("app.services.cluster_extraction.asyncio.create_subprocess_exec", _fake_create_subprocess_exec),
-            patch("app.services.cluster_extraction.get_case_title", return_value="Example Case Title"),
+            patch.object(
+                runner._stage_manager,
+                "prepare_stage",
+                return_value=SimpleNamespace(run_dir="/remote/stage"),
+            ),
+            patch.object(runner._stage_manager, "build_remote_command", return_value="remote command"),
             patch.object(
                 runner,
                 "_load_artifact_payload_from_completed_event",
                 return_value=(artifact_checklist, artifact_document_map),
             ) as mocked_loader,
         ):
-            collection = asyncio.run(runner.run("400", documents))
+            result = asyncio.run(runner.run("backend_run_2", "400", documents))
 
         mocked_loader.assert_called_once()
-        self.assertEqual(len(collection.items), 1)
-        self.assertEqual(collection.items[0].bin_id, "Remedy_Sought")
-        self.assertEqual(collection.items[0].evidence.document_id, 21)
-        self.assertEqual(collection.items[0].evidence.start_offset, 2)
+        self.assertEqual(len(result.collection.items), 1)
+        self.assertEqual(result.collection.items[0].bin_id, "Remedy_Sought")
+        self.assertEqual(result.collection.items[0].evidence.document_id, 21)
+        self.assertEqual(result.collection.items[0].evidence.start_offset, 2)
 
     def test_run_raises_on_failed_terminal_event(self):
         stdout_lines = [
@@ -300,10 +312,15 @@ class ClusterChecklistRunnerTests(unittest.TestCase):
 
         with (
             patch("app.services.cluster_extraction.asyncio.create_subprocess_exec", _fake_create_subprocess_exec),
-            patch("app.services.cluster_extraction.get_case_title", return_value="Example Case Title"),
+            patch.object(
+                runner._stage_manager,
+                "prepare_stage",
+                return_value=SimpleNamespace(run_dir="/remote/stage"),
+            ),
+            patch.object(runner._stage_manager, "build_remote_command", return_value="remote command"),
         ):
             with self.assertRaises(RuntimeError) as exc:
-                asyncio.run(runner.run("100", documents))
+                asyncio.run(runner.run("backend_run_3", "100", documents))
 
         self.assertIn("mock failure", str(exc.exception))
 

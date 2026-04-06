@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-import shlex
 import shutil
 import subprocess
 import tempfile
@@ -16,6 +15,7 @@ from app.eventing import get_event_producer
 from app.schemas.checklists import EvidenceCollection
 from app.schemas.documents import Document
 from app.schemas.summary import SummaryRequest
+from app.services.remote_stage import RemoteStageManager
 from app.services.spoof_replay import validate_spoof_fixture_dir
 from app.services.summary_agent_payload import build_summary_agent_request_payload
 
@@ -37,9 +37,11 @@ class ClusterSummaryResult:
 class ClusterSummaryRunner:
     def __init__(self) -> None:
         self._settings = get_settings()
+        self._stage_manager = RemoteStageManager(self._settings)
 
     async def run(
         self,
+        backend_run_id: str,
         case_id: str,
         *,
         case_title: Optional[str],
@@ -66,11 +68,15 @@ class ClusterSummaryRunner:
             request=request,
             settings=self._settings,
         )
-        remote_repo_dir = await asyncio.to_thread(self._resolve_remote_repo_dir)
+        stage_paths = await asyncio.to_thread(self._stage_manager.require_existing_stage, backend_run_id)
         process = await asyncio.create_subprocess_exec(
             "ssh",
             self._settings.cluster_ssh_host,
-            self._build_remote_command(remote_repo_dir),
+            self._stage_manager.build_remote_command(
+                stage_paths,
+                controller_script=self._settings.cluster_summary_remote_controller_script,
+                mode="slurm_summarize_agent",
+            ),
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
@@ -150,39 +156,6 @@ class ClusterSummaryRunner:
                     await stderr_task
                 except asyncio.CancelledError:
                     pass
-
-    def _resolve_remote_repo_dir(self) -> str:
-        inner_command = f"cd {self._double_quote(self._settings.cluster_remote_repo_dir)} && pwd"
-        command = [
-            "ssh",
-            self._settings.cluster_ssh_host,
-            f"bash -lc {shlex.quote(inner_command)}",
-        ]
-        result = subprocess.run(command, check=False, text=True, capture_output=True)
-        if result.returncode != 0:
-            stderr = (result.stderr or "").strip()
-            stdout = (result.stdout or "").strip()
-            detail = stderr or stdout or "unknown error"
-            raise RuntimeError(f"Unable to resolve remote repo directory: {detail}")
-        resolved = (result.stdout or "").strip().splitlines()
-        if not resolved:
-            raise RuntimeError("Unable to resolve remote repo directory: empty output.")
-        return resolved[-1].strip()
-
-    def _build_remote_command(self, remote_repo_dir: str) -> str:
-        inner_command = (
-            f"cd {self._double_quote(remote_repo_dir)} && "
-            f"{self._double_quote(self._settings.cluster_remote_python_path)} "
-            f"{self._double_quote(self._settings.cluster_summary_remote_controller_script)} "
-            "--mode slurm_summarize_agent "
-            f"--poll-seconds {int(self._settings.cluster_poll_seconds)} "
-            f"--max-wait-seconds {int(self._settings.cluster_max_wait_seconds)}"
-        )
-        return f"bash -lc {shlex.quote(inner_command)}"
-
-    def _double_quote(self, value: str) -> str:
-        escaped = value.replace("\\", "\\\\").replace('"', '\\"')
-        return f'"{escaped}"'
 
     async def _stream_stderr(self, case_id: str, request_id: str, stderr: asyncio.StreamReader) -> None:
         while True:
@@ -378,8 +351,10 @@ def validate_cluster_summary_runtime_prerequisites() -> None:
 
     required_text_fields = {
         "LEGAL_CASE_CLUSTER_SSH_HOST": settings.cluster_ssh_host,
-        "LEGAL_CASE_CLUSTER_REMOTE_REPO_DIR": settings.cluster_remote_repo_dir,
+        "LEGAL_CASE_CLUSTER_REMOTE_STAGE_ROOT": settings.cluster_remote_stage_root,
         "LEGAL_CASE_CLUSTER_REMOTE_PYTHON_PATH": settings.cluster_remote_python_path,
+        "LEGAL_CASE_CLUSTER_REMOTE_HF_CACHE_DIR": settings.cluster_remote_hf_cache_dir,
+        "LEGAL_CASE_CLUSTER_REMOTE_SLURM_BIN_DIR": settings.cluster_remote_slurm_bin_dir,
         "LEGAL_CASE_CLUSTER_SUMMARY_REMOTE_CONTROLLER_SCRIPT": settings.cluster_summary_remote_controller_script,
     }
     for env_name, value in required_text_fields.items():
@@ -390,12 +365,23 @@ def validate_cluster_summary_runtime_prerequisites() -> None:
     for binary in missing_binaries:
         config_errors.append(f"Required local binary '{binary}' was not found on PATH.")
 
+    if not settings.cluster_summary_remote_controller_script.startswith("interface_agents/"):
+        config_errors.append(
+            "LEGAL_CASE_CLUSTER_SUMMARY_REMOTE_CONTROLLER_SCRIPT must be a path under interface_agents/."
+        )
+
+    try:
+        RemoteStageManager(settings).validate_local_prerequisites()
+    except RuntimeError as exc:
+        config_errors.append(str(exc))
+
     if config_errors:
         joined = " ".join(config_errors)
         raise RuntimeError(f"Cluster summary prerequisites are not satisfied. {joined}")
 
 
 async def run_cluster_summary(
+    backend_run_id: str,
     case_id: str,
     *,
     case_title: Optional[str],
@@ -406,6 +392,7 @@ async def run_cluster_summary(
     progress_callback: Optional[ProgressCallback] = None,
 ) -> ClusterSummaryResult:
     return await _RUNNER.run(
+        backend_run_id,
         case_id,
         case_title=case_title,
         documents=documents,

@@ -793,7 +793,7 @@ async def _run_extraction(
             "Checklist extraction engine selected",
             {"case_id": case_id, "engine": engine.name},
         )
-        result = await engine.run(case_id, documents, progress_callback=progress_callback)
+        result = await engine.run(case_id, case_id, documents, progress_callback=progress_callback)
 
         sanitized_items = _strip_sentence_ids_from_collection(result, text_lookup)
         _DOCUMENT_CHECKLIST_STORE.set(case_id, items=sanitized_items)

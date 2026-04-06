@@ -11,7 +11,7 @@ from app.eventing import get_event_producer
 from app.schemas.summary import SummaryJob, SummaryJobStatus, SummaryRequest
 from app.services.cluster_queue import get_cluster_run_lock
 from app.services.documents import list_cached_documents
-from app.services.summary_engines import get_summary_generation_engine
+from app.services.summary_engines import SummaryRunInput, get_summary_generation_engine
 
 producer = get_event_producer(__name__)
 
@@ -67,14 +67,30 @@ async def _run_summary_job(job_id: str, case_id: str, request: SummaryRequest) -
         await _update_job(job_id, status=SummaryJobStatus.running)
 
         try:
+            stored = _checklist_store.get(case_id)
+            if stored is None:
+                raise RuntimeError(f"No checklist is available for case '{case_id}'.")
+            cached_docs = list_cached_documents(case_id)
+            if not cached_docs:
+                raise RuntimeError(f"No cached documents are available for case '{case_id}'.")
+
             engine = get_summary_generation_engine()
             producer.info(
                 "Summary generation engine selected",
                 {"job_id": job_id, "case_id": case_id, "engine": engine.name},
             )
+            checklist_collection = stored.items
+            checklist_definitions = {item.bin_id: item.bin_id for item in checklist_collection.items}
             result = await engine.run(
-                case_id,
-                request,
+                SummaryRunInput(
+                    backend_run_id=job_id,
+                    case_id=case_id,
+                    case_title=None,
+                    documents=cached_docs,
+                    checklist_collection=checklist_collection,
+                    checklist_definitions=checklist_definitions,
+                    request=request,
+                ),
                 progress_callback=lambda event_type, event_data: _handle_cluster_progress(job_id, event_type, event_data),
             )
             await _update_job(

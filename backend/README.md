@@ -1,6 +1,6 @@
 # Backend Service
 
-FastAPI service that powers the Legal Case Summary Workspace.
+FastAPI service for the Multi-Document Summarization Interface.
 
 ## Quick Start
 ```bash
@@ -18,9 +18,11 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - `LEGAL_CASE_CLUSTER_SPOOF_EVENT_DELAY_SECONDS` – Optional per-event delay for spoof replay
 - `LEGAL_CASE_CLUSTER_SPOOF_EXTRACTION_FIXTURE_DIR` – Extraction spoof fixture directory
 - `LEGAL_CASE_CLUSTER_SPOOF_SUMMARY_FIXTURE_DIR` – Summary spoof fixture directory
-- `LEGAL_CASE_CLUSTER_SSH_HOST` – SSH host for remote extraction controller
-- `LEGAL_CASE_CLUSTER_REMOTE_REPO_DIR` – Remote repo root for controller invocation
-- `LEGAL_CASE_CLUSTER_REMOTE_PYTHON_PATH` – Remote python executable used to launch controller
+- `LEGAL_CASE_CLUSTER_SSH_HOST` – SSH host for the SLURM head node
+- `LEGAL_CASE_CLUSTER_REMOTE_STAGE_ROOT` – Remote root where the backend stages a fresh `interface_agents/` snapshot for each run
+- `LEGAL_CASE_CLUSTER_REMOTE_PYTHON_PATH` – Persistent remote python executable used to launch staged controllers
+- `LEGAL_CASE_CLUSTER_REMOTE_HF_CACHE_DIR` – Shared Hugging Face cache directory used by staged runs
+- `LEGAL_CASE_CLUSTER_REMOTE_SLURM_BIN_DIR` – Directory that contains `sbatch`, `squeue`, and `sacct`
 - `LEGAL_CASE_CLUSTER_REMOTE_CONTROLLER_SCRIPT` – Remote controller entrypoint (native path by default)
 - `LEGAL_CASE_CLUSTER_FOCUS_CONTEXT_TEMPLATE_PATH` – Checklist focus-context template file (supports placeholder `#CASE_TITLE`)
 - `LEGAL_CASE_CLUSTER_SUMMARY_REMOTE_CONTROLLER_SCRIPT` – Remote summary-agent controller entrypoint

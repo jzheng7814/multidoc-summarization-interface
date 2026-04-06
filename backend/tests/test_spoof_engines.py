@@ -3,12 +3,12 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
-from unittest.mock import patch
 
-from app.schemas.documents import DocumentReference
+from app.schemas.checklists import EvidenceCollection, EvidenceItem, EvidencePointer
+from app.schemas.documents import Document, DocumentReference
 from app.schemas.summary import SummaryRequest
 from app.services.checklist_engines import SpoofChecklistExtractionEngine
-from app.services.summary_engines import SpoofSummaryGenerationEngine
+from app.services.summary_engines import SpoofSummaryGenerationEngine, SummaryRunInput
 
 
 class SpoofEnginesTests(unittest.IsolatedAsyncioTestCase):
@@ -38,6 +38,7 @@ class SpoofEnginesTests(unittest.IsolatedAsyncioTestCase):
 
             with self.assertRaises(RuntimeError):
                 await engine.run(
+                    "backend_run_1",
                     "46110",
                     [
                         DocumentReference(
@@ -92,7 +93,8 @@ class SpoofEnginesTests(unittest.IsolatedAsyncioTestCase):
                 cluster_spoof_event_delay_seconds=0.0,
             )
             engine = SpoofChecklistExtractionEngine(settings)
-            collection = await engine.run(
+            result = await engine.run(
+                "backend_run_2",
                 "46110",
                 [
                     DocumentReference(
@@ -106,10 +108,10 @@ class SpoofEnginesTests(unittest.IsolatedAsyncioTestCase):
             )
 
             self.assertEqual(seen_events, ["started", "slurm_state", "completed"])
-            self.assertEqual(len(collection.items), 1)
-            self.assertEqual(collection.items[0].bin_id, "Appeal")
-            self.assertEqual(collection.items[0].value, "Appeal filed")
-            self.assertEqual(collection.items[0].evidence.document_id, 77)
+            self.assertEqual(len(result.collection.items), 1)
+            self.assertEqual(result.collection.items[0].bin_id, "Appeal")
+            self.assertEqual(result.collection.items[0].value, "Appeal filed")
+            self.assertEqual(result.collection.items[0].evidence.document_id, 77)
 
     async def test_spoof_summary_engine_replays_events_and_returns_summary_result(self):
         with TemporaryDirectory() as temp_dir:
@@ -145,12 +147,46 @@ class SpoofEnginesTests(unittest.IsolatedAsyncioTestCase):
                 cluster_spoof_event_delay_seconds=0.0,
             )
             engine = SpoofSummaryGenerationEngine(settings)
-            with patch("app.services.summary_engines.list_cached_documents", return_value=[SimpleNamespace(id=77)]):
-                result = await engine.run(
-                    "46110",
-                    SummaryRequest(),
-                    progress_callback=lambda event_type, _: seen_events.append(event_type),
-                )
+            result = await engine.run(
+                SummaryRunInput(
+                    backend_run_id="backend_run_3",
+                    case_id="46110",
+                    case_title="Example Run",
+                    documents=[
+                        Document(
+                            id=77,
+                            title="Docket",
+                            type=None,
+                            description=None,
+                            source=None,
+                            court=None,
+                            state=None,
+                            ecf_number=None,
+                            file_url=None,
+                            external_url=None,
+                            clearinghouse_link=None,
+                            text_url=None,
+                            date=None,
+                            date_is_estimate=None,
+                            date_not_available=None,
+                            is_docket=False,
+                            content="Canonical text",
+                        )
+                    ],
+                    checklist_collection=EvidenceCollection(
+                        items=[
+                            EvidenceItem(
+                                bin_id="Appeal",
+                                value="Appeal filed",
+                                evidence=EvidencePointer(document_id=77, start_offset=0, end_offset=6),
+                            )
+                        ]
+                    ),
+                    checklist_definitions={"Appeal": "Whether an appeal was filed."},
+                    request=SummaryRequest(),
+                ),
+                progress_callback=lambda event_type, _: seen_events.append(event_type),
+            )
 
             self.assertEqual(seen_events, ["started", "slurm_submitted", "completed"])
             self.assertEqual(result.run_id, "run_1")

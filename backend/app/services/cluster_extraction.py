@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-import shlex
 import shutil
 import subprocess
 import tempfile
@@ -17,6 +16,7 @@ from app.schemas.checklists import SUMMARY_DOCUMENT_ID, EvidenceCollection, Evid
 from app.schemas.documents import DocumentReference
 from app.services.cluster_checklist_spec import load_cluster_checklist_spec
 from app.services.cluster_focus_context import load_cluster_focus_context
+from app.services.remote_stage import RemoteStageManager
 from app.services.spoof_replay import validate_spoof_fixture_dir
 
 producer = get_event_producer(__name__)
@@ -46,9 +46,11 @@ class ClusterExtractionResult:
 class ClusterChecklistRunner:
     def __init__(self) -> None:
         self._settings = get_settings()
+        self._stage_manager = RemoteStageManager(self._settings)
 
     async def run(
         self,
+        backend_run_id: str,
         case_id: str,
         documents: List[DocumentReference],
         progress_callback: Optional[ProgressCallback] = None,
@@ -75,14 +77,21 @@ class ClusterChecklistRunner:
             checklist_spec=checklist_spec,
             focus_context=focus_context,
         )
-        remote_command = self._build_remote_command()
+        stage_paths = await asyncio.to_thread(self._stage_manager.prepare_stage, backend_run_id)
+        remote_command = self._stage_manager.build_remote_command(
+            stage_paths,
+            controller_script=self._settings.cluster_remote_controller_script,
+            mode="slurm_extract_strategy",
+        )
 
         producer.info(
             "Starting cluster controller run",
             {
+                "backend_run_id": backend_run_id,
                 "case_id": case_id,
                 "request_id": request_id,
                 "ssh_host": self._settings.cluster_ssh_host,
+                "stage_dir": str(stage_paths.run_dir),
                 "poll_seconds": self._settings.cluster_poll_seconds,
                 "max_wait_seconds": self._settings.cluster_max_wait_seconds,
             },
@@ -380,21 +389,6 @@ class ClusterChecklistRunner:
                 )
             )
         return resolved
-
-    def _build_remote_command(self) -> str:
-        inner_command = (
-            f"cd {self._double_quote(self._settings.cluster_remote_repo_dir)} && "
-            f"{self._double_quote(self._settings.cluster_remote_python_path)} "
-            f"{self._double_quote(self._settings.cluster_remote_controller_script)} "
-            "--mode slurm_extract_strategy "
-            f"--poll-seconds {int(self._settings.cluster_poll_seconds)} "
-            f"--max-wait-seconds {int(self._settings.cluster_max_wait_seconds)}"
-        )
-        return f"bash -lc {shlex.quote(inner_command)}"
-
-    def _double_quote(self, value: str) -> str:
-        escaped = value.replace("\\", "\\\\").replace('"', '\\"')
-        return f'"{escaped}"'
 
     async def _collection_from_completed_event(
         self,
@@ -762,8 +756,10 @@ def validate_cluster_runtime_prerequisites() -> None:
 
     required_text_fields = {
         "LEGAL_CASE_CLUSTER_SSH_HOST": settings.cluster_ssh_host,
-        "LEGAL_CASE_CLUSTER_REMOTE_REPO_DIR": settings.cluster_remote_repo_dir,
+        "LEGAL_CASE_CLUSTER_REMOTE_STAGE_ROOT": settings.cluster_remote_stage_root,
         "LEGAL_CASE_CLUSTER_REMOTE_PYTHON_PATH": settings.cluster_remote_python_path,
+        "LEGAL_CASE_CLUSTER_REMOTE_HF_CACHE_DIR": settings.cluster_remote_hf_cache_dir,
+        "LEGAL_CASE_CLUSTER_REMOTE_SLURM_BIN_DIR": settings.cluster_remote_slurm_bin_dir,
         "LEGAL_CASE_CLUSTER_REMOTE_CONTROLLER_SCRIPT": settings.cluster_remote_controller_script,
     }
     for env_name, value in required_text_fields.items():
@@ -774,12 +770,23 @@ def validate_cluster_runtime_prerequisites() -> None:
     for binary in missing_binaries:
         config_errors.append(f"Required local binary '{binary}' was not found on PATH.")
 
+    if not settings.cluster_remote_controller_script.startswith("interface_agents/"):
+        config_errors.append(
+            "LEGAL_CASE_CLUSTER_REMOTE_CONTROLLER_SCRIPT must be a path under interface_agents/."
+        )
+
+    try:
+        RemoteStageManager(settings).validate_local_prerequisites()
+    except RuntimeError as exc:
+        config_errors.append(str(exc))
+
     if config_errors:
         joined = " ".join(config_errors)
         raise RuntimeError(f"Cluster extraction prerequisites are not satisfied. {joined}")
 
 
 async def run_cluster_extraction(
+    backend_run_id: str,
     case_id: str,
     documents: List[DocumentReference],
     progress_callback: Optional[ProgressCallback] = None,
@@ -788,6 +795,7 @@ async def run_cluster_extraction(
     focus_context: Optional[str] = None,
 ) -> ClusterExtractionResult:
     return await _RUNNER.run(
+        backend_run_id,
         case_id,
         documents,
         progress_callback=progress_callback,

@@ -339,18 +339,20 @@ async def _run_extraction_job(run_id: str) -> None:
         try:
             engine = get_checklist_extraction_engine()
             result = await engine.run(
+                run_id,
                 case_identifier,
                 doc_refs,
                 progress_callback=lambda event_type, data: _handle_extraction_progress(run_id, event_type, data),
                 checklist_spec=checklist_spec,
                 focus_context=focus_context,
             )
+            latest_run = _require_run(run_id)
             _run_store.store_extraction_result(
                 run_id,
                 extraction_result=result.collection.model_dump(mode="json", by_alias=False),
                 remote_run_id=result.run_id,
-                remote_job_id=result.job_id,
-                remote_output_dir=result.output_dir,
+                remote_job_id=result.job_id or latest_run.extraction_remote_job_id,
+                remote_output_dir=result.output_dir or latest_run.extraction_remote_output_dir,
                 manifest_path=result.manifest_path,
                 result_payload_path=result.result_payload_path,
                 checklist_ndjson_path=result.checklist_ndjson_path,
@@ -442,6 +444,7 @@ async def _run_summary_job(run_id: str) -> None:
         try:
             engine = get_summary_generation_engine()
             run_input = SummaryRunInput(
+                backend_run_id=run_id,
                 case_id=run.source_case_id or run.id,
                 case_title=run.case_title,
                 documents=run.documents,
@@ -453,6 +456,7 @@ async def _run_summary_job(run_id: str) -> None:
                 run_input,
                 progress_callback=lambda event_type, data: _handle_summary_progress(run_id, event_type, data),
             )
+            latest_run = _require_run(run_id)
             _run_store.store_summary_result(
                 run_id,
                 summary_text=result.summary_text,
@@ -465,8 +469,8 @@ async def _run_summary_job(run_id: str) -> None:
                     "summary_path": result.summary_path,
                 },
                 remote_run_id=result.run_id,
-                remote_job_id=result.job_id,
-                remote_output_dir=None,
+                remote_job_id=result.job_id or latest_run.summary_remote_job_id,
+                remote_output_dir=latest_run.summary_remote_output_dir,
                 manifest_path=result.manifest_path,
                 result_payload_path=result.result_payload_path,
                 summary_path=result.summary_path,

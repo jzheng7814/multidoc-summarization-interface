@@ -1,0 +1,17 @@
+# Core schema/config/runtime
+pydantic>=1.10
+pyyaml>=6.0
+pytz>=2024.1
+tiktoken>=0.7.0
+
+# Model/tokenizer stack
+torch>=2.1
+transformers>=4.46
+sentencepiece>=0.2.0
+
+# Local inference/runtime
+vllm>=0.8.5
+ray>=2.9
+
+# Data preprocessing
+pysbd>=0.3.4

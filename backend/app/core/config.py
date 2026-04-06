@@ -77,11 +77,11 @@ class Settings(BaseSettings):
         "../scratch/handoff/spoof_fixtures/summary/run_20260319T025055Z_6dcb90725b"
     )
     cluster_ssh_host: str = "sky1"
-    cluster_remote_repo_dir: str = "/coc/pskynet6/$USER/gavel"
-    cluster_remote_python_path: str = "/coc/pskynet6/$USER/miniconda3/envs/gavel-dev/bin/python"
-    cluster_remote_controller_script: str = (
-        "src/extract_checklist_from_documents/gavel_agent/controller/run_controller_native.py"
-    )
+    cluster_remote_stage_root: str = "/coc/pskynet6/$USER/flash/interface_agent_runs"
+    cluster_remote_python_path: str = "/coc/pskynet6/$USER/flash/miniconda3/envs/gavel-dev/bin/python"
+    cluster_remote_hf_cache_dir: str = "/coc/pskynet6/$USER/flash/hf_cache"
+    cluster_remote_slurm_bin_dir: str = "/opt/slurm/Ubuntu-20.04/current/bin"
+    cluster_remote_controller_script: str = "interface_agents/checklist_agent/controller/run_controller_native.py"
     cluster_poll_seconds: int = 2
     cluster_max_wait_seconds: int = 21600
     cluster_model_name: str = "unsloth/gpt-oss-20b-BF16"
@@ -95,9 +95,7 @@ class Settings(BaseSettings):
     cluster_dataset_prefix: str = "controller"
     cluster_slurm_partition: str = "nlprx-lab"
     cluster_slurm_qos: str = "short"
-    cluster_summary_remote_controller_script: str = (
-        "src/summarize_documents/summary_agent/controller/run_controller.py"
-    )
+    cluster_summary_remote_controller_script: str = "interface_agents/summary_agent/controller/run_controller.py"
     cluster_summary_model_name: str = "unsloth/gpt-oss-20b-BF16"
     cluster_summary_max_steps: int = 200
     cluster_summary_reasoning_effort: Literal["low", "medium", "high"] = "medium"

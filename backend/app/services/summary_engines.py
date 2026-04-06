@@ -24,6 +24,7 @@ ProgressCallback = Callable[[str, Dict[str, Any]], None]
 
 @dataclass(frozen=True)
 class SummaryRunInput:
+    backend_run_id: str
     case_id: str
     case_title: Optional[str]
     documents: Sequence[Document]
@@ -52,6 +53,7 @@ class ClusterSummaryGenerationEngine:
         progress_callback: Optional[ProgressCallback] = None,
     ) -> ClusterSummaryResult:
         return await run_cluster_summary(
+            run_input.backend_run_id,
             run_input.case_id,
             case_title=run_input.case_title,
             documents=run_input.documents,
