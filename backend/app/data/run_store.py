@@ -191,6 +191,18 @@ class SqlRunStore:
         finally:
             session.close()
 
+    def update_title(self, run_id: str, title: str) -> None:
+        session = self._session_factory()
+        try:
+            record = self._require_record(session, run_id)
+            record.title = title
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
     def update_summary_config(self, run_id: str, summary_config: Dict[str, Any]) -> None:
         session = self._session_factory()
         try:

@@ -6,7 +6,7 @@ from fastapi import APIRouter, BackgroundTasks, Body, File, Form, HTTPException,
 from pydantic import ValidationError
 
 from app.schemas.checklists import EvidenceCategoryCollection
-from app.schemas.documents import UploadDocumentsManifest
+from app.schemas.documents import UploadDocumentsManifest, UploadManifestDocument
 from app.schemas.runs import (
     RunCreateResponse,
     RunDefaultConfigResponse,
@@ -17,6 +17,7 @@ from app.schemas.runs import (
     RunSummaryConfig,
     RunSummaryStartRequest,
     RunSummaryStatusEnvelope,
+    RunTitleUpdateRequest,
     RunWorkflowStageUpdateRequest,
 )
 from app.services import runs as run_service
@@ -66,6 +67,11 @@ async def get_run(run_id: str) -> RunCreateResponse:
     return run_service.get_run(run_id)
 
 
+@router.put("/{run_id}/title", response_model=RunCreateResponse)
+async def update_run_title(run_id: str, request: RunTitleUpdateRequest) -> RunCreateResponse:
+    return run_service.update_run_title(run_id, request.title)
+
+
 @router.put("/{run_id}/workflow-stage", response_model=RunCreateResponse)
 async def update_workflow_stage(run_id: str, request: RunWorkflowStageUpdateRequest) -> RunCreateResponse:
     return run_service.update_workflow_stage(run_id, request.workflow_stage)
@@ -88,6 +94,25 @@ async def get_run_documents(run_id: str) -> List[RunDocumentPayload]:
         )
         for doc in docs
     ]
+
+
+@router.post("/{run_id}/documents", response_model=RunCreateResponse)
+async def add_run_document(
+    run_id: str,
+    metadata: str = Form(...),
+    file: UploadFile = File(...),
+) -> RunCreateResponse:
+    try:
+        metadata_payload = UploadManifestDocument.model_validate_json(metadata)
+    except ValidationError as exc:
+        raise HTTPException(status_code=422, detail="Invalid document metadata payload.") from exc
+
+    return await run_service.add_run_document(run_id, metadata_payload, file)
+
+
+@router.delete("/{run_id}/documents/{document_id}", response_model=RunCreateResponse)
+async def delete_run_document(run_id: str, document_id: int) -> RunCreateResponse:
+    return run_service.delete_run_document(run_id, document_id)
 
 
 @router.get("/{run_id}/extraction-config", response_model=RunExtractionConfig)

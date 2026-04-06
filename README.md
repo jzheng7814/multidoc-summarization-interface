@@ -7,8 +7,12 @@ Multi-Document Summarization Interface is a run-centric application for ingestin
 - `backend/` – FastAPI service, run store, background orchestration, staged remote execution, schemas, and API routes.
 - `backend/app/resources/` – Default extraction checklist spec and default extraction/summary focus templates.
 - `interface_agents/` – Remote checklist and summary runtimes that the backend stages to the SLURM head node for each backend run.
-- `docs/` – Operator notes and migration/porting documentation.
 - `tools/`, `scratch/` – Local experiments and scratch assets outside the normal application runtime.
+
+## Additional Documentation
+- `backend/README.md` – backend architecture, database schema, queueing model, remote staging, and environment variables.
+- `frontend/README.md` – frontend structure, route flow, workspace state, and browser-side API contract.
+- `interface_agents/README.md` – remote controller/worker layout, staged-run contract, and agent artifact model.
 
 ## Setup
 ### Prerequisites

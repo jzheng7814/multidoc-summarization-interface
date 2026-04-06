@@ -19,7 +19,7 @@ from app.schemas.checklists import (
     EvidenceItem,
     EvidencePointer,
 )
-from app.schemas.documents import Document, DocumentReference, UploadDocumentsManifest
+from app.schemas.documents import Document, DocumentReference, UploadDocumentsManifest, UploadManifestDocument
 from app.schemas.runs import (
     RunDefaultConfigResponse,
     RunCreateResponse,
@@ -98,7 +98,7 @@ def create_run_from_documents(
 def create_empty_run() -> RunCreateResponse:
     return create_run_from_documents(
         source_type="new_run",
-        title="Untitled Run",
+        title="",
         documents=[],
     )
 
@@ -134,6 +134,16 @@ async def update_run_from_upload(run_id: str, manifest: UploadDocumentsManifest,
 
 def get_run(run_id: str) -> RunCreateResponse:
     return _to_run_response(_require_run(run_id))
+
+
+def update_run_title(run_id: str, title: str) -> RunCreateResponse:
+    run = _require_run(run_id)
+    _assert_run_not_active(run)
+
+    normalized = str(title).strip()
+
+    _run_store.update_title(run_id, normalized)
+    return get_run(run_id)
 
 
 def update_workflow_stage(run_id: str, workflow_stage: WorkflowStage) -> RunCreateResponse:
@@ -200,6 +210,41 @@ def get_default_configs() -> RunDefaultConfigResponse:
 
 def get_run_documents(run_id: str) -> List[Document]:
     return list(_require_run(run_id).documents)
+
+
+async def add_run_document(run_id: str, metadata: UploadManifestDocument, file: UploadFile) -> RunCreateResponse:
+    run = _require_run(run_id)
+    _assert_run_not_active(run)
+
+    uploaded_document = await _parse_uploaded_document(metadata, file)
+    next_document_id = _next_document_id(run.documents)
+    new_document = uploaded_document.model_copy(update={"id": next_document_id})
+    documents = _sort_documents([*run.documents, new_document])
+
+    _replace_run_documents(
+        run,
+        source_type="manual_upload",
+        title=run.title,
+        documents=documents,
+    )
+    return get_run(run_id)
+
+
+def delete_run_document(run_id: str, document_id: int) -> RunCreateResponse:
+    run = _require_run(run_id)
+    _assert_run_not_active(run)
+
+    documents = [doc for doc in run.documents if int(doc.id) != int(document_id)]
+    if len(documents) == len(run.documents):
+        raise HTTPException(status_code=404, detail=f"Document '{document_id}' was not found in run '{run_id}'.")
+
+    _replace_run_documents(
+        run,
+        source_type="manual_upload",
+        title=run.title,
+        documents=documents,
+    )
+    return get_run(run_id)
 
 
 def get_extraction_config(run_id: str) -> RunExtractionConfig:
@@ -745,6 +790,14 @@ async def _parse_uploaded_documents(manifest: UploadDocumentsManifest, files: Li
     return _sort_documents(output)
 
 
+async def _parse_uploaded_document(metadata: UploadManifestDocument, file: UploadFile) -> Document:
+    documents = await _parse_uploaded_documents(
+        UploadDocumentsManifest(title="placeholder", documents=[metadata]),
+        [file],
+    )
+    return documents[0]
+
+
 def _documents_to_references(documents: Sequence[Document]) -> List[DocumentReference]:
     return [
         DocumentReference(
@@ -866,6 +919,12 @@ def _sort_documents(documents: List[Document]) -> List[Document]:
         return (1, 0, date_value, document.id)
 
     return sorted(list(documents), key=_sort_key)
+
+
+def _next_document_id(documents: Sequence[Document]) -> int:
+    if not documents:
+        return 1
+    return max(int(doc.id) for doc in documents) + 1
 
 
 def _assert_run_not_active(run: StoredRun) -> None:

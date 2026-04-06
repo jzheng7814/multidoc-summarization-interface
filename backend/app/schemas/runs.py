@@ -187,6 +187,12 @@ class RunDefaultConfigResponse(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
 
+class RunTitleUpdateRequest(BaseModel):
+    title: str
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+
 class RunStageStatus(BaseModel):
     status: str
     phase: Optional[str] = None

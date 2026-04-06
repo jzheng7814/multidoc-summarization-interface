@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Download, Plus, Trash2, Upload, X } from 'lucide-react';
 
-import { updateRunFromUpload } from '../../services/apiClient';
+import { addRunDocument, deleteRunDocument, updateRunTitle } from '../../services/apiClient';
 
 const DOCUMENT_TYPE_OPTIONS = [
     'Complaint',
@@ -124,29 +124,25 @@ function parseSummaryConfig(payload) {
     };
 }
 
-function resolveDocumentTypeLabel(document) {
-    if (document.type === 'Other') {
-        return document.typeOther || 'Other';
-    }
-    return document.type;
-}
-
 function RunSetupPage({
     runId,
     initialRunData,
     onRunDataUpdated,
     onStartExtraction
 }) {
-    const [uploadTitle, setUploadTitle] = useState('');
-    const [uploadedDocuments, setUploadedDocuments] = useState([]);
+    const [runTitle, setRunTitle] = useState(() => String(initialRunData?.title ?? '').trim());
 
     const [isAddingDocument, setIsAddingDocument] = useState(false);
     const [draftDocument, setDraftDocument] = useState(createEmptyDraft());
     const [draftError, setDraftError] = useState('');
 
-    const [isCreatingRun, setIsCreatingRun] = useState(false);
+    const [isSavingTitle, setIsSavingTitle] = useState(false);
+    const [isSavingDocument, setIsSavingDocument] = useState(false);
+    const [removingDocumentId, setRemovingDocumentId] = useState(null);
     const [isStartingExtraction, setIsStartingExtraction] = useState(false);
     const [loadError, setLoadError] = useState('');
+    const [titleError, setTitleError] = useState('');
+    const [documentError, setDocumentError] = useState('');
     const [runData, setRunData] = useState(() => initialRunData || null);
     const [extractionConfig, setExtractionConfig] = useState(() => {
         if (!initialRunData) {
@@ -168,13 +164,6 @@ function RunSetupPage({
     const summaryFileInputRef = useRef(null);
     const configuredRunIdRef = useRef(runId);
 
-    const canLoadRun = useMemo(() => {
-        if (isCreatingRun) {
-            return false;
-        }
-        return uploadTitle.trim().length > 0 && uploadedDocuments.length > 0;
-    }, [isCreatingRun, uploadTitle, uploadedDocuments.length]);
-
     useEffect(() => {
         if (!initialRunData) {
             return;
@@ -184,6 +173,7 @@ function RunSetupPage({
         configuredRunIdRef.current = incomingRunId;
 
         setRunData(initialRunData);
+        setRunTitle(String(initialRunData?.title ?? '').trim());
         if (isRunChanged) {
             setExtractionConfig(parseExtractionConfig(initialRunData?.extractionConfig));
             setSummaryConfig(parseSummaryConfig(initialRunData?.summaryConfig));
@@ -198,8 +188,15 @@ function RunSetupPage({
         ));
     }, [initialRunData, runId]);
 
+    const applyRunPayload = (payload) => {
+        setRunData(payload);
+        setRunTitle(String(payload?.title ?? '').trim());
+        onRunDataUpdated?.(payload);
+    };
+
     const handleStartAddDocument = () => {
         setDraftError('');
+        setDocumentError('');
         setDraftDocument(createEmptyDraft());
         setIsAddingDocument(true);
     };
@@ -210,7 +207,36 @@ function RunSetupPage({
         setIsAddingDocument(false);
     };
 
-    const handleAddDocument = () => {
+    const handleSaveTitle = async () => {
+        if (!runId) {
+            setTitleError('Run ID is missing; cannot save title.');
+            return;
+        }
+        const normalizedTitle = runTitle.trim();
+        if (normalizedTitle === String(runData?.title ?? '').trim()) {
+            setTitleError('');
+            return;
+        }
+
+        setIsSavingTitle(true);
+        setTitleError('');
+        setLoadError('');
+        try {
+            const payload = await updateRunTitle(runId, normalizedTitle);
+            applyRunPayload(payload);
+        } catch (error) {
+            setTitleError(error.message || 'Failed to save run title.');
+            throw error;
+        } finally {
+            setIsSavingTitle(false);
+        }
+    };
+
+    const handleAddDocument = async () => {
+        if (!runId) {
+            setDraftError('Run ID is missing; cannot add a document.');
+            return;
+        }
         if (!draftDocument.file) {
             setDraftError('Please upload a .txt file.');
             return;
@@ -236,52 +262,42 @@ function RunSetupPage({
             return;
         }
 
-        setUploadedDocuments((current) => ([
-            ...current,
-            {
-                id: `upload-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        setIsSavingDocument(true);
+        setDocumentError('');
+        setLoadError('');
+        setDraftError('');
+        try {
+            const payload = await addRunDocument(runId, {
                 file: draftDocument.file,
                 name: draftDocument.name.trim(),
                 date: draftDocument.date,
                 type: draftDocument.type,
                 typeOther: draftDocument.type === 'Other' ? draftDocument.typeOther.trim() : ''
-            }
-        ]));
-        handleCancelAddDocument();
+            });
+            applyRunPayload(payload);
+            handleCancelAddDocument();
+        } catch (error) {
+            setDraftError(error.message || 'Failed to add document to this run.');
+        } finally {
+            setIsSavingDocument(false);
+        }
     };
 
-    const handleRemoveDocument = (documentId) => {
-        setUploadedDocuments((current) => current.filter((doc) => doc.id !== documentId));
-    };
-
-    const handleLoadRun = async () => {
+    const handleRemoveDocument = async (documentId) => {
         if (!runId) {
-            setLoadError('Run ID is missing; cannot load documents into run.');
+            setDocumentError('Run ID is missing; cannot remove a document.');
             return;
         }
-        setIsCreatingRun(true);
+        setRemovingDocumentId(documentId);
+        setDocumentError('');
         setLoadError('');
-        setExtractionConfigError('');
-        setSummaryConfigError('');
         try {
-            const payload = await updateRunFromUpload(runId, {
-                title: uploadTitle,
-                documents: uploadedDocuments
-            });
-
-            setRunData(payload);
-            onRunDataUpdated?.(payload);
-            if (!extractionConfig) {
-                setExtractionConfig(parseExtractionConfig(payload?.extractionConfig));
-            }
-            if (!summaryConfig) {
-                setSummaryConfig(parseSummaryConfig(payload?.summaryConfig));
-            }
-            setEditingItemIndex(null);
+            const payload = await deleteRunDocument(runId, documentId);
+            applyRunPayload(payload);
         } catch (error) {
-            setLoadError(error.message || 'Failed to load documents into this run.');
+            setDocumentError(error.message || 'Failed to remove document from this run.');
         } finally {
-            setIsCreatingRun(false);
+            setRemovingDocumentId(null);
         }
     };
 
@@ -387,20 +403,33 @@ function RunSetupPage({
             return;
         }
         setLoadError('');
+        setTitleError('');
         setExtractionConfigError('');
         setSummaryConfigError('');
         setIsStartingExtraction(true);
         try {
+            if (!runTitle.trim()) {
+                throw new Error('Run title is required.');
+            }
+            if (runTitle.trim() !== String(runData?.title ?? '').trim()) {
+                const payload = await updateRunTitle(runId, runTitle.trim());
+                applyRunPayload(payload);
+            }
             const normalizedExtraction = parseExtractionConfig(extractionConfig || {});
             const normalizedSummary = parseSummaryConfig(summaryConfig || {});
             await onStartExtraction({
-                runData,
+                runData: {
+                    ...runData,
+                    title: runTitle.trim()
+                },
                 extractionConfig: normalizedExtraction,
                 summaryConfig: normalizedSummary
             });
         } catch (error) {
             const message = error?.message || 'Failed to start extraction run.';
-            if (message.toLowerCase().includes('extraction')) {
+            if (message.toLowerCase().includes('title')) {
+                setTitleError(message);
+            } else if (message.toLowerCase().includes('extraction')) {
                 setExtractionConfigError(message);
             } else if (message.toLowerCase().includes('summary')) {
                 setSummaryConfigError(message);
@@ -413,6 +442,7 @@ function RunSetupPage({
     };
 
     const runDocuments = runData?.documents || [];
+    const hasUnsavedTitle = runTitle.trim() !== String(runData?.title ?? '').trim();
 
     return (
         <div className="min-h-screen bg-[var(--color-surface-app)] p-6 text-[var(--color-text-primary)] transition-colors">
@@ -424,93 +454,109 @@ function RunSetupPage({
                             Configure document intake, extraction, and summary settings for one run.
                         </p>
                     </div>
+                    {runData && (
+                        <div className="text-xs text-[var(--color-text-secondary)] rounded-full border border-[var(--color-border)] px-3 py-1 whitespace-nowrap">
+                            Run ID: {runData.runId}
+                        </div>
+                    )}
                 </div>
 
                 <section className="bg-[var(--color-surface-panel)] rounded-lg shadow-md p-6 border border-[var(--color-border)] space-y-4">
                     <div className="flex items-center justify-between gap-3 flex-wrap">
-                        <h2 className="text-xl font-semibold">Section 1: Upload Documents</h2>
-                        {runData && (
-                            <div className="text-xs text-[var(--color-text-secondary)] rounded-full border border-[var(--color-border)] px-3 py-1">
-                                Run ID: {runData.runId}
+                        <h2 className="text-xl font-semibold">Run Title</h2>
+                        {isSavingTitle && (
+                            <div className="text-sm text-[var(--color-text-secondary)]">
+                                Saving…
                             </div>
                         )}
                     </div>
 
-                    <div className="space-y-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-[var(--color-text-secondary)]" htmlFor="upload-title">
-                                Run Title
-                            </label>
-                            <input
-                                id="upload-title"
-                                type="text"
-                                value={uploadTitle}
-                                onChange={(event) => setUploadTitle(event.target.value)}
-                                placeholder="Enter a title for this document set"
-                                className="w-full px-3 py-2 border border-[var(--color-input-border)] rounded-md bg-[var(--color-input-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
-                            />
-                        </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-[var(--color-text-secondary)]" htmlFor="run-title">
+                            Title
+                        </label>
+                        <input
+                            id="run-title"
+                            type="text"
+                            value={runTitle}
+                            onChange={(event) => {
+                                setRunTitle(event.target.value);
+                                setTitleError('');
+                            }}
+                            onBlur={() => {
+                                if (!hasUnsavedTitle || isSavingTitle) {
+                                    return;
+                                }
+                                void handleSaveTitle().catch(() => {});
+                            }}
+                            placeholder="Enter a title for this run"
+                            className="w-full px-3 py-2 border border-[var(--color-input-border)] rounded-md bg-[var(--color-input-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+                        />
+                    </div>
 
-                        <div className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface-panel-alt)] p-3">
-                            <div className="mb-2 text-sm font-medium text-[var(--color-text-secondary)]">Documents</div>
-                            {uploadedDocuments.length === 0 ? (
-                                <div className="mb-3 rounded border-2 border-dashed border-[var(--color-border-strong)] bg-[var(--color-surface-panel)] px-3 py-6 text-center text-sm text-[var(--color-text-muted)]">
-                                    No documents added yet.
-                                </div>
-                            ) : (
-                                <div className="mb-3 space-y-2">
-                                    {uploadedDocuments.map((document) => (
-                                        <div key={document.id} className="flex items-start gap-3 rounded border border-[var(--color-border)] bg-[var(--color-surface-panel)] px-3 py-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveDocument(document.id)}
-                                                className="mt-0.5 text-[var(--color-text-muted)] hover:text-[var(--color-danger)]"
-                                                aria-label={`Remove ${document.name}`}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </button>
-                                            <div className="min-w-0">
-                                                <div className="text-sm font-semibold">{document.name}</div>
-                                                <div className="text-xs text-[var(--color-text-secondary)] mt-0.5">
-                                                    {document.date} · {resolveDocumentTypeLabel(document)}
-                                                </div>
-                                                <div className="text-xs text-[var(--color-text-muted)] mt-0.5 truncate">
-                                                    {document.file?.name}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                            <button
-                                type="button"
-                                onClick={handleStartAddDocument}
-                                className="w-full flex items-center justify-center gap-2 rounded border-2 border-[var(--color-accent-soft)] bg-[var(--color-surface-panel)] px-3 py-2 text-sm font-medium text-[var(--color-accent)] hover:border-[var(--color-accent)]"
-                            >
-                                <Plus className="h-4 w-4" />
-                                Add Document
-                            </button>
+                    {titleError && (
+                        <p className="text-sm text-[var(--color-text-danger)]">{titleError}</p>
+                    )}
+                </section>
+
+                <section className="bg-[var(--color-surface-panel)] rounded-lg shadow-md p-6 border border-[var(--color-border)] space-y-4">
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                        <h2 className="text-xl font-semibold">Section 1: Upload Documents</h2>
+                        <div className="text-sm text-[var(--color-text-secondary)]">
+                            Documents in run: <span className="font-medium text-[var(--color-text-primary)]">{runDocuments.length}</span>
                         </div>
                     </div>
 
-                    <button
-                        type="button"
-                        onClick={handleLoadRun}
-                        disabled={!canLoadRun}
-                        className="w-full bg-[var(--color-accent)] text-[var(--color-text-inverse)] py-3 px-4 rounded-md font-medium hover:bg-[var(--color-accent-hover)] disabled:bg-[var(--color-surface-muted)] disabled:text-[var(--color-input-disabled-text)] disabled:cursor-not-allowed transition-colors"
-                    >
-                        {isCreatingRun ? 'Loading Documents Into Run…' : 'Load Documents Into Run'}
-                    </button>
+                    <div className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface-panel-alt)] p-3">
+                        <div className="mb-2 text-sm font-medium text-[var(--color-text-secondary)]">Documents</div>
+                        {runDocuments.length === 0 ? (
+                            <div className="mb-3 rounded border-2 border-dashed border-[var(--color-border-strong)] bg-[var(--color-surface-panel)] px-3 py-6 text-center text-sm text-[var(--color-text-muted)]">
+                                No documents in this run yet.
+                            </div>
+                        ) : (
+                            <div className="mb-3 space-y-2">
+                                {runDocuments.map((document) => (
+                                    <div key={document.id} className="flex items-start gap-3 rounded border border-[var(--color-border)] bg-[var(--color-surface-panel)] px-3 py-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                void handleRemoveDocument(document.id);
+                                            }}
+                                            disabled={removingDocumentId === document.id}
+                                            className="mt-0.5 text-[var(--color-text-muted)] hover:text-[var(--color-danger)] disabled:opacity-50 disabled:cursor-not-allowed"
+                                            aria-label={`Remove ${document.title}`}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                        <div className="min-w-0">
+                                            <div className="text-sm font-semibold">{document.title}</div>
+                                            <div className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                                                {document.date || 'No date'} · {document.type || 'Unspecified'}
+                                            </div>
+                                            <div className="text-xs text-[var(--color-text-muted)] mt-0.5">
+                                                Document ID {document.id}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        <button
+                            type="button"
+                            onClick={handleStartAddDocument}
+                            className="w-full flex items-center justify-center gap-2 rounded border-2 border-[var(--color-accent-soft)] bg-[var(--color-surface-panel)] px-3 py-2 text-sm font-medium text-[var(--color-accent)] hover:border-[var(--color-accent)]"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Add Document
+                        </button>
+                    </div>
+
+                    {documentError && (
+                        <p className="text-sm text-[var(--color-text-danger)]">{documentError}</p>
+                    )}
 
                     {loadError && (
                         <p className="text-sm text-[var(--color-text-danger)]">{loadError}</p>
-                    )}
-
-                    {runData && (
-                        <div className="rounded border border-[var(--color-border)] bg-[var(--color-surface-panel-alt)] p-3 text-sm text-[var(--color-text-secondary)]">
-                            <div>Run Title: <span className="font-medium text-[var(--color-text-primary)]">{runData.title}</span></div>
-                            <div className="mt-1">Documents loaded: {runDocuments.length}</div>
-                        </div>
                     )}
                 </section>
 
@@ -779,10 +825,14 @@ function RunSetupPage({
                     onClick={handleStartExtraction}
                     disabled={
                         !runData ||
+                        !runTitle.trim() ||
                         runDocuments.length === 0 ||
                         !extractionConfig ||
                         !summaryConfig ||
-                        isStartingExtraction
+                        isStartingExtraction ||
+                        isSavingTitle ||
+                        isSavingDocument ||
+                        removingDocumentId !== null
                     }
                     className="w-full bg-[var(--color-accent)] text-[var(--color-text-inverse)] py-3 px-4 rounded-md font-medium hover:bg-[var(--color-accent-hover)] disabled:bg-[var(--color-surface-muted)] disabled:text-[var(--color-input-disabled-text)] disabled:cursor-not-allowed"
                 >
@@ -895,16 +945,20 @@ function RunSetupPage({
                             <button
                                 type="button"
                                 onClick={handleCancelAddDocument}
+                                disabled={isSavingDocument}
                                 className="px-3 py-1.5 text-sm rounded border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-strong)]"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="button"
-                                onClick={handleAddDocument}
-                                className="px-3 py-1.5 text-sm rounded bg-[var(--color-accent)] text-[var(--color-text-inverse)] hover:bg-[var(--color-accent-hover)]"
+                                onClick={() => {
+                                    void handleAddDocument();
+                                }}
+                                disabled={isSavingDocument}
+                                className="px-3 py-1.5 text-sm rounded bg-[var(--color-accent)] text-[var(--color-text-inverse)] hover:bg-[var(--color-accent-hover)] disabled:opacity-60 disabled:cursor-not-allowed"
                             >
-                                Add
+                                {isSavingDocument ? 'Adding…' : 'Add'}
                             </button>
                         </div>
                     </div>

@@ -102,6 +102,14 @@ export async function fetchRun(runId) {
     return request(`/runs/${runId}`);
 }
 
+export async function updateRunTitle(runId, title) {
+    const normalized = String(title ?? '').trim();
+    return request(`/runs/${runId}/title`, {
+        method: 'PUT',
+        body: JSON.stringify({ title: normalized })
+    });
+}
+
 export async function updateRunWorkflowStage(runId, workflowStage) {
     const normalized = String(workflowStage || '').trim();
     if (!normalized) {
@@ -138,6 +146,42 @@ export async function updateRunChecklist(runId, checklistPayload) {
 
 export async function fetchRunDocuments(runId) {
     return request(`/runs/${runId}/documents`);
+}
+
+export async function addRunDocument(runId, document) {
+    const file = document?.file;
+    if (!file) {
+        throw new Error('A document file is required.');
+    }
+
+    const name = String(document?.name || '').trim();
+    const date = String(document?.date || '').trim();
+    const type = String(document?.type || '').trim();
+    const typeOther = String(document?.typeOther || '').trim();
+    if (!name || !date || !type) {
+        throw new Error('Document name, date, and type are required.');
+    }
+
+    const formData = new FormData();
+    formData.append('metadata', JSON.stringify({
+        name,
+        date,
+        type,
+        typeOther: type === 'Other' ? typeOther : undefined,
+        fileName: file.name
+    }));
+    formData.append('file', file, file.name);
+
+    return request(`/runs/${runId}/documents`, {
+        method: 'POST',
+        body: formData
+    });
+}
+
+export async function deleteRunDocument(runId, documentId) {
+    return request(`/runs/${runId}/documents/${documentId}`, {
+        method: 'DELETE'
+    });
 }
 
 export async function startRunSummary(runId, summaryConfig = null) {
