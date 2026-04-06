@@ -59,14 +59,6 @@ class DocumentReference(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
 
-class DocumentChunk(BaseModel):
-    id: str
-    text: str
-    start: int
-    end: int
-    model_config = ConfigDict(extra="forbid", populate_by_name=True)
-
-
 class UploadManifestDocument(BaseModel):
     name: str = Field(..., min_length=1, description="Display document name")
     date: Optional[str] = Field(

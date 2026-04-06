@@ -331,10 +331,8 @@ class ClusterChecklistRunner:
         run_title: Optional[str] = None,
     ) -> Dict[str, Any]:
         resolved_docs = self._resolve_documents(documents)
-        checklist_strategy = self._settings.cluster_checklist_strategy
         resolved_checklist_spec = checklist_spec or load_cluster_checklist_spec(
             self._settings.cluster_checklist_spec_path,
-            strategy=checklist_strategy,
         )
         resolved_focus_context = focus_context or load_cluster_focus_context(run_title)
         request: Dict[str, Any] = {
@@ -353,15 +351,12 @@ class ClusterChecklistRunner:
                 ],
             },
             "model": self._settings.cluster_model_name,
-            "checklist_strategy": checklist_strategy,
+            "checklist_strategy": "individual",
             "checklist_spec": resolved_checklist_spec,
             "focus_context": resolved_focus_context,
             "resume": bool(self._settings.cluster_resume),
             "debug": bool(self._settings.cluster_debug),
         }
-
-        if checklist_strategy == "all":
-            request["max_steps"] = int(self._settings.cluster_max_steps)
 
         slurm: Dict[str, Any] = {}
         partition = self._settings.cluster_slurm_partition.strip()

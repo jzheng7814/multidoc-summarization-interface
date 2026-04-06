@@ -2,13 +2,10 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Set
+from typing import Any, Dict, List, Set
 
 
-ChecklistStrategy = Literal["all", "individual"]
-
-
-def load_cluster_checklist_spec(raw_path: str, strategy: ChecklistStrategy) -> Dict[str, Any]:
+def load_cluster_checklist_spec(raw_path: str) -> Dict[str, Any]:
     path = _resolve_path(raw_path)
     if not path.exists():
         raise RuntimeError(f"Checklist spec file not found: {path}")
@@ -23,16 +20,25 @@ def load_cluster_checklist_spec(raw_path: str, strategy: ChecklistStrategy) -> D
     if not isinstance(payload, dict):
         raise RuntimeError("Checklist spec file root must be a JSON object.")
 
-    return validate_cluster_checklist_spec_payload(payload, strategy=strategy, path=path)
+    return validate_cluster_checklist_spec_payload(payload, path=path)
 
 
-def validate_cluster_checklist_spec_payload(
-    payload: Dict[str, Any], *, strategy: ChecklistStrategy, path: Path | None = None
-) -> Dict[str, Any]:
+def validate_cluster_checklist_spec_payload(payload: Dict[str, Any], path: Path | None = None) -> Dict[str, Any]:
     effective_path = path or Path("<inline-checklist-spec>")
-    if strategy == "all":
-        return _validate_all_spec(payload, effective_path)
-    return _validate_individual_spec(payload, effective_path)
+
+    if "user_instruction" in payload:
+        raise RuntimeError(
+            "Checklist spec must not include top-level user_instruction "
+            f"(file: {effective_path})."
+        )
+    if "constraints" in payload:
+        raise RuntimeError(
+            "Checklist spec must not include top-level constraints "
+            f"(file: {effective_path})."
+        )
+
+    normalized_items = _validate_items(payload, path=effective_path)
+    return {"checklist_items": normalized_items}
 
 
 def _resolve_path(raw_path: str) -> Path:
@@ -43,41 +49,7 @@ def _resolve_path(raw_path: str) -> Path:
     return backend_root / path
 
 
-def _validate_all_spec(payload: Dict[str, Any], path: Path) -> Dict[str, Any]:
-    if "user_instruction" not in payload:
-        raise RuntimeError(
-            f"Checklist spec missing required field for strategy=all: user_instruction ({path})."
-        )
-    if "constraints" not in payload:
-        raise RuntimeError(f"Checklist spec missing required field for strategy=all: constraints ({path}).")
-
-    normalized_items = _validate_common_items(payload, require_per_item_directives=False, path=path)
-    return {
-        "user_instruction": _require_non_empty_string(payload.get("user_instruction"), "user_instruction", path),
-        "constraints": _require_constraints(payload.get("constraints"), "constraints", path),
-        "checklist_items": normalized_items,
-    }
-
-
-def _validate_individual_spec(payload: Dict[str, Any], path: Path) -> Dict[str, Any]:
-    if "user_instruction" in payload:
-        raise RuntimeError(
-            "Checklist spec for strategy=individual must not include top-level user_instruction "
-            f"(file: {path})."
-        )
-    if "constraints" in payload:
-        raise RuntimeError(
-            "Checklist spec for strategy=individual must not include top-level constraints "
-            f"(file: {path})."
-        )
-
-    normalized_items = _validate_common_items(payload, require_per_item_directives=True, path=path)
-    return {"checklist_items": normalized_items}
-
-
-def _validate_common_items(
-    payload: Dict[str, Any], *, require_per_item_directives: bool, path: Path
-) -> List[Dict[str, Any]]:
+def _validate_items(payload: Dict[str, Any], *, path: Path) -> List[Dict[str, Any]]:
     raw_items = payload.get("checklist_items")
     if not isinstance(raw_items, list):
         raise RuntimeError(f"`checklist_items` must be an array in checklist spec file: {path}")
@@ -96,43 +68,32 @@ def _validate_common_items(
             raise RuntimeError(f"Duplicate checklist key `{key}` in checklist spec file: {path}")
         keys_seen.add(key)
 
-        item: Dict[str, Any] = {
-            "key": key,
-            "description": _require_non_empty_string(raw_item.get("description"), f"{field}.description", path),
-        }
-
-        if require_per_item_directives:
-            item["user_instruction"] = _require_non_empty_string(
-                raw_item.get("user_instruction"),
-                f"{field}.user_instruction",
-                path,
-            )
-            item["constraints"] = _require_constraints(
-                raw_item.get("constraints"),
-                f"{field}.constraints",
-                path,
-            )
-            item["max_steps"] = _require_positive_int(
-                raw_item.get("max_steps"),
-                f"{field}.max_steps",
-                path,
-            )
-            item["reasoning_effort"] = _require_reasoning_effort(
-                raw_item.get("reasoning_effort"),
-                f"{field}.reasoning_effort",
-                path,
-            )
-        else:
-            if "user_instruction" in raw_item:
-                raise RuntimeError(
-                    f"{field}.user_instruction is not allowed for strategy=all in checklist spec file: {path}"
-                )
-            if "constraints" in raw_item:
-                raise RuntimeError(
-                    f"{field}.constraints is not allowed for strategy=all in checklist spec file: {path}"
-                )
-
-        normalized_items.append(item)
+        normalized_items.append(
+            {
+                "key": key,
+                "description": _require_non_empty_string(raw_item.get("description"), f"{field}.description", path),
+                "user_instruction": _require_non_empty_string(
+                    raw_item.get("user_instruction"),
+                    f"{field}.user_instruction",
+                    path,
+                ),
+                "constraints": _require_constraints(
+                    raw_item.get("constraints"),
+                    f"{field}.constraints",
+                    path,
+                ),
+                "max_steps": _require_positive_int(
+                    raw_item.get("max_steps"),
+                    f"{field}.max_steps",
+                    path,
+                ),
+                "reasoning_effort": _require_reasoning_effort(
+                    raw_item.get("reasoning_effort"),
+                    f"{field}.reasoning_effort",
+                    path,
+                ),
+            }
+        )
 
     return normalized_items
 

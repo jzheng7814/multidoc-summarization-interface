@@ -17,7 +17,6 @@ backend/.env
 backend/.venv
 backend/__pycache__/
 backend/.pytest_cache/
-backend/scripts/
 frontend/.env
 
 # Editor directories and files

@@ -255,17 +255,6 @@ async def start_extraction(run_id: str, background_tasks: BackgroundTasks, confi
 
 
 async def _run_extraction_job(run_id: str) -> None:
-    if settings.cluster_checklist_strategy != "individual":
-        message = "Run-centric extraction configuration requires MULTI_DOCUMENT_CLUSTER_CHECKLIST_STRATEGY=individual."
-        _run_store.update_extraction_state(
-            run_id,
-            status="failed",
-            error=message,
-            progress={"phase": "failed", "event_type": "failed", "error": message},
-        )
-        _set_workflow_stage(run_id, "setup")
-        return
-
     run = _require_run(run_id)
     extraction_config = _parse_extraction_config(run.extraction_config)
 
@@ -773,18 +762,9 @@ def _documents_to_references(documents: Sequence[Document]) -> List[DocumentRefe
 
 
 def _default_extraction_config() -> Dict[str, Any]:
-    strategy = settings.cluster_checklist_strategy
-    if strategy != "individual":
-        raise RuntimeError(
-            "Run-centric extraction configuration requires MULTI_DOCUMENT_CLUSTER_CHECKLIST_STRATEGY=individual."
-        )
-
     from app.services.cluster_checklist_spec import load_cluster_checklist_spec
 
-    checklist_spec = load_cluster_checklist_spec(
-        settings.cluster_checklist_spec_path,
-        strategy="individual",
-    )
+    checklist_spec = load_cluster_checklist_spec(settings.cluster_checklist_spec_path)
     focus_context = load_cluster_focus_context_template(settings)
 
     config = {
@@ -809,7 +789,7 @@ def _normalize_extraction_config(config: RunExtractionConfig) -> Dict[str, Any]:
     raw_spec = payload.get("checklist_spec")
     if not isinstance(raw_spec, dict):
         raise RuntimeError("Extraction config checklist_spec must be an object.")
-    normalized_spec = validate_cluster_checklist_spec_payload(raw_spec, strategy="individual")
+    normalized_spec = validate_cluster_checklist_spec_payload(raw_spec)
     return {
         "focus_context": config.focus_context.strip(),
         "checklist_spec": normalized_spec,

@@ -8,10 +8,7 @@ from app.services.cluster_checklist_spec import load_cluster_checklist_spec
 
 class ClusterChecklistSpecTests(unittest.TestCase):
     def test_load_individual_spec_from_default_resource(self):
-        spec = load_cluster_checklist_spec(
-            "app/resources/checklists/remote_checklist_spec.individual.json",
-            strategy="individual",
-        )
+        spec = load_cluster_checklist_spec("app/resources/checklists/remote_checklist_spec.individual.json")
         self.assertIn("checklist_items", spec)
         self.assertIsInstance(spec["checklist_items"], list)
         self.assertGreater(len(spec["checklist_items"]), 0)
@@ -44,7 +41,7 @@ class ClusterChecklistSpecTests(unittest.TestCase):
                 encoding="utf-8",
             )
             with self.assertRaises(RuntimeError):
-                load_cluster_checklist_spec(str(path), strategy="individual")
+                load_cluster_checklist_spec(str(path))
 
     def test_rejects_invalid_individual_reasoning_effort(self):
         with tempfile.TemporaryDirectory(prefix="cluster_spec_test_") as temp_dir:
@@ -67,7 +64,7 @@ class ClusterChecklistSpecTests(unittest.TestCase):
                 encoding="utf-8",
             )
             with self.assertRaises(RuntimeError):
-                load_cluster_checklist_spec(str(path), strategy="individual")
+                load_cluster_checklist_spec(str(path))
 
 
 if __name__ == "__main__":

@@ -1,17 +1,8 @@
 from __future__ import annotations
 
-from enum import Enum
 from typing import List, Literal, Optional
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
-
-
-class SummaryJobStatus(str, Enum):
-    pending = "pending"
-    running = "running"
-    succeeded = "succeeded"
-    failed = "failed"
-
 
 class SummarySlurmOptions(BaseModel):
     partition: Optional[str] = None
@@ -77,28 +68,3 @@ class SummaryRequest(BaseModel):
     )
     slurm: Optional[SummarySlurmOptions] = None
     model_config = ConfigDict(extra="forbid", populate_by_name=True, protected_namespaces=())
-
-
-class SummaryJob(BaseModel):
-    id: str
-    corpus_id: str
-    status: SummaryJobStatus
-    summary_text: Optional[str] = None
-    error: Optional[str] = None
-    run_id: Optional[str] = None
-    remote_job_id: Optional[str] = Field(
-        None,
-        serialization_alias="remoteJobId",
-        validation_alias=AliasChoices("remoteJobId", "remote_job_id"),
-    )
-    model_config = ConfigDict(extra="forbid", populate_by_name=True)
-
-
-class SummaryJobEnvelope(BaseModel):
-    job: SummaryJob
-    model_config = ConfigDict(extra="forbid", populate_by_name=True)
-
-
-class SummaryPromptResponse(BaseModel):
-    prompt: str
-    model_config = ConfigDict(extra="forbid", populate_by_name=True)

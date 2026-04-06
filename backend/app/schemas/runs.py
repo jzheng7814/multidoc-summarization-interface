@@ -305,14 +305,3 @@ class RunWorkflowStageUpdateRequest(BaseModel):
     )
 
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
-
-
-class RunChecklistResultEnvelope(BaseModel):
-    run_id: str = Field(
-        ...,
-        serialization_alias="runId",
-        validation_alias=AliasChoices("runId", "run_id"),
-    )
-    categories: List[Dict[str, object]]
-
-    model_config = ConfigDict(extra="forbid", populate_by_name=True)

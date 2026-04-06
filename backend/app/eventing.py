@@ -303,11 +303,10 @@ async def init_event_system(settings: Settings) -> None:
     if _EVENT_SYSTEM_STARTED:
         return
     manager = get_event_manager()
-    app_config = settings.app
-    log_path = build_event_log_path(app_config.event_log_dir, app_config.event_log_prefix)
+    log_path = build_event_log_path(settings.event_log_dir, settings.event_log_prefix)
     manager.register_consumer(FileEventConsumer(log_path, min_level=EventVisibility.DEBUG))
     manager.register_consumer(ConsoleEventConsumer(min_level=EventVisibility.INFO))
-    socket_consumer = UnixSocketEventConsumer(app_config.ipc_socket_path)
+    socket_consumer = UnixSocketEventConsumer(settings.ipc_socket_path)
     manager.register_consumer(socket_consumer)
     await socket_consumer.start()
     await manager.start()
