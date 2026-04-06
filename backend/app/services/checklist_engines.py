@@ -12,7 +12,6 @@ from app.services.spoof_replay import (
     replay_spoof_events,
     require_completed_terminal_event,
     resolve_spoof_fixture_dir,
-    validate_fixture_corpus,
     validate_fixture_document_ids,
 )
 
@@ -78,7 +77,6 @@ class SpoofChecklistExtractionEngine:
     ) -> ClusterExtractionResult:
         fixture_dir = resolve_spoof_fixture_dir(self._settings.cluster_spoof_extraction_fixture_dir)
         request_payload = load_spoof_request_payload(fixture_dir)
-        validate_fixture_corpus(corpus_id, request_payload, label="Spoof extraction fixture")
         validate_fixture_document_ids(
             [document.id for document in documents],
             request_payload,
@@ -115,7 +113,7 @@ class SpoofChecklistExtractionEngine:
             output_dir=str(payload.get("output_dir") or "").strip() or None,
             manifest_path=str(payload.get("manifest_path") or "").strip() or None,
             result_payload_path=str((fixture_dir / "result_payload.json").resolve()),
-            checklist_ndjson_path=str((fixture_dir / "checklist.json").resolve()),
+            checklist_ndjson_path=str((fixture_dir / "checklist.ndjson").resolve()),
         )
 
 

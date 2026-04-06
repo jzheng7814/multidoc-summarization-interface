@@ -1,0 +1,126 @@
+{
+  "by_source_document_id": {
+    "60801": "60801",
+    "155313": "155313",
+    "155857": "155857",
+    "155858": "155858",
+    "155859": "155859",
+    "155860": "155860",
+    "155861": "155861",
+    "155856": "155856",
+    "160610": "160610",
+    "161070": "161070",
+    "163685": "163685",
+    "163684": "163684"
+  },
+  "documents": [
+    {
+      "index": 0,
+      "doc_id": "60801",
+      "filename": "docket_001_main_docket_125_cv_0.txt",
+      "title": "Main Docket (1:25-cv-00420)",
+      "doc_type": "Docket",
+      "date": null,
+      "sentence_count": 268
+    },
+    {
+      "index": 1,
+      "doc_id": "155313",
+      "filename": "complaint_002_complaint_for_declar.txt",
+      "title": "Complaint for Declaratory and Injunctive Relief",
+      "doc_type": "Complaint",
+      "date": "2025-02-12",
+      "sentence_count": 815
+    },
+    {
+      "index": 2,
+      "doc_id": "155857",
+      "filename": "pleading_motion_brie_003_memorandum_of_points.txt",
+      "title": "Memorandum of Points and Authorities in Support of Plaintiffs' Motion for a Temporary Restraining Order and Preliminary Injunction",
+      "doc_type": "Pleading / Motion / Brief",
+      "date": "2025-02-14",
+      "sentence_count": 1426
+    },
+    {
+      "index": 3,
+      "doc_id": "155858",
+      "filename": "pleading_motion_brie_004_motion_for_temporary.txt",
+      "title": "Motion for Temporary Restraining Order and Preliminary Injunction",
+      "doc_type": "Pleading / Motion / Brief",
+      "date": "2025-02-14",
+      "sentence_count": 237
+    },
+    {
+      "index": 4,
+      "doc_id": "155859",
+      "filename": "complaint_005_amended_complaint_fo.txt",
+      "title": "Amended Complaint for Declaratory and Injunctive Relief",
+      "doc_type": "Complaint",
+      "date": "2025-02-17",
+      "sentence_count": 841
+    },
+    {
+      "index": 5,
+      "doc_id": "155860",
+      "filename": "pleading_motion_brie_006_defendants_response.txt",
+      "title": "Defendants' Response to Plaintiffs' Motion for Temporary Restraining Order",
+      "doc_type": "Pleading / Motion / Brief",
+      "date": "2025-02-17",
+      "sentence_count": 900
+    },
+    {
+      "index": 6,
+      "doc_id": "155861",
+      "filename": "pleading_motion_brie_007_plaintiffs_reply_in.txt",
+      "title": "Plaintiffs' Reply in Support of their Motion for a Temporary Restraining Order and Preliminary Injunction",
+      "doc_type": "Pleading / Motion / Brief",
+      "date": "2025-02-18",
+      "sentence_count": 409
+    },
+    {
+      "index": 7,
+      "doc_id": "155856",
+      "filename": "orderopinion_008_memorandum_opinion_a.txt",
+      "title": "Memorandum Opinion and Order",
+      "doc_type": "Order/Opinion",
+      "date": "2025-02-20",
+      "sentence_count": 653
+    },
+    {
+      "index": 8,
+      "doc_id": "160610",
+      "filename": "pleading_motion_brie_009_memorandum_of_points.txt",
+      "title": "Memorandum of Points and Authorities in Support of Defendants' Motion to Dismiss",
+      "doc_type": "Pleading / Motion / Brief",
+      "date": "2025-05-15",
+      "sentence_count": 1490
+    },
+    {
+      "index": 9,
+      "doc_id": "161070",
+      "filename": "complaint_010_second_amended_compl.txt",
+      "title": "Second Amended Complaint for Declaratory and Injunctive Relief",
+      "doc_type": "Complaint",
+      "date": "2025-06-06",
+      "sentence_count": 2154
+    },
+    {
+      "index": 10,
+      "doc_id": "163685",
+      "filename": "pleading_motion_brie_011_defendants_motion_to.txt",
+      "title": "Defendants' Motion to Dismiss",
+      "doc_type": "Pleading / Motion / Brief",
+      "date": "2025-07-11",
+      "sentence_count": 46
+    },
+    {
+      "index": 11,
+      "doc_id": "163684",
+      "filename": "pleading_motion_brie_012_plaintiffs_response.txt",
+      "title": "Plaintiffs' Response in Opposition to Defendants' Motion to Dismiss",
+      "doc_type": "Pleading / Motion / Brief",
+      "date": "2025-08-15",
+      "sentence_count": 2472
+    }
+  ]
+}

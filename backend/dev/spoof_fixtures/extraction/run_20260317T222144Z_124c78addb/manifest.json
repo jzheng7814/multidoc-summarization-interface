@@ -1,0 +1,169 @@
+{
+  "run_id": "run_20260317T222144Z_124c78addb",
+  "created_at": "2026-03-18T01:35:51.598573+00:00",
+  "checklist_strategy": "individual",
+  "checklist_source": "inline_spec",
+  "checklist_items_count": 19,
+  "generated_checklist_configs": [
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/001_filing_date.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/002_who_are_the_parties.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/003_class_action_or_individual_plaintiffs.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/004_representation_structure.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/005_arguments_and_reasoning.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/006_remedy_sought.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/007_first_and_last_name_of_judge.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/008_consolidated_cases_noted.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/009_related_cases_listed_by_their_case_code_number.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/010_note_important_filings.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/011_amendments_and_claim_or_party_changes.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/012_court_rulings.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/013_trials.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/014_appeal.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/015_current_procedural_posture.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/016_decrees.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/017_settlements.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/018_monitoring.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/019_factual_basis_of_case.yaml"
+  ],
+  "max_steps": null,
+  "reasoning_effort": null,
+  "item_runtime_settings": [
+    {
+      "item_index": 1,
+      "key": "Filing_Date",
+      "max_steps": 15,
+      "reasoning_effort": "low"
+    },
+    {
+      "item_index": 2,
+      "key": "Who_are_the_Parties",
+      "max_steps": 160,
+      "reasoning_effort": "medium"
+    },
+    {
+      "item_index": 3,
+      "key": "Class_Action_or_Individual_Plaintiffs",
+      "max_steps": 20,
+      "reasoning_effort": "low"
+    },
+    {
+      "item_index": 4,
+      "key": "Representation_Structure",
+      "max_steps": 60,
+      "reasoning_effort": "medium"
+    },
+    {
+      "item_index": 5,
+      "key": "Arguments_and_Reasoning",
+      "max_steps": 220,
+      "reasoning_effort": "high"
+    },
+    {
+      "item_index": 6,
+      "key": "Remedy_Sought",
+      "max_steps": 70,
+      "reasoning_effort": "medium"
+    },
+    {
+      "item_index": 7,
+      "key": "First_and_Last_name_of_Judge",
+      "max_steps": 100,
+      "reasoning_effort": "medium"
+    },
+    {
+      "item_index": 8,
+      "key": "Consolidated_Cases_Noted",
+      "max_steps": 15,
+      "reasoning_effort": "low"
+    },
+    {
+      "item_index": 9,
+      "key": "Related_Cases_Listed_by_Their_Case_Code_Number",
+      "max_steps": 25,
+      "reasoning_effort": "low"
+    },
+    {
+      "item_index": 10,
+      "key": "Note_Important_Filings",
+      "max_steps": 260,
+      "reasoning_effort": "medium"
+    },
+    {
+      "item_index": 11,
+      "key": "Amendments_and_Claim_or_Party_Changes",
+      "max_steps": 140,
+      "reasoning_effort": "medium"
+    },
+    {
+      "item_index": 12,
+      "key": "Court_Rulings",
+      "max_steps": 220,
+      "reasoning_effort": "high"
+    },
+    {
+      "item_index": 13,
+      "key": "Trials",
+      "max_steps": 20,
+      "reasoning_effort": "low"
+    },
+    {
+      "item_index": 14,
+      "key": "Appeal",
+      "max_steps": 120,
+      "reasoning_effort": "medium"
+    },
+    {
+      "item_index": 15,
+      "key": "Current_Procedural_Posture",
+      "max_steps": 30,
+      "reasoning_effort": "low"
+    },
+    {
+      "item_index": 16,
+      "key": "Decrees",
+      "max_steps": 100,
+      "reasoning_effort": "medium"
+    },
+    {
+      "item_index": 17,
+      "key": "Settlements",
+      "max_steps": 20,
+      "reasoning_effort": "low"
+    },
+    {
+      "item_index": 18,
+      "key": "Monitoring",
+      "max_steps": 20,
+      "reasoning_effort": "low"
+    },
+    {
+      "item_index": 19,
+      "key": "Factual_Basis_of_Case",
+      "max_steps": 100,
+      "reasoning_effort": "medium"
+    }
+  ],
+  "focus_context": "This run supports legal case summarization and human review over a multi-document corpus centered on one target case.\n\nPurpose\n- Build a checklist that is accurate enough for downstream summary generation and easy for a human reviewer to verify from the cited evidence.\n- Optimize for strong, self-contained values and canonical supporting evidence.\n- The human reviewer should mostly need to delete, trim, or correct unsupported content, not reopen documents to discover major facts the extraction missed.\n\nScope discipline\n- Extract facts about the target case itself unless a checklist item explicitly asks for relationships, citations, or external matters.\n- Other cases, quoted precedent, string citations, background authorities, and parallel litigation are external references, not target-case facts.\n- Treat another case as related only when the local text explicitly states the relationship to the target case.\n- Treat an appeal as part of the target case only when the record explicitly ties the appellate event to this case.\n- Do not infer judges, rulings, decrees, class status, or procedural posture for the target case from other cases.\n\nSource priority\n- Prefer the most authoritative local source for each item.\n- Use complaint and operative pleading captions, party sections, prayers for relief, signature blocks, and amended pleadings for parties, class status, representation structure, remedies, factual allegations, and claim or party changes.\n- Use the actual order, opinion, notice of appeal, appellate disposition, decree, trial record, or docket text for this case for rulings, appeals, decrees, trials, settlements, monitoring, and current procedural posture.\n- For current procedural posture, later supported materials control earlier ones.\n- When the underlying pleading or order is available, prefer it over short docket text for substantive claim or party changes.\n\nValue quality\n- Write each value as a concise, self-contained synthesis that remains useful without the evidence text.\n- Do not output bare labels, bare citations, or thin docket paraphrases when a more informative supported value is possible.\n- Prefer fewer, stronger, summary-usable values over many weak fragments.\n- When new evidence enriches, narrows, or corrects an existing entity, event, or proposition, consolidate and update instead of appending duplicates.\n\nEvidence quality\n- Cite evidence that directly supports every material clause of the value.\n- Prefer canonical spans that let a reviewer confirm the value quickly.\n- If one span does not support the full value, use multiple spans or split the value into smaller supported values.\n- Do not rely on a span that supports only a case number, title fragment, or generic legal standard when the value makes a broader claim.\n\nPitfalls to avoid\n- Do not confuse the target case with cited precedent or adjacent litigation involving similar parties, agencies, policies, or dates.\n- Do not use quoted language from another case to classify this case.\n- Do not confuse filing dates with entered dates or later procedural dates.\n- Do not infer substantive claim changes, party changes, or requested relief solely from a short docket description when the underlying filing or order is available.\n- Do not treat motion hearings, scheduling notices, or telephonic access instructions as trial events.\n- Do not encode uncertainty as Not Applicable or N/A unless the record affirmatively establishes non-applicability and the checklist item explicitly calls for that outcome.\n\nCompleteness standard\n- Before stopping on an important item, check the canonical sources most likely to contain the answer.\n- Prefer capturing the major summary-significant developments of the target case over enumerating minor procedural noise.\n- If a later pleading, ruling, or docket event materially changes parties, claims, requested relief, or posture, capture that change explicitly.\n- When a bucket is relation-heavy or easy to contaminate, leave it empty rather than filling it with unsupported inferences from external cases.",
+  "controller_timing": {
+    "started_at": "2026-03-17T22:21:45.175734+00:00",
+    "finished_at": "2026-03-18T00:57:15.702210+00:00",
+    "elapsed_seconds": 9330.526
+  },
+  "jobs_total": 19,
+  "jobs_completed": 19,
+  "jobs_failed": 0,
+  "artifacts": {
+    "events_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/events.ndjson",
+    "request_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/request.json",
+    "result_payload_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/result_payload.json",
+    "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/checklist.json",
+    "checklist_ndjson_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/checklist.ndjson",
+    "document_map_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/document_map.json",
+    "manifest_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/manifest.json"
+  },
+  "completion_stats": {
+    "filled": 12,
+    "empty": 7,
+    "total": 19
+  }
+}

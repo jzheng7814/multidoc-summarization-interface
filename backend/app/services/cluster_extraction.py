@@ -18,6 +18,7 @@ from app.services.cluster_checklist_spec import load_cluster_checklist_spec
 from app.services.cluster_focus_context import load_cluster_focus_context
 from app.services.remote_stage import RemoteStageManager
 from app.services.spoof_replay import validate_spoof_fixture_dir
+from app.services.spoof_scenario import validate_spoof_scenario_path
 
 producer = get_event_producer(__name__)
 ProgressCallback = Callable[[str, Dict[str, Any]], None]
@@ -741,6 +742,7 @@ _RUNNER = ClusterChecklistRunner()
 def validate_cluster_runtime_prerequisites() -> None:
     settings = get_settings()
     if settings.cluster_run_mode == "spoof":
+        validate_spoof_scenario_path(settings.cluster_spoof_scenario_path)
         validate_spoof_fixture_dir(
             settings.cluster_spoof_extraction_fixture_dir,
             label="Spoof extraction",

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import colorsys
+from dataclasses import replace
 from datetime import date as date_type, datetime, timezone
 from typing import Any, Dict, List, Optional, Sequence, cast
 import uuid
@@ -36,6 +37,7 @@ from app.services.checklist_engines import get_checklist_extraction_engine
 from app.services.cluster_checklist_spec import validate_cluster_checklist_spec_payload
 from app.services.cluster_focus_context import load_cluster_focus_context_template, render_cluster_focus_context_template
 from app.services.cluster_queue import get_cluster_run_lock
+from app.services.spoof_scenario import load_spoof_scenario
 from app.services.summary_engines import SummaryRunInput, get_summary_generation_engine
 from app.services.summary_focus_context import load_default_summary_focus_context, render_summary_focus_context_template
 
@@ -91,11 +93,25 @@ def create_run_from_documents(
         extraction_config=extraction_config,
         summary_config=summary_config,
     )
-    stored = _require_run(run_id)
-    return _to_run_response(stored)
+    return get_run(run_id)
 
 
 def create_empty_run() -> RunCreateResponse:
+    if _is_spoof_mode():
+        scenario = load_spoof_scenario(settings)
+        run_id = str(uuid.uuid4())
+        created_at = datetime.now(timezone.utc).isoformat()
+        _run_store.create_run(
+            run_id=run_id,
+            source_type="spoof_fixture",
+            title=scenario.title,
+            created_at=created_at,
+            workflow_stage="setup",
+            documents=[doc.model_copy(deep=True) for doc in scenario.documents],
+            extraction_config=scenario.extraction_config.model_dump(mode="json", by_alias=False),
+            summary_config=scenario.summary_config.model_dump(mode="json", by_alias=False),
+        )
+        return get_run(run_id)
     return create_run_from_documents(
         source_type="new_run",
         title="",
@@ -104,6 +120,8 @@ def create_empty_run() -> RunCreateResponse:
 
 
 async def create_run_from_upload(manifest: UploadDocumentsManifest, files: List[UploadFile]) -> RunCreateResponse:
+    if _is_spoof_mode():
+        return create_empty_run()
     title = manifest.title.strip()
     if not title:
         raise HTTPException(status_code=400, detail="Run title is required.")
@@ -116,6 +134,8 @@ async def create_run_from_upload(manifest: UploadDocumentsManifest, files: List[
 
 
 async def update_run_from_upload(run_id: str, manifest: UploadDocumentsManifest, files: List[UploadFile]) -> RunCreateResponse:
+    if _is_spoof_mode():
+        return get_run(run_id)
     run = _require_run(run_id)
     _assert_run_not_active(run)
 
@@ -133,10 +153,12 @@ async def update_run_from_upload(run_id: str, manifest: UploadDocumentsManifest,
 
 
 def get_run(run_id: str) -> RunCreateResponse:
-    return _to_run_response(_require_run(run_id))
+    return _to_run_response(_require_effective_run(run_id))
 
 
 def update_run_title(run_id: str, title: str) -> RunCreateResponse:
+    if _is_spoof_mode():
+        return get_run(run_id)
     run = _require_run(run_id)
     _assert_run_not_active(run)
 
@@ -202,6 +224,12 @@ def update_workflow_stage(run_id: str, workflow_stage: WorkflowStage) -> RunCrea
 
 
 def get_default_configs() -> RunDefaultConfigResponse:
+    if _is_spoof_mode():
+        scenario = load_spoof_scenario(settings)
+        return RunDefaultConfigResponse(
+            extraction_config=scenario.extraction_config,
+            summary_config=scenario.summary_config,
+        )
     return RunDefaultConfigResponse(
         extraction_config=RunExtractionConfig.model_validate(_default_extraction_config()),
         summary_config=RunSummaryConfig.model_validate(_default_summary_config()),
@@ -209,10 +237,12 @@ def get_default_configs() -> RunDefaultConfigResponse:
 
 
 def get_run_documents(run_id: str) -> List[Document]:
-    return list(_require_run(run_id).documents)
+    return list(_require_effective_run(run_id).documents)
 
 
 async def add_run_document(run_id: str, metadata: UploadManifestDocument, file: UploadFile) -> RunCreateResponse:
+    if _is_spoof_mode():
+        return get_run(run_id)
     run = _require_run(run_id)
     _assert_run_not_active(run)
 
@@ -231,6 +261,8 @@ async def add_run_document(run_id: str, metadata: UploadManifestDocument, file: 
 
 
 def delete_run_document(run_id: str, document_id: int) -> RunCreateResponse:
+    if _is_spoof_mode():
+        return get_run(run_id)
     run = _require_run(run_id)
     _assert_run_not_active(run)
 
@@ -248,22 +280,26 @@ def delete_run_document(run_id: str, document_id: int) -> RunCreateResponse:
 
 
 def get_extraction_config(run_id: str) -> RunExtractionConfig:
-    run = _require_run(run_id)
+    run = _require_effective_run(run_id)
     return _parse_extraction_config(run.extraction_config)
 
 
 def update_extraction_config(run_id: str, config: RunExtractionConfig) -> RunExtractionConfig:
+    if _is_spoof_mode():
+        return get_extraction_config(run_id)
     normalized = _normalize_extraction_config(config)
     _run_store.update_extraction_config(run_id, normalized)
     return _parse_extraction_config(normalized)
 
 
 def get_summary_config(run_id: str) -> RunSummaryConfig:
-    run = _require_run(run_id)
+    run = _require_effective_run(run_id)
     return _parse_summary_config(run.summary_config)
 
 
 def update_summary_config(run_id: str, config: RunSummaryConfig) -> RunSummaryConfig:
+    if _is_spoof_mode():
+        return get_summary_config(run_id)
     normalized = config.model_dump(mode="json", by_alias=False)
     _run_store.update_summary_config(run_id, normalized)
     return _parse_summary_config(normalized)
@@ -271,11 +307,11 @@ def update_summary_config(run_id: str, config: RunSummaryConfig) -> RunSummaryCo
 
 async def start_extraction(run_id: str, background_tasks: BackgroundTasks, config: Optional[RunExtractionConfig]) -> RunExtractionStatusEnvelope:
     async with _start_lock:
-        run = _require_run(run_id)
-        if config is not None:
+        run = _require_effective_run(run_id)
+        if config is not None and not _is_spoof_mode():
             normalized_config = _normalize_extraction_config(config)
             _run_store.update_extraction_config(run_id, normalized_config)
-            run = _require_run(run_id)
+            run = _require_effective_run(run_id)
 
         if run.extraction_status in {"queued", "running"}:
             return get_extraction_status(run_id)
@@ -300,7 +336,7 @@ async def start_extraction(run_id: str, background_tasks: BackgroundTasks, confi
 
 
 async def _run_extraction_job(run_id: str) -> None:
-    run = _require_run(run_id)
+    run = _require_effective_run(run_id)
     extraction_config = _parse_extraction_config(run.extraction_config)
 
     doc_refs = _documents_to_references(run.documents)
@@ -362,11 +398,11 @@ async def _run_extraction_job(run_id: str) -> None:
 
 async def start_summary(run_id: str, background_tasks: BackgroundTasks, config: Optional[RunSummaryConfig]) -> RunSummaryStatusEnvelope:
     async with _start_lock:
-        run = _require_run(run_id)
-        if config is not None:
+        run = _require_effective_run(run_id)
+        if config is not None and not _is_spoof_mode():
             normalized_config = config.model_dump(mode="json", by_alias=False)
             _run_store.update_summary_config(run_id, normalized_config)
-            run = _require_run(run_id)
+            run = _require_effective_run(run_id)
 
         if run.summary_status in {"queued", "running"}:
             return get_summary_status(run_id)
@@ -394,7 +430,7 @@ async def start_summary(run_id: str, background_tasks: BackgroundTasks, config: 
 
 
 async def _run_summary_job(run_id: str) -> None:
-    run = _require_run(run_id)
+    run = _require_effective_run(run_id)
     summary_config = _parse_summary_config(run.summary_config)
     extraction_config = _parse_extraction_config(run.extraction_config)
 
@@ -523,7 +559,7 @@ def get_summary_status(run_id: str) -> RunSummaryStatusEnvelope:
 
 
 def get_checklist_categories(run_id: str) -> EvidenceCategoryCollection:
-    run = _require_run(run_id)
+    run = _require_effective_run(run_id)
     if not run.extraction_result:
         raise HTTPException(status_code=409, detail=f"Checklist is not ready for run '{run_id}'.")
 
@@ -577,7 +613,7 @@ def get_checklist_categories(run_id: str) -> EvidenceCategoryCollection:
 
 
 def update_checklist_categories(run_id: str, payload: EvidenceCategoryCollection) -> EvidenceCategoryCollection:
-    run = _require_run(run_id)
+    run = _require_effective_run(run_id)
     if run.extraction_status != "succeeded" or not run.extraction_result:
         raise HTTPException(
             status_code=409,
@@ -586,6 +622,8 @@ def update_checklist_categories(run_id: str, payload: EvidenceCategoryCollection
                 "(status must be succeeded)."
             ),
         )
+    if _is_spoof_mode():
+        return get_checklist_categories(run_id)
     if run.summary_status in {"queued", "running"}:
         raise HTTPException(
             status_code=409,
@@ -888,6 +926,10 @@ def _to_run_response(run: StoredRun) -> RunCreateResponse:
     )
 
 
+def _is_spoof_mode() -> bool:
+    return settings.cluster_run_mode == "spoof"
+
+
 def _require_run(run_id: str) -> StoredRun:
     normalized = str(run_id).strip()
     if not normalized:
@@ -898,6 +940,24 @@ def _require_run(run_id: str) -> StoredRun:
     if run.extraction_config is None or run.summary_config is None:
         raise HTTPException(status_code=500, detail=f"Run '{normalized}' is missing required run configuration.")
     return run
+
+
+def _require_effective_run(run_id: str) -> StoredRun:
+    return _apply_spoof_setup(_require_run(run_id))
+
+
+def _apply_spoof_setup(run: StoredRun) -> StoredRun:
+    if not _is_spoof_mode():
+        return run
+    scenario = load_spoof_scenario(settings)
+    return replace(
+        run,
+        source_type="spoof_fixture",
+        title=scenario.title,
+        extraction_config=scenario.extraction_config.model_dump(mode="json", by_alias=False),
+        summary_config=scenario.summary_config.model_dump(mode="json", by_alias=False),
+        documents=[doc.model_copy(deep=True) for doc in scenario.documents],
+    )
 
 
 def _parse_date(value: Optional[str]) -> Optional[datetime]:

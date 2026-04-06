@@ -15,7 +15,6 @@ from app.services.spoof_replay import (
     replay_spoof_events,
     require_completed_terminal_event,
     resolve_spoof_fixture_dir,
-    validate_fixture_corpus,
     validate_fixture_document_ids,
 )
 
@@ -77,7 +76,6 @@ class SpoofSummaryGenerationEngine:
     ) -> ClusterSummaryResult:
         fixture_dir = resolve_spoof_fixture_dir(self._settings.cluster_spoof_summary_fixture_dir)
         request_payload = load_spoof_request_payload(fixture_dir)
-        validate_fixture_corpus(run_input.corpus_id, request_payload, label="Spoof summary fixture")
         validate_fixture_document_ids(
             [document.id for document in run_input.documents],
             request_payload,

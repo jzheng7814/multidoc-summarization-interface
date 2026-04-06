@@ -1,0 +1,2565 @@
+{
+  "run_id": "run_20260319T025055Z_6dcb90725b",
+  "request_id": "summary_agent_manual_46110_20260319T024154Z",
+  "job_id": "2576901",
+  "state": "COMPLETED",
+  "case_id": "46110",
+  "model": "unsloth/gpt-oss-20b-BF16",
+  "max_steps": 200,
+  "reasoning_effort": "medium",
+  "summary": "National Treasury Employees Union v. Trump, No. 25‑cv‑00420‑CRC, was filed on February 12, 2025 in the U.S. District Court for the District of Columbia by the National Treasury Employees Union together with the National Federation of Federal Employees, the International Association of Machinists, and the International Federation of Professional and Technical Employees. The complaint alleged that Executive Order No. 14210, issued February 11, 2025, directed federal agencies to conduct mass layoffs of non‑essential and probationary employees and to pressure workers to resign through a deferred‑resignation program, thereby violating Congressional reduction‑in‑force procedures and the constitutional separation of powers; plaintiffs sought declaratory judgment and injunctive relief. Judge George A. O’Toole, Jr. entered a temporary restraining order on February 6 that halted enforcement of the February 6 deadline, but on February 12 he dissolved that order and denied the plaintiffs’ motion for a temporary restraining order and preliminary injunction, holding that the court likely lacked subject‑matter jurisdiction and directing the parties to pursue their claims under the Federal Service Labor‑Management Relations Statute. On May 15, 2025 the defendants—President Donald J. Trump and the acting or appointed directors and secretaries of OPM, IRS, HHS, CFPB, USDA Forest Service, VA, DoD, NASA, and NIH—filed a motion to dismiss; the court granted that motion and dismissed the case entirely on the same day, closing the action with no further action pending.",
+  "summary_stats": {
+    "paragraph_count": 1,
+    "character_count": 1572,
+    "non_empty": true
+  },
+  "summary_state": {
+    "paragraphs": [
+      {
+        "paragraph_id": "p001",
+        "text": "National Treasury Employees Union v. Trump, No. 25‑cv‑00420‑CRC, was filed on February 12, 2025 in the U.S. District Court for the District of Columbia by the National Treasury Employees Union together with the National Federation of Federal Employees, the International Association of Machinists, and the International Federation of Professional and Technical Employees. The complaint alleged that Executive Order No. 14210, issued February 11, 2025, directed federal agencies to conduct mass layoffs of non‑essential and probationary employees and to pressure workers to resign through a deferred‑resignation program, thereby violating Congressional reduction‑in‑force procedures and the constitutional separation of powers; plaintiffs sought declaratory judgment and injunctive relief. Judge George A. O’Toole, Jr. entered a temporary restraining order on February 6 that halted enforcement of the February 6 deadline, but on February 12 he dissolved that order and denied the plaintiffs’ motion for a temporary restraining order and preliminary injunction, holding that the court likely lacked subject‑matter jurisdiction and directing the parties to pursue their claims under the Federal Service Labor‑Management Relations Statute. On May 15, 2025 the defendants—President Donald J. Trump and the acting or appointed directors and secretaries of OPM, IRS, HHS, CFPB, USDA Forest Service, VA, DoD, NASA, and NIH—filed a motion to dismiss; the court granted that motion and dismissed the case entirely on the same day, closing the action with no further action pending.",
+        "last_updated": "2026-03-19T03:06:16.330777+00:00"
+      }
+    ],
+    "summary_text": "National Treasury Employees Union v. Trump, No. 25‑cv‑00420‑CRC, was filed on February 12, 2025 in the U.S. District Court for the District of Columbia by the National Treasury Employees Union together with the National Federation of Federal Employees, the International Association of Machinists, and the International Federation of Professional and Technical Employees. The complaint alleged that Executive Order No. 14210, issued February 11, 2025, directed federal agencies to conduct mass layoffs of non‑essential and probationary employees and to pressure workers to resign through a deferred‑resignation program, thereby violating Congressional reduction‑in‑force procedures and the constitutional separation of powers; plaintiffs sought declaratory judgment and injunctive relief. Judge George A. O’Toole, Jr. entered a temporary restraining order on February 6 that halted enforcement of the February 6 deadline, but on February 12 he dissolved that order and denied the plaintiffs’ motion for a temporary restraining order and preliminary injunction, holding that the court likely lacked subject‑matter jurisdiction and directing the parties to pursue their claims under the Federal Service Labor‑Management Relations Statute. On May 15, 2025 the defendants—President Donald J. Trump and the acting or appointed directors and secretaries of OPM, IRS, HHS, CFPB, USDA Forest Service, VA, DoD, NASA, and NIH—filed a motion to dismiss; the court granted that motion and dismissed the case entirely on the same day, closing the action with no further action pending.",
+    "summary_stats": {
+      "paragraph_count": 1,
+      "character_count": 1572,
+      "non_empty": true
+    },
+    "last_updated": "2026-03-19T03:06:16.330803+00:00"
+  },
+  "checklist": {
+    "All_Reported_Opinions_Cited_with_Shortened_Bluebook_Citation": {
+      "extracted": []
+    },
+    "Appeal": {
+      "extracted": []
+    },
+    "Cause_of_Action": {
+      "extracted": []
+    },
+    "Class_Action_or_Individual_Plaintiffs": {
+      "extracted": []
+    },
+    "Consolidated_Cases_Noted": {
+      "extracted": []
+    },
+    "Court_Rulings": {
+      "extracted": [
+        {
+          "value": "United States District Court for the District of Columbia, Judge George A. O’Toole, Jr., denied the plaintiffs’ motion for a temporary restraining order and preliminary injunction on February 12, 2025, finding they lacked standing and subject‑matter jurisdiction.",
+          "evidence": [
+            {
+              "source_document_id": "155856",
+              "start_offset": 6058,
+              "end_offset": 6445
+            }
+          ]
+        },
+        {
+          "value": "United States District Court for the District of Columbia granted defendants’ motion to dismiss the case and dismissed the case entirely on May 15, 2025, and set May 15, 2025 as the deadline to answer defendants’ motion to dismiss.",
+          "evidence": [
+            {
+              "source_document_id": "160610",
+              "start_offset": 0,
+              "end_offset": 170
+            }
+          ]
+        }
+      ]
+    },
+    "Issues_Decided": {
+      "extracted": []
+    },
+    "Court_and_Party_Reasoning": {
+      "extracted": []
+    },
+    "Dissent_or_Separate_Views": {
+      "extracted": []
+    },
+    "Key_Rule_or_Test_Statements": {
+      "extracted": []
+    },
+    "Date_of_Settlement": {
+      "extracted": []
+    },
+    "Dates_of_All_Decrees": {
+      "extracted": []
+    },
+    "Disputes_Over_Settlement_Enforcement": {
+      "extracted": []
+    },
+    "Factual_Basis_of_Case": {
+      "extracted": [
+        {
+          "value": "Unions representing hundreds of thousands of federal employees bring this action to protect workers from the Executive Branch’s attempts to dismantle the federal government through mass firings of nonessential employees and those in probationary status, and from a pressure campaign encouraging resignation via a deferred resignation program.",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 3448,
+              "end_offset": 3883
+            }
+          ]
+        },
+        {
+          "value": "Executive Order No. 14210, issued February 11, 2025, directs federal agencies to promptly undertake mass firings through reduction‑in‑force (RIF) processes, which the complaint alleges will violate Congress’s RIF protocol.",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 4292,
+              "end_offset": 4410
+            }
+          ]
+        },
+        {
+          "value": "The Office of Personnel Management, under Acting Director Charles Ezell, will implement and guide the federal agencies’ mass firing of employees and administer the deferred resignation program.",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 6804,
+              "end_offset": 6947
+            }
+          ]
+        }
+      ]
+    },
+    "Filing_Date": {
+      "extracted": [
+        {
+          "value": "2025-02-12",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 0,
+              "end_offset": 18
+            }
+          ]
+        }
+      ]
+    },
+    "First_and_Last_name_of_Judge": {
+      "extracted": [
+        {
+          "value": "Judge Christopher R. Cooper, United States District Court for the District of Columbia, signed the memorandum opinion and order on February 20, 2025.",
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_offset": 8137,
+              "end_offset": 8189
+            }
+          ]
+        },
+        {
+          "value": "Judge George A. O’Toole, Jr., United States District Court for the District of Columbia, entered a temporary restraining order on February 6, 2025, and dissolved it on February 12, 2025.",
+          "evidence": [
+            {
+              "source_document_id": "155856",
+              "start_offset": 6063,
+              "end_offset": 6151
+            }
+          ]
+        }
+      ]
+    },
+    "How_Long_Decrees_will_Last": {
+      "extracted": []
+    },
+    "How_Long_Settlement_will_Last": {
+      "extracted": []
+    },
+    "Monitor_Reports": {
+      "extracted": []
+    },
+    "Name_of_the_Monitor": {
+      "extracted": []
+    },
+    "Note_Important_Filings": {
+      "extracted": [
+        {
+          "value": "Original Complaint filed by the National Treasury Employees Union on 2025-02-12, seeking declaratory and injunctive relief against a list of federal employee employers.",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 0,
+              "end_offset": 671
+            }
+          ]
+        },
+        {
+          "value": "Motion for Temporary Restraining Order filed by the National Treasury Employees Union on 2025-02-14, requesting an immediate restraining order and a preliminary injunction to preserve the status quo.",
+          "evidence": [
+            {
+              "source_document_id": "155857",
+              "start_offset": 0,
+              "end_offset": 1070
+            }
+          ]
+        },
+        {
+          "value": "Amended Complaint filed by the National Treasury Employees Union on 2025-02-17, updating the original complaint with additional claims and parties.",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 0,
+              "end_offset": 692
+            }
+          ]
+        },
+        {
+          "value": "Motion to Dismiss filed by defendants on 2025-05-15, arguing lack of jurisdiction and failure to state a claim in the original complaint.",
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_offset": 12504,
+              "end_offset": 13185
+            }
+          ]
+        },
+        {
+          "value": "Motion to Amend/Correct Amended Complaint filed by the National Treasury Employees Union on 2025-05-27, correcting errors in the Amended Complaint and adding new allegations.",
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_offset": 13185,
+              "end_offset": 13500
+            }
+          ]
+        },
+        {
+          "value": "Second Amended Complaint filed by the National Treasury Employees Union on 2025-06-06, incorporating the amendments and bringing additional parties into the litigation.",
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_offset": 14794,
+              "end_offset": 15026
+            }
+          ]
+        },
+        {
+          "value": "Notice of Voluntary Dismissal by INTERNATIONAL UNION, UNITED AUTOMOBILE, AEROSPACE AND AGRICULTURAL IMPLEMENT WORKERS OF AMERICA filed on 2025-05-27, removing those parties from the lawsuit.",
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_offset": 13819,
+              "end_offset": 14487
+            }
+          ]
+        },
+        {
+          "value": "Minute Order granting Motion for Leave to File Supplemental Declaration on 2025-02-20, allowing the plaintiff to file supplemental declaration.",
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_offset": 27509,
+              "end_offset": 27658
+            }
+          ]
+        },
+        {
+          "value": "Consent Motion for Extension of Time to File Response/Reply to Motion to Dismiss filed on 2025-05-27, granting defendants additional time to respond.",
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_offset": 13500,
+              "end_offset": 13738
+            }
+          ]
+        }
+      ]
+    },
+    "Related_Cases_Listed_by_Their_Case_Code_Number": {
+      "extracted": [
+        {
+          "value": "AFGE v. Ezell, No. 25-cv-10276 – cited as precedent on the same policy challenge involving probationary employees.",
+          "evidence": [
+            {
+              "source_document_id": "155860",
+              "start_offset": 13167,
+              "end_offset": 13208
+            }
+          ]
+        },
+        {
+          "value": "AFGE v. Trump, No. 25-cv-03698-SI – cited as precedent on the same policy challenge involving probationary employees.",
+          "evidence": [
+            {
+              "source_document_id": "160610",
+              "start_offset": 47252,
+              "end_offset": 47293
+            }
+          ]
+        }
+      ]
+    },
+    "Remedy_Sought": {
+      "extracted": [
+        {
+          "value": "Plaintiffs seek a declaration that the mass firing of nonessential, probationary, and other employees and OPM’s deferred resignation program are unlawful; injunctive relief preventing OPM from extending, expanding, or replicating its deferred resignation program; injunctive relief preventing OPM from violating the RIF statute and regulations, including requirements related to the establishment of competitive areas; an order that defendants pay reasonable attorneys’ fees and costs; and an order for such other and further relief as the court deems just and proper.",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 35865,
+              "end_offset": 36493
+            }
+          ]
+        }
+      ]
+    },
+    "Significant_Terms_of_Decrees": {
+      "extracted": []
+    },
+    "Significant_Terms_of_Settlement": {
+      "extracted": []
+    },
+    "Statutory_or_Constitutional_Basis_for_the_Case": {
+      "extracted": []
+    },
+    "Trials": {
+      "extracted": []
+    },
+    "Type_of_Counsel": {
+      "extracted": []
+    },
+    "Whether_the_Settlement_is_Court-enforced_or_Not": {
+      "extracted": []
+    },
+    "Who_are_the_Parties": {
+      "extracted": [
+        {
+          "value": "Plaintiff: National Treasury Employees Union (NTEU), an unincorporated association representing employees in 37 federal departments and agencies",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 4573,
+              "end_offset": 4920
+            }
+          ]
+        },
+        {
+          "value": "Plaintiff: National Federation of Federal Employees (NFFE), an affiliate of IAM and an unincorporated association representing approximately 110,000 federal employees",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 4920,
+              "end_offset": 5151
+            }
+          ]
+        },
+        {
+          "value": "Plaintiff: International Association of Machinists (IAM), an unincorporated association representing about 600,000 members and 15,000 federal employees",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 5227,
+              "end_offset": 5554
+            }
+          ]
+        },
+        {
+          "value": "Plaintiff: International Federation of Professional and Technical Employees (IFPTE), an unincorporated association representing federal employees",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 5554,
+              "end_offset": 5633
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Donald J. Trump, President of the United States",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 6400,
+              "end_offset": 6481
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Charles Ezell, Acting Director of the United States Office of Personnel Management (OPM)",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 6753,
+              "end_offset": 6865
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Douglas O’Donnell, Acting Commissioner of the Internal Revenue Service (IRS)",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 7008,
+              "end_offset": 7108
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Robert F. Kennedy Jr., Secretary of the Department of Health and Human Services (HHS)",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 7421,
+              "end_offset": 7532
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Russell Vought, Acting Director of the Consumer Financial Protection Bureau (CFPB)",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 7733,
+              "end_offset": 7839
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Randy Moore, Chief of the U.S. Forest Service within the U.S. Department of Agriculture",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 8017,
+              "end_offset": 8128
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Doug Collins, Secretary of the Department of Veterans Affairs (VA)",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 8334,
+              "end_offset": 8424
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Pete Hegseth, Secretary of the Department of Defense (DoD)",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 8622,
+              "end_offset": 8704
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Makenzie Lystrup, Director of Goddard Space Flight Center, National Aeronautics and Space Administration (NASA)",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 9001,
+              "end_offset": 9129
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Matthew J. Memoli, Acting Director of the National Institutes of Health (NIH)",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 9341,
+              "end_offset": 9438
+            }
+          ]
+        }
+      ]
+    },
+    "Representation_Structure": {
+      "extracted": [
+        {
+          "value": "Plaintiffs represented by National Treasury Employees Union in-house counsel (General Counsel, Deputy General Counsel, etc).",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 37378,
+              "end_offset": 37622
+            }
+          ]
+        },
+        {
+          "value": "Defendants represented by U.S. Department of Justice counsel (Office of General Counsel).",
+          "evidence": [
+            {
+              "source_document_id": "160610",
+              "start_offset": 73789,
+              "end_offset": 73834
+            }
+          ]
+        }
+      ]
+    },
+    "Arguments_and_Reasoning": {
+      "extracted": [
+        {
+          "value": "Plaintiff theory: The Unions allege that the Executive Branch, via Executive Order No. 14210, is directing federal agencies to undertake mass firings of hundreds of thousands of employees, including nonessential and probationary employees, and to pressure employees to resign via a deferred resignation program, thereby violating Congress’s constitutional separation of powers and the statutory reduction‑in‑force (RIF) procedures.",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 2912,
+              "end_offset": 3631
+            }
+          ]
+        },
+        {
+          "value": "Amendment-added theory: The amended complaint, filed February 17, 2025, adds claims that the Executive Branch is terminating additional probationary employees at HHS, EPA, DOE, the Department of Agriculture, and the Food and Nutrition Service, as well as term employees at the CFPB, expanding the scope of alleged violations.",
+          "evidence": [
+            {
+              "source_document_id": "155856",
+              "start_offset": 11593,
+              "end_offset": 11905
+            }
+          ]
+        },
+        {
+          "value": "Defense theory: The government argues that the federal employee claims are precluded by the Federal Service Labor‑Management Relations Statute (FSLMRS) scheme, citing the Thunder Basin precedent that precludes court jurisdiction when claims are entirely within the statutory administrative review system.",
+          "evidence": [
+            {
+              "source_document_id": "155856",
+              "start_offset": 16940,
+              "end_offset": 17999
+            }
+          ]
+        },
+        {
+          "value": "Court treatment: The district court denied the unions’ temporary restraining order and preliminary injunction, holding that it likely lacks subject‑matter jurisdiction over the claims and must direct the unions to pursue their challenges through the FSLMRS scheme.",
+          "evidence": [
+            {
+              "source_document_id": "155856",
+              "start_offset": 12028,
+              "end_offset": 13856
+            }
+          ]
+        }
+      ]
+    },
+    "Amendments_and_Claim_or_Party_Changes": {
+      "extracted": [
+        {
+          "value": "On February 17, 2025, the National Treasury Employees Union and affiliated unions filed a First Amended Complaint adding claims of unlawful terminations of probationary employees at the Department of Health and Human Services, the Environmental Protection Agency, the Department of Energy, the Department of Agriculture, the Food and Nutrition Service, and the Consumer Financial Protection Bureau, thereby expanding the allegations against these agencies.",
+          "evidence": [
+            {
+              "source_document_id": "155856",
+              "start_offset": 11593,
+              "end_offset": 11983
+            }
+          ]
+        },
+        {
+          "value": "On June 6, 2025, the National Treasury Employees Union filed a Second Amended Complaint against all defendants, adding claims of separation of powers violations and expanding the relief sought.",
+          "evidence": [
+            {
+              "source_document_id": "163684",
+              "start_offset": 31945,
+              "end_offset": 32019
+            }
+          ]
+        },
+        {
+          "value": "On May 27, 2025, the International Union, United Automobile, Aerospace and Agricultural Implement Workers of America voluntarily dismissed itself from the action, reducing the defendant set.",
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_offset": 13819,
+              "end_offset": 14103
+            }
+          ]
+        }
+      ]
+    },
+    "Current_Procedural_Posture": {
+      "extracted": [
+        {
+          "value": "Dismissed – plaintiffs voluntarily dismissed the case on 05/27/2025; the case is closed and no further action is pending.",
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_offset": 14103,
+              "end_offset": 14487
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "checklist_sentence_spans": {
+    "All_Reported_Opinions_Cited_with_Shortened_Bluebook_Citation": {
+      "extracted": []
+    },
+    "Appeal": {
+      "extracted": []
+    },
+    "Cause_of_Action": {
+      "extracted": []
+    },
+    "Class_Action_or_Individual_Plaintiffs": {
+      "extracted": []
+    },
+    "Consolidated_Cases_Noted": {
+      "extracted": []
+    },
+    "Court_Rulings": {
+      "extracted": [
+        {
+          "value": "United States District Court for the District of Columbia, Judge George A. O’Toole, Jr., denied the plaintiffs’ motion for a temporary restraining order and preliminary injunction on February 12, 2025, finding they lacked standing and subject‑matter jurisdiction.",
+          "evidence": [
+            {
+              "source_document_id": "155856",
+              "start_sentence": 118,
+              "end_sentence": 124,
+              "start_offset": 6058,
+              "end_offset": 6445
+            }
+          ]
+        },
+        {
+          "value": "United States District Court for the District of Columbia granted defendants’ motion to dismiss the case and dismissed the case entirely on May 15, 2025, and set May 15, 2025 as the deadline to answer defendants’ motion to dismiss.",
+          "evidence": [
+            {
+              "source_document_id": "160610",
+              "start_sentence": 1,
+              "end_sentence": 5,
+              "start_offset": 0,
+              "end_offset": 170
+            }
+          ]
+        }
+      ]
+    },
+    "Issues_Decided": {
+      "extracted": []
+    },
+    "Court_and_Party_Reasoning": {
+      "extracted": []
+    },
+    "Dissent_or_Separate_Views": {
+      "extracted": []
+    },
+    "Key_Rule_or_Test_Statements": {
+      "extracted": []
+    },
+    "Date_of_Settlement": {
+      "extracted": []
+    },
+    "Dates_of_All_Decrees": {
+      "extracted": []
+    },
+    "Disputes_Over_Settlement_Enforcement": {
+      "extracted": []
+    },
+    "Factual_Basis_of_Case": {
+      "extracted": [
+        {
+          "value": "Unions representing hundreds of thousands of federal employees bring this action to protect workers from the Executive Branch’s attempts to dismantle the federal government through mass firings of nonessential employees and those in probationary status, and from a pressure campaign encouraging resignation via a deferred resignation program.",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_sentence": 109,
+              "end_sentence": 114,
+              "start_offset": 3448,
+              "end_offset": 3883
+            }
+          ]
+        },
+        {
+          "value": "Executive Order No. 14210, issued February 11, 2025, directs federal agencies to promptly undertake mass firings through reduction‑in‑force (RIF) processes, which the complaint alleges will violate Congress’s RIF protocol.",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_sentence": 122,
+              "end_sentence": 124,
+              "start_offset": 4292,
+              "end_offset": 4410
+            }
+          ]
+        },
+        {
+          "value": "The Office of Personnel Management, under Acting Director Charles Ezell, will implement and guide the federal agencies’ mass firing of employees and administer the deferred resignation program.",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_sentence": 175,
+              "end_sentence": 177,
+              "start_offset": 6804,
+              "end_offset": 6947
+            }
+          ]
+        }
+      ]
+    },
+    "Filing_Date": {
+      "extracted": [
+        {
+          "value": "2025-02-12",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_sentence": 1,
+              "end_sentence": 1,
+              "start_offset": 0,
+              "end_offset": 18
+            }
+          ]
+        }
+      ]
+    },
+    "First_and_Last_name_of_Judge": {
+      "extracted": [
+        {
+          "value": "Judge Christopher R. Cooper, United States District Court for the District of Columbia, signed the memorandum opinion and order on February 20, 2025.",
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_sentence": 52,
+              "end_sentence": 52,
+              "start_offset": 8137,
+              "end_offset": 8189
+            }
+          ]
+        },
+        {
+          "value": "Judge George A. O’Toole, Jr., United States District Court for the District of Columbia, entered a temporary restraining order on February 6, 2025, and dissolved it on February 12, 2025.",
+          "evidence": [
+            {
+              "source_document_id": "155856",
+              "start_sentence": 119,
+              "end_sentence": 119,
+              "start_offset": 6063,
+              "end_offset": 6151
+            }
+          ]
+        }
+      ]
+    },
+    "How_Long_Decrees_will_Last": {
+      "extracted": []
+    },
+    "How_Long_Settlement_will_Last": {
+      "extracted": []
+    },
+    "Monitor_Reports": {
+      "extracted": []
+    },
+    "Name_of_the_Monitor": {
+      "extracted": []
+    },
+    "Note_Important_Filings": {
+      "extracted": [
+        {
+          "value": "Original Complaint filed by the National Treasury Employees Union on 2025-02-12, seeking declaratory and injunctive relief against a list of federal employee employers.",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_sentence": 1,
+              "end_sentence": 20,
+              "start_offset": 0,
+              "end_offset": 671
+            }
+          ]
+        },
+        {
+          "value": "Motion for Temporary Restraining Order filed by the National Treasury Employees Union on 2025-02-14, requesting an immediate restraining order and a preliminary injunction to preserve the status quo.",
+          "evidence": [
+            {
+              "source_document_id": "155857",
+              "start_sentence": 1,
+              "end_sentence": 30,
+              "start_offset": 0,
+              "end_offset": 1070
+            }
+          ]
+        },
+        {
+          "value": "Amended Complaint filed by the National Treasury Employees Union on 2025-02-17, updating the original complaint with additional claims and parties.",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_sentence": 1,
+              "end_sentence": 20,
+              "start_offset": 0,
+              "end_offset": 692
+            }
+          ]
+        },
+        {
+          "value": "Motion to Dismiss filed by defendants on 2025-05-15, arguing lack of jurisdiction and failure to state a claim in the original complaint.",
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_sentence": 82,
+              "end_sentence": 84,
+              "start_offset": 12504,
+              "end_offset": 13185
+            }
+          ]
+        },
+        {
+          "value": "Motion to Amend/Correct Amended Complaint filed by the National Treasury Employees Union on 2025-05-27, correcting errors in the Amended Complaint and adding new allegations.",
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_sentence": 85,
+              "end_sentence": 86,
+              "start_offset": 13185,
+              "end_offset": 13500
+            }
+          ]
+        },
+        {
+          "value": "Second Amended Complaint filed by the National Treasury Employees Union on 2025-06-06, incorporating the amendments and bringing additional parties into the litigation.",
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_sentence": 94,
+              "end_sentence": 95,
+              "start_offset": 14794,
+              "end_offset": 15026
+            }
+          ]
+        },
+        {
+          "value": "Notice of Voluntary Dismissal by INTERNATIONAL UNION, UNITED AUTOMOBILE, AEROSPACE AND AGRICULTURAL IMPLEMENT WORKERS OF AMERICA filed on 2025-05-27, removing those parties from the lawsuit.",
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_sentence": 89,
+              "end_sentence": 90,
+              "start_offset": 13819,
+              "end_offset": 14487
+            }
+          ]
+        },
+        {
+          "value": "Minute Order granting Motion for Leave to File Supplemental Declaration on 2025-02-20, allowing the plaintiff to file supplemental declaration.",
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_sentence": 203,
+              "end_sentence": 203,
+              "start_offset": 27509,
+              "end_offset": 27658
+            }
+          ]
+        },
+        {
+          "value": "Consent Motion for Extension of Time to File Response/Reply to Motion to Dismiss filed on 2025-05-27, granting defendants additional time to respond.",
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_sentence": 87,
+              "end_sentence": 87,
+              "start_offset": 13500,
+              "end_offset": 13738
+            }
+          ]
+        }
+      ]
+    },
+    "Related_Cases_Listed_by_Their_Case_Code_Number": {
+      "extracted": [
+        {
+          "value": "AFGE v. Ezell, No. 25-cv-10276 – cited as precedent on the same policy challenge involving probationary employees.",
+          "evidence": [
+            {
+              "source_document_id": "155860",
+              "start_sentence": 226,
+              "end_sentence": 226,
+              "start_offset": 13167,
+              "end_offset": 13208
+            }
+          ]
+        },
+        {
+          "value": "AFGE v. Trump, No. 25-cv-03698-SI – cited as precedent on the same policy challenge involving probationary employees.",
+          "evidence": [
+            {
+              "source_document_id": "160610",
+              "start_sentence": 978,
+              "end_sentence": 978,
+              "start_offset": 47252,
+              "end_offset": 47293
+            }
+          ]
+        }
+      ]
+    },
+    "Remedy_Sought": {
+      "extracted": [
+        {
+          "value": "Plaintiffs seek a declaration that the mass firing of nonessential, probationary, and other employees and OPM’s deferred resignation program are unlawful; injunctive relief preventing OPM from extending, expanding, or replicating its deferred resignation program; injunctive relief preventing OPM from violating the RIF statute and regulations, including requirements related to the establishment of competitive areas; an order that defendants pay reasonable attorneys’ fees and costs; and an order for such other and further relief as the court deems just and proper.",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_sentence": 717,
+              "end_sentence": 726,
+              "start_offset": 35865,
+              "end_offset": 36493
+            }
+          ]
+        }
+      ]
+    },
+    "Significant_Terms_of_Decrees": {
+      "extracted": []
+    },
+    "Significant_Terms_of_Settlement": {
+      "extracted": []
+    },
+    "Statutory_or_Constitutional_Basis_for_the_Case": {
+      "extracted": []
+    },
+    "Trials": {
+      "extracted": []
+    },
+    "Type_of_Counsel": {
+      "extracted": []
+    },
+    "Whether_the_Settlement_is_Court-enforced_or_Not": {
+      "extracted": []
+    },
+    "Who_are_the_Parties": {
+      "extracted": [
+        {
+          "value": "Plaintiff: National Treasury Employees Union (NTEU), an unincorporated association representing employees in 37 federal departments and agencies",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_sentence": 130,
+              "end_sentence": 136,
+              "start_offset": 4573,
+              "end_offset": 4920
+            }
+          ]
+        },
+        {
+          "value": "Plaintiff: National Federation of Federal Employees (NFFE), an affiliate of IAM and an unincorporated association representing approximately 110,000 federal employees",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_sentence": 137,
+              "end_sentence": 141,
+              "start_offset": 4920,
+              "end_offset": 5151
+            }
+          ]
+        },
+        {
+          "value": "Plaintiff: International Association of Machinists (IAM), an unincorporated association representing about 600,000 members and 15,000 federal employees",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_sentence": 143,
+              "end_sentence": 148,
+              "start_offset": 5227,
+              "end_offset": 5554
+            }
+          ]
+        },
+        {
+          "value": "Plaintiff: International Federation of Professional and Technical Employees (IFPTE), an unincorporated association representing federal employees",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_sentence": 149,
+              "end_sentence": 150,
+              "start_offset": 5554,
+              "end_offset": 5633
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Donald J. Trump, President of the United States",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_sentence": 164,
+              "end_sentence": 165,
+              "start_offset": 6400,
+              "end_offset": 6481
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Charles Ezell, Acting Director of the United States Office of Personnel Management (OPM)",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_sentence": 171,
+              "end_sentence": 172,
+              "start_offset": 6753,
+              "end_offset": 6865
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Douglas O’Donnell, Acting Commissioner of the Internal Revenue Service (IRS)",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_sentence": 176,
+              "end_sentence": 177,
+              "start_offset": 7008,
+              "end_offset": 7108
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Robert F. Kennedy Jr., Secretary of the Department of Health and Human Services (HHS)",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_sentence": 185,
+              "end_sentence": 186,
+              "start_offset": 7421,
+              "end_offset": 7532
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Russell Vought, Acting Director of the Consumer Financial Protection Bureau (CFPB)",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_sentence": 192,
+              "end_sentence": 193,
+              "start_offset": 7733,
+              "end_offset": 7839
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Randy Moore, Chief of the U.S. Forest Service within the U.S. Department of Agriculture",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_sentence": 198,
+              "end_sentence": 199,
+              "start_offset": 8017,
+              "end_offset": 8128
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Doug Collins, Secretary of the Department of Veterans Affairs (VA)",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_sentence": 204,
+              "end_sentence": 205,
+              "start_offset": 8334,
+              "end_offset": 8424
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Pete Hegseth, Secretary of the Department of Defense (DoD)",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_sentence": 210,
+              "end_sentence": 211,
+              "start_offset": 8622,
+              "end_offset": 8704
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Makenzie Lystrup, Director of Goddard Space Flight Center, National Aeronautics and Space Administration (NASA)",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_sentence": 218,
+              "end_sentence": 219,
+              "start_offset": 9001,
+              "end_offset": 9129
+            }
+          ]
+        },
+        {
+          "value": "Defendant: Matthew J. Memoli, Acting Director of the National Institutes of Health (NIH)",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_sentence": 225,
+              "end_sentence": 226,
+              "start_offset": 9341,
+              "end_offset": 9438
+            }
+          ]
+        }
+      ]
+    },
+    "Representation_Structure": {
+      "extracted": [
+        {
+          "value": "Plaintiffs represented by National Treasury Employees Union in-house counsel (General Counsel, Deputy General Counsel, etc).",
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_sentence": 758,
+              "end_sentence": 764,
+              "start_offset": 37378,
+              "end_offset": 37622
+            }
+          ]
+        },
+        {
+          "value": "Defendants represented by U.S. Department of Justice counsel (Office of General Counsel).",
+          "evidence": [
+            {
+              "source_document_id": "160610",
+              "start_sentence": 1488,
+              "end_sentence": 1489,
+              "start_offset": 73789,
+              "end_offset": 73834
+            }
+          ]
+        }
+      ]
+    },
+    "Arguments_and_Reasoning": {
+      "extracted": [
+        {
+          "value": "Plaintiff theory: The Unions allege that the Executive Branch, via Executive Order No. 14210, is directing federal agencies to undertake mass firings of hundreds of thousands of employees, including nonessential and probationary employees, and to pressure employees to resign via a deferred resignation program, thereby violating Congress’s constitutional separation of powers and the statutory reduction‑in‑force (RIF) procedures.",
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_sentence": 101,
+              "end_sentence": 110,
+              "start_offset": 2912,
+              "end_offset": 3631
+            }
+          ]
+        },
+        {
+          "value": "Amendment-added theory: The amended complaint, filed February 17, 2025, adds claims that the Executive Branch is terminating additional probationary employees at HHS, EPA, DOE, the Department of Agriculture, and the Food and Nutrition Service, as well as term employees at the CFPB, expanding the scope of alleged violations.",
+          "evidence": [
+            {
+              "source_document_id": "155856",
+              "start_sentence": 234,
+              "end_sentence": 238,
+              "start_offset": 11593,
+              "end_offset": 11905
+            }
+          ]
+        },
+        {
+          "value": "Defense theory: The government argues that the federal employee claims are precluded by the Federal Service Labor‑Management Relations Statute (FSLMRS) scheme, citing the Thunder Basin precedent that precludes court jurisdiction when claims are entirely within the statutory administrative review system.",
+          "evidence": [
+            {
+              "source_document_id": "155856",
+              "start_sentence": 345,
+              "end_sentence": 370,
+              "start_offset": 16940,
+              "end_offset": 17999
+            }
+          ]
+        },
+        {
+          "value": "Court treatment: The district court denied the unions’ temporary restraining order and preliminary injunction, holding that it likely lacks subject‑matter jurisdiction over the claims and must direct the unions to pursue their challenges through the FSLMRS scheme.",
+          "evidence": [
+            {
+              "source_document_id": "155856",
+              "start_sentence": 245,
+              "end_sentence": 280,
+              "start_offset": 12028,
+              "end_offset": 13856
+            }
+          ]
+        }
+      ]
+    },
+    "Amendments_and_Claim_or_Party_Changes": {
+      "extracted": [
+        {
+          "value": "On February 17, 2025, the National Treasury Employees Union and affiliated unions filed a First Amended Complaint adding claims of unlawful terminations of probationary employees at the Department of Health and Human Services, the Environmental Protection Agency, the Department of Energy, the Department of Agriculture, the Food and Nutrition Service, and the Consumer Financial Protection Bureau, thereby expanding the allegations against these agencies.",
+          "evidence": [
+            {
+              "source_document_id": "155856",
+              "start_sentence": 234,
+              "end_sentence": 242,
+              "start_offset": 11593,
+              "end_offset": 11983
+            }
+          ]
+        },
+        {
+          "value": "On June 6, 2025, the National Treasury Employees Union filed a Second Amended Complaint against all defendants, adding claims of separation of powers violations and expanding the relief sought.",
+          "evidence": [
+            {
+              "source_document_id": "163684",
+              "start_sentence": 718,
+              "end_sentence": 718,
+              "start_offset": 31945,
+              "end_offset": 32019
+            }
+          ]
+        },
+        {
+          "value": "On May 27, 2025, the International Union, United Automobile, Aerospace and Agricultural Implement Workers of America voluntarily dismissed itself from the action, reducing the defendant set.",
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_sentence": 89,
+              "end_sentence": 89,
+              "start_offset": 13819,
+              "end_offset": 14103
+            }
+          ]
+        }
+      ]
+    },
+    "Current_Procedural_Posture": {
+      "extracted": [
+        {
+          "value": "Dismissed – plaintiffs voluntarily dismissed the case on 05/27/2025; the case is closed and no further action is pending.",
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_sentence": 90,
+              "end_sentence": 90,
+              "start_offset": 14103,
+              "end_offset": 14487
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "checklist_definitions": {
+    "All_Reported_Opinions_Cited_with_Shortened_Bluebook_Citation": "extract every citation to a judicial opinion that includes a reporter or database citation (e.g., 123 F.3d 456; 789 U.S. 321; 2020 WL 4218003). Include the case name if it appears immediately before the citation (ignore signals like \"see,\" \"cf.,\" and commas); otherwise output the citation alone. Output one entry per opinion as \"Case Name, Reporter/Database Citation,\" using shortened Bluebook form if applicable. Strip pincites and parentheticals; if parallel cites appear, keep only the first. Exclude id./supra/infra, docket-only references, slip opinions without a reporter/database cite, and non-case sources (statutes, rules, articles).",
+    "Appeal": "identify whether any appeals are mentioned, including which parties filed the appeal and to which court and provide the extracted information. If applicable, clearly state the information using the following format: \"Appeal: [parties] appealed to [court].\" Try to be as completely as possible.",
+    "Cause_of_Action": "identify the cause of action, including whether it refers to a statute (e.g., 42 USC 1983) or a case (e.g., Ex Parte Young). Extract the crucial cause of action information as completely as possible.",
+    "Class_Action_or_Individual_Plaintiffs": "identify whether the case involves class action plaintiffs or individual plaintiffs. Clearly state the information using the following format: \"Plaintiffs: Class Action\" if it is a class action, or \"Plaintiffs: Individual, described as [description]\" if individual plaintiffs are involved.",
+    "Consolidated_Cases_Noted": "identify whether any consolidated cases are mentioned and extract the crucial consolidated cases information as completely as possible. Do not list the current case as its own related/consolidated matter.",
+    "Court_Rulings": "identify the court's decisions or orders in sequence. Capture the court level, date (if provided), and whether later rulings modify or reverse earlier ones. Focus on concise descriptions of outcomes (granted/denied) for key motions or issues, such as: granted/denied motions to dismiss, granted/denied summary judgment, issued preliminary injunctions or TROs, certified/denied class certification, or other significant rulings.",
+    "Issues_Decided": "capture the specific legal issues or questions the court addresses in each ruling, in chronological order. Frame each value as the issue being decided, including motion/stage context when present.",
+    "Court_and_Party_Reasoning": "capture the court's reasoning for each issue/ruling, including where the court adopts or rejects party arguments. Summarize tests or standards applied, key analogies/distinctions, and policy rationales. Note in the value if the reasoning is majority/per curiam and mention party arguments only as reflected or addressed by the court. Keep entries chronological per ruling.",
+    "Dissent_or_Separate_Views": "capture dissenting or concurring reasoning that differs from the majority. Prefix each value with \"Dissent:\" or \"Concurrence:\" and summarize the core rationale or disagreement, in chronological order.",
+    "Key_Rule_or_Test_Statements": "quote or closely summarize the sentences where the court states rules, tests, or standards applied. Prefer verbatim rule statements; avoid factual narrative. If tied to majority/dissent/concurrence, indicate that. Keep entries chronological with the rulings.",
+    "Date_of_Settlement": "extract settlement dates with the court level if provided, and note whether the settlement supersedes prior orders. If applicable, clearly state the information using the following format: \"[date]: [settlement].\"",
+    "Dates_of_All_Decrees": "identify dates of decrees and the issuing court. Extract all such information as completely as possible. If applicable, clearly state each item using the following format: \"[date]: [court]: [decree].\"",
+    "Disputes_Over_Settlement_Enforcement": "extract disputes over settlement enforcement, noting when they arise and whether they modify or challenge prior settlements.",
+    "Factual_Basis_of_Case": "extract the facts or evidence upon which the case is built, in the order they emerge. Note how the factual narrative changes or expands over time. This typically includes: 1. Details of the relevant events—what happened, when it happened, where it happened, and who was involved. 2. Evidence – physical evidence, documentary records, witness testimonies, etc., that support these facts. 3. Background information—context or explanatory facts that provide additional understanding.",
+    "Filing_Date": "extract the case filing date—when the lawsuit was first initiated. Extract the crucial information as completely as possible.",
+    "First_and_Last_name_of_Judge": "identify judges in the order they appear (initial assignment, reassignments, appellate panels). Note the court level with each name so later judges can be understood as replacing or superseding prior judges. Example output format: \"[court level]: [full name]\"; if only last name appears, output the last name with the level.",
+    "How_Long_Decrees_will_Last": "extract the duration of all decrees, noting issuance/modification dates when present. Extract crucial related information as completely as possible. If applicable, clearly state the information using the following format: \"[date]: [duration]: [decree].\"",
+    "How_Long_Settlement_will_Last": "extract the duration of all settlements information, noting the date and whether it supersedes prior orders. If applicable, clearly state the information using the following format: \"[date]: [duration]: [settlement].\"",
+    "Monitor_Reports": "identify references to monitoring activities or compliance reviews mentioned in the documents. Extract concise information about: (1) what is being monitored, (2) key findings or compliance status if mentioned, (3) dates of monitoring activities if available. Focus on summarizing the monitoring outcomes rather than extracting entire reports. Format as brief statements like: 'Monitor found [compliance/non-compliance] with [specific requirement] as of [date]'. Limit to the most significant monitoring findings only.",
+    "Name_of_the_Monitor": "identify whether a monitor was appointed and note the name of the monitor if mentioned.",
+    "Note_Important_Filings": "identify important filings or motions in the order they occur (TROs, PIs, motions to dismiss, motions for summary judgment, etc.). Include the filing court/level and date if provided so the sequence of filings is clear.",
+    "Related_Cases_Listed_by_Their_Case_Code_Number": "identify whether any related cases are listed by their case code number and extract the crucial consolidated cases information as completely as possible. Exclude the current case itself; do not echo its docket or caption or similar as related.",
+    "Remedy_Sought": "extract the remedy sought (e.g., declaratory judgment) information. Extract the crucial remedy sought information as completely as possible.",
+    "Significant_Terms_of_Decrees": "extract the significant terms of decrees information. Significant terms means the substance of the decree. In a decree, the judge orders the defendants to do something. The significant terms would be what the defendants are ordered/agree to do. Extract the crucial significant terms of decrees information as completely as possible.",
+    "Significant_Terms_of_Settlement": "extract the significant terms of settlements information. Significant terms means the substance of the settlement. In a settlement, the parties agree to do something. The significant terms would be what the parties agreed to do. Extract significant terms of settlements information as completely as possible.",
+    "Statutory_or_Constitutional_Basis_for_the_Case": "extract the statutory or constitutional basis for the case, including any relevant constitutional clauses and amendments if applicable. A case can either be based on a statute or a provision of the Constitution--i.e., a case will either claim that someone violated a statute, or violated the Constitution. For cases that have a constitutional basis, the documents should refer to the clause of the Constitution that was allegedly violated, as well as the amendment if applicable. For example it would say \"the plaintiffs alleged violations of the Fourteenth Amendment's Equal Protection Clause,\" or \"the plaintiffs alleged violations of the Commerce Clause.\"",
+    "Trials": "extract information about all trials mentioned in the documents as completely as possible. The trial information includes things like scheduling, proceedings, outcomes, and any related motions or rulings.",
+    "Type_of_Counsel": "identify the type of counsel mentioned (such as private, legal services, ACLU, etc.).",
+    "Whether_the_Settlement_is_Court-enforced_or_Not": "identify whether the settlement is court-enforced. If applicable, clearly state the result using the following format: \"[Yes/No].\"",
+    "Who_are_the_Parties": "identify the description of the parties involved. Provide details about each plaintiff and defendant, including any relevant positions or offices held if applicable. Extract each individual party as a separate entry in the extracted list. If there are multiple plaintiffs or multiple defendants, create a distinct entry for each person or entity. Each value should follow this format: \"Plaintiff: [description]\" or \"Defendant: [description]\". Try to be as complete as possible."
+  },
+  "focus_context": "Case scope:\n- Target case title: National Treasury Employees Union v. Trump\n\nUse this run to produce a precise, litigation-grade narrative summary for the target case only.\nPrioritize material procedural posture, dispositive rulings, and timeline-critical developments.\nAvoid drifting into background law or unrelated referenced matters unless they directly change the target case outcome.",
+  "offset_basis": {
+    "type": "character_offsets",
+    "index_base": 0,
+    "range_semantics": "half_open",
+    "text_source": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/data/controller_run_20260319T025055Z_6dcb90725b/46110"
+  },
+  "document_map": {
+    "by_source_document_id": {
+      "60801": "60801",
+      "155313": "155313",
+      "155857": "155857",
+      "155858": "155858",
+      "155859": "155859",
+      "155860": "155860",
+      "155861": "155861",
+      "155856": "155856",
+      "160610": "160610",
+      "161070": "161070",
+      "163685": "163685",
+      "163684": "163684"
+    },
+    "documents": [
+      {
+        "index": 0,
+        "doc_id": "60801",
+        "filename": "docket_001_main_docket_125_cv_0.txt",
+        "title": "Main Docket (1:25-cv-00420)",
+        "doc_type": "Docket",
+        "date": null,
+        "sentence_count": 268
+      },
+      {
+        "index": 1,
+        "doc_id": "155313",
+        "filename": "complaint_002_complaint_for_declar.txt",
+        "title": "Complaint for Declaratory and Injunctive Relief",
+        "doc_type": "Complaint",
+        "date": "2025-02-12",
+        "sentence_count": 815
+      },
+      {
+        "index": 2,
+        "doc_id": "155857",
+        "filename": "pleading_motion_brie_003_memorandum_of_points.txt",
+        "title": "Memorandum of Points and Authorities in Support of Plaintiffs' Motion for a Temporary Restraining Order and Preliminary Injunction",
+        "doc_type": "Pleading / Motion / Brief",
+        "date": "2025-02-14",
+        "sentence_count": 1426
+      },
+      {
+        "index": 3,
+        "doc_id": "155858",
+        "filename": "pleading_motion_brie_004_motion_for_temporary.txt",
+        "title": "Motion for Temporary Restraining Order and Preliminary Injunction",
+        "doc_type": "Pleading / Motion / Brief",
+        "date": "2025-02-14",
+        "sentence_count": 237
+      },
+      {
+        "index": 4,
+        "doc_id": "155859",
+        "filename": "complaint_005_amended_complaint_fo.txt",
+        "title": "Amended Complaint for Declaratory and Injunctive Relief",
+        "doc_type": "Complaint",
+        "date": "2025-02-17",
+        "sentence_count": 841
+      },
+      {
+        "index": 5,
+        "doc_id": "155860",
+        "filename": "pleading_motion_brie_006_defendants_response.txt",
+        "title": "Defendants' Response to Plaintiffs' Motion for Temporary Restraining Order",
+        "doc_type": "Pleading / Motion / Brief",
+        "date": "2025-02-17",
+        "sentence_count": 900
+      },
+      {
+        "index": 6,
+        "doc_id": "155861",
+        "filename": "pleading_motion_brie_007_plaintiffs_reply_in.txt",
+        "title": "Plaintiffs' Reply in Support of their Motion for a Temporary Restraining Order and Preliminary Injunction",
+        "doc_type": "Pleading / Motion / Brief",
+        "date": "2025-02-18",
+        "sentence_count": 409
+      },
+      {
+        "index": 7,
+        "doc_id": "155856",
+        "filename": "orderopinion_008_memorandum_opinion_a.txt",
+        "title": "Memorandum Opinion and Order",
+        "doc_type": "Order/Opinion",
+        "date": "2025-02-20",
+        "sentence_count": 653
+      },
+      {
+        "index": 8,
+        "doc_id": "160610",
+        "filename": "pleading_motion_brie_009_memorandum_of_points.txt",
+        "title": "Memorandum of Points and Authorities in Support of Defendants' Motion to Dismiss",
+        "doc_type": "Pleading / Motion / Brief",
+        "date": "2025-05-15",
+        "sentence_count": 1490
+      },
+      {
+        "index": 9,
+        "doc_id": "161070",
+        "filename": "complaint_010_second_amended_compl.txt",
+        "title": "Second Amended Complaint for Declaratory and Injunctive Relief",
+        "doc_type": "Complaint",
+        "date": "2025-06-06",
+        "sentence_count": 2154
+      },
+      {
+        "index": 10,
+        "doc_id": "163685",
+        "filename": "pleading_motion_brie_011_defendants_motion_to.txt",
+        "title": "Defendants' Motion to Dismiss",
+        "doc_type": "Pleading / Motion / Brief",
+        "date": "2025-07-11",
+        "sentence_count": 46
+      },
+      {
+        "index": 11,
+        "doc_id": "163684",
+        "filename": "pleading_motion_brie_012_plaintiffs_response.txt",
+        "title": "Plaintiffs' Response in Opposition to Defendants' Motion to Dismiss",
+        "doc_type": "Pleading / Motion / Brief",
+        "date": "2025-08-15",
+        "sentence_count": 2472
+      }
+    ]
+  },
+  "output_dir": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/agent_output/gpt-oss-20b-BF16/46110/summary_agent",
+  "summary_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/summary.json",
+  "summary_state_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/agent_output/gpt-oss-20b-BF16/46110/summary_agent/summary_state.json",
+  "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/agent_output/gpt-oss-20b-BF16/46110/summary_agent/ledger.jsonl",
+  "stats_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/agent_output/gpt-oss-20b-BF16/46110/summary_agent/stats.json",
+  "run_summary": {
+    "run_id": "f0ccda1d-30ef-4340-a918-70eef4d51266",
+    "request_id": "summary_agent_manual_46110_20260319T024154Z",
+    "case_id": "46110",
+    "total_steps": 55,
+    "summary": "National Treasury Employees Union v. Trump, No. 25‑cv‑00420‑CRC, was filed on February 12, 2025 in the U.S. District Court for the District of Columbia by the National Treasury Employees Union together with the National Federation of Federal Employees, the International Association of Machinists, and the International Federation of Professional and Technical Employees. The complaint alleged that Executive Order No. 14210, issued February 11, 2025, directed federal agencies to conduct mass layoffs of non‑essential and probationary employees and to pressure workers to resign through a deferred‑resignation program, thereby violating Congressional reduction‑in‑force procedures and the constitutional separation of powers; plaintiffs sought declaratory judgment and injunctive relief. Judge George A. O’Toole, Jr. entered a temporary restraining order on February 6 that halted enforcement of the February 6 deadline, but on February 12 he dissolved that order and denied the plaintiffs’ motion for a temporary restraining order and preliminary injunction, holding that the court likely lacked subject‑matter jurisdiction and directing the parties to pursue their claims under the Federal Service Labor‑Management Relations Statute. On May 15, 2025 the defendants—President Donald J. Trump and the acting or appointed directors and secretaries of OPM, IRS, HHS, CFPB, USDA Forest Service, VA, DoD, NASA, and NIH—filed a motion to dismiss; the court granted that motion and dismissed the case entirely on the same day, closing the action with no further action pending.",
+    "summary_state": {
+      "paragraphs": [
+        {
+          "paragraph_id": "p001",
+          "text": "National Treasury Employees Union v. Trump, No. 25‑cv‑00420‑CRC, was filed on February 12, 2025 in the U.S. District Court for the District of Columbia by the National Treasury Employees Union together with the National Federation of Federal Employees, the International Association of Machinists, and the International Federation of Professional and Technical Employees. The complaint alleged that Executive Order No. 14210, issued February 11, 2025, directed federal agencies to conduct mass layoffs of non‑essential and probationary employees and to pressure workers to resign through a deferred‑resignation program, thereby violating Congressional reduction‑in‑force procedures and the constitutional separation of powers; plaintiffs sought declaratory judgment and injunctive relief. Judge George A. O’Toole, Jr. entered a temporary restraining order on February 6 that halted enforcement of the February 6 deadline, but on February 12 he dissolved that order and denied the plaintiffs’ motion for a temporary restraining order and preliminary injunction, holding that the court likely lacked subject‑matter jurisdiction and directing the parties to pursue their claims under the Federal Service Labor‑Management Relations Statute. On May 15, 2025 the defendants—President Donald J. Trump and the acting or appointed directors and secretaries of OPM, IRS, HHS, CFPB, USDA Forest Service, VA, DoD, NASA, and NIH—filed a motion to dismiss; the court granted that motion and dismissed the case entirely on the same day, closing the action with no further action pending.",
+          "last_updated": "2026-03-19T03:06:16.330777+00:00"
+        }
+      ],
+      "summary_text": "National Treasury Employees Union v. Trump, No. 25‑cv‑00420‑CRC, was filed on February 12, 2025 in the U.S. District Court for the District of Columbia by the National Treasury Employees Union together with the National Federation of Federal Employees, the International Association of Machinists, and the International Federation of Professional and Technical Employees. The complaint alleged that Executive Order No. 14210, issued February 11, 2025, directed federal agencies to conduct mass layoffs of non‑essential and probationary employees and to pressure workers to resign through a deferred‑resignation program, thereby violating Congressional reduction‑in‑force procedures and the constitutional separation of powers; plaintiffs sought declaratory judgment and injunctive relief. Judge George A. O’Toole, Jr. entered a temporary restraining order on February 6 that halted enforcement of the February 6 deadline, but on February 12 he dissolved that order and denied the plaintiffs’ motion for a temporary restraining order and preliminary injunction, holding that the court likely lacked subject‑matter jurisdiction and directing the parties to pursue their claims under the Federal Service Labor‑Management Relations Statute. On May 15, 2025 the defendants—President Donald J. Trump and the acting or appointed directors and secretaries of OPM, IRS, HHS, CFPB, USDA Forest Service, VA, DoD, NASA, and NIH—filed a motion to dismiss; the court granted that motion and dismissed the case entirely on the same day, closing the action with no further action pending.",
+      "summary_stats": {
+        "paragraph_count": 1,
+        "character_count": 1572,
+        "non_empty": true
+      }
+    },
+    "summary_stats": {
+      "paragraph_count": 1,
+      "character_count": 1572,
+      "non_empty": true
+    },
+    "checklist": {
+      "All_Reported_Opinions_Cited_with_Shortened_Bluebook_Citation": {
+        "extracted": []
+      },
+      "Appeal": {
+        "extracted": []
+      },
+      "Cause_of_Action": {
+        "extracted": []
+      },
+      "Class_Action_or_Individual_Plaintiffs": {
+        "extracted": []
+      },
+      "Consolidated_Cases_Noted": {
+        "extracted": []
+      },
+      "Court_Rulings": {
+        "extracted": [
+          {
+            "value": "United States District Court for the District of Columbia, Judge George A. O’Toole, Jr., denied the plaintiffs’ motion for a temporary restraining order and preliminary injunction on February 12, 2025, finding they lacked standing and subject‑matter jurisdiction.",
+            "evidence": [
+              {
+                "source_document_id": "155856",
+                "start_sentence": 118,
+                "end_sentence": 124,
+                "start_offset": 6058,
+                "end_offset": 6445
+              }
+            ]
+          },
+          {
+            "value": "United States District Court for the District of Columbia granted defendants’ motion to dismiss the case and dismissed the case entirely on May 15, 2025, and set May 15, 2025 as the deadline to answer defendants’ motion to dismiss.",
+            "evidence": [
+              {
+                "source_document_id": "160610",
+                "start_sentence": 1,
+                "end_sentence": 5,
+                "start_offset": 0,
+                "end_offset": 170
+              }
+            ]
+          }
+        ]
+      },
+      "Issues_Decided": {
+        "extracted": []
+      },
+      "Court_and_Party_Reasoning": {
+        "extracted": []
+      },
+      "Dissent_or_Separate_Views": {
+        "extracted": []
+      },
+      "Key_Rule_or_Test_Statements": {
+        "extracted": []
+      },
+      "Date_of_Settlement": {
+        "extracted": []
+      },
+      "Dates_of_All_Decrees": {
+        "extracted": []
+      },
+      "Disputes_Over_Settlement_Enforcement": {
+        "extracted": []
+      },
+      "Factual_Basis_of_Case": {
+        "extracted": [
+          {
+            "value": "Unions representing hundreds of thousands of federal employees bring this action to protect workers from the Executive Branch’s attempts to dismantle the federal government through mass firings of nonessential employees and those in probationary status, and from a pressure campaign encouraging resignation via a deferred resignation program.",
+            "evidence": [
+              {
+                "source_document_id": "155313",
+                "start_sentence": 109,
+                "end_sentence": 114,
+                "start_offset": 3448,
+                "end_offset": 3883
+              }
+            ]
+          },
+          {
+            "value": "Executive Order No. 14210, issued February 11, 2025, directs federal agencies to promptly undertake mass firings through reduction‑in‑force (RIF) processes, which the complaint alleges will violate Congress’s RIF protocol.",
+            "evidence": [
+              {
+                "source_document_id": "155313",
+                "start_sentence": 122,
+                "end_sentence": 124,
+                "start_offset": 4292,
+                "end_offset": 4410
+              }
+            ]
+          },
+          {
+            "value": "The Office of Personnel Management, under Acting Director Charles Ezell, will implement and guide the federal agencies’ mass firing of employees and administer the deferred resignation program.",
+            "evidence": [
+              {
+                "source_document_id": "155313",
+                "start_sentence": 175,
+                "end_sentence": 177,
+                "start_offset": 6804,
+                "end_offset": 6947
+              }
+            ]
+          }
+        ]
+      },
+      "Filing_Date": {
+        "extracted": [
+          {
+            "value": "2025-02-12",
+            "evidence": [
+              {
+                "source_document_id": "155313",
+                "start_sentence": 1,
+                "end_sentence": 1,
+                "start_offset": 0,
+                "end_offset": 18
+              }
+            ]
+          }
+        ]
+      },
+      "First_and_Last_name_of_Judge": {
+        "extracted": [
+          {
+            "value": "Judge Christopher R. Cooper, United States District Court for the District of Columbia, signed the memorandum opinion and order on February 20, 2025.",
+            "evidence": [
+              {
+                "source_document_id": "60801",
+                "start_sentence": 52,
+                "end_sentence": 52,
+                "start_offset": 8137,
+                "end_offset": 8189
+              }
+            ]
+          },
+          {
+            "value": "Judge George A. O’Toole, Jr., United States District Court for the District of Columbia, entered a temporary restraining order on February 6, 2025, and dissolved it on February 12, 2025.",
+            "evidence": [
+              {
+                "source_document_id": "155856",
+                "start_sentence": 119,
+                "end_sentence": 119,
+                "start_offset": 6063,
+                "end_offset": 6151
+              }
+            ]
+          }
+        ]
+      },
+      "How_Long_Decrees_will_Last": {
+        "extracted": []
+      },
+      "How_Long_Settlement_will_Last": {
+        "extracted": []
+      },
+      "Monitor_Reports": {
+        "extracted": []
+      },
+      "Name_of_the_Monitor": {
+        "extracted": []
+      },
+      "Note_Important_Filings": {
+        "extracted": [
+          {
+            "value": "Original Complaint filed by the National Treasury Employees Union on 2025-02-12, seeking declaratory and injunctive relief against a list of federal employee employers.",
+            "evidence": [
+              {
+                "source_document_id": "155313",
+                "start_sentence": 1,
+                "end_sentence": 20,
+                "start_offset": 0,
+                "end_offset": 671
+              }
+            ]
+          },
+          {
+            "value": "Motion for Temporary Restraining Order filed by the National Treasury Employees Union on 2025-02-14, requesting an immediate restraining order and a preliminary injunction to preserve the status quo.",
+            "evidence": [
+              {
+                "source_document_id": "155857",
+                "start_sentence": 1,
+                "end_sentence": 30,
+                "start_offset": 0,
+                "end_offset": 1070
+              }
+            ]
+          },
+          {
+            "value": "Amended Complaint filed by the National Treasury Employees Union on 2025-02-17, updating the original complaint with additional claims and parties.",
+            "evidence": [
+              {
+                "source_document_id": "155859",
+                "start_sentence": 1,
+                "end_sentence": 20,
+                "start_offset": 0,
+                "end_offset": 692
+              }
+            ]
+          },
+          {
+            "value": "Motion to Dismiss filed by defendants on 2025-05-15, arguing lack of jurisdiction and failure to state a claim in the original complaint.",
+            "evidence": [
+              {
+                "source_document_id": "60801",
+                "start_sentence": 82,
+                "end_sentence": 84,
+                "start_offset": 12504,
+                "end_offset": 13185
+              }
+            ]
+          },
+          {
+            "value": "Motion to Amend/Correct Amended Complaint filed by the National Treasury Employees Union on 2025-05-27, correcting errors in the Amended Complaint and adding new allegations.",
+            "evidence": [
+              {
+                "source_document_id": "60801",
+                "start_sentence": 85,
+                "end_sentence": 86,
+                "start_offset": 13185,
+                "end_offset": 13500
+              }
+            ]
+          },
+          {
+            "value": "Second Amended Complaint filed by the National Treasury Employees Union on 2025-06-06, incorporating the amendments and bringing additional parties into the litigation.",
+            "evidence": [
+              {
+                "source_document_id": "60801",
+                "start_sentence": 94,
+                "end_sentence": 95,
+                "start_offset": 14794,
+                "end_offset": 15026
+              }
+            ]
+          },
+          {
+            "value": "Notice of Voluntary Dismissal by INTERNATIONAL UNION, UNITED AUTOMOBILE, AEROSPACE AND AGRICULTURAL IMPLEMENT WORKERS OF AMERICA filed on 2025-05-27, removing those parties from the lawsuit.",
+            "evidence": [
+              {
+                "source_document_id": "60801",
+                "start_sentence": 89,
+                "end_sentence": 90,
+                "start_offset": 13819,
+                "end_offset": 14487
+              }
+            ]
+          },
+          {
+            "value": "Minute Order granting Motion for Leave to File Supplemental Declaration on 2025-02-20, allowing the plaintiff to file supplemental declaration.",
+            "evidence": [
+              {
+                "source_document_id": "60801",
+                "start_sentence": 203,
+                "end_sentence": 203,
+                "start_offset": 27509,
+                "end_offset": 27658
+              }
+            ]
+          },
+          {
+            "value": "Consent Motion for Extension of Time to File Response/Reply to Motion to Dismiss filed on 2025-05-27, granting defendants additional time to respond.",
+            "evidence": [
+              {
+                "source_document_id": "60801",
+                "start_sentence": 87,
+                "end_sentence": 87,
+                "start_offset": 13500,
+                "end_offset": 13738
+              }
+            ]
+          }
+        ]
+      },
+      "Related_Cases_Listed_by_Their_Case_Code_Number": {
+        "extracted": [
+          {
+            "value": "AFGE v. Ezell, No. 25-cv-10276 – cited as precedent on the same policy challenge involving probationary employees.",
+            "evidence": [
+              {
+                "source_document_id": "155860",
+                "start_sentence": 226,
+                "end_sentence": 226,
+                "start_offset": 13167,
+                "end_offset": 13208
+              }
+            ]
+          },
+          {
+            "value": "AFGE v. Trump, No. 25-cv-03698-SI – cited as precedent on the same policy challenge involving probationary employees.",
+            "evidence": [
+              {
+                "source_document_id": "160610",
+                "start_sentence": 978,
+                "end_sentence": 978,
+                "start_offset": 47252,
+                "end_offset": 47293
+              }
+            ]
+          }
+        ]
+      },
+      "Remedy_Sought": {
+        "extracted": [
+          {
+            "value": "Plaintiffs seek a declaration that the mass firing of nonessential, probationary, and other employees and OPM’s deferred resignation program are unlawful; injunctive relief preventing OPM from extending, expanding, or replicating its deferred resignation program; injunctive relief preventing OPM from violating the RIF statute and regulations, including requirements related to the establishment of competitive areas; an order that defendants pay reasonable attorneys’ fees and costs; and an order for such other and further relief as the court deems just and proper.",
+            "evidence": [
+              {
+                "source_document_id": "155313",
+                "start_sentence": 717,
+                "end_sentence": 726,
+                "start_offset": 35865,
+                "end_offset": 36493
+              }
+            ]
+          }
+        ]
+      },
+      "Significant_Terms_of_Decrees": {
+        "extracted": []
+      },
+      "Significant_Terms_of_Settlement": {
+        "extracted": []
+      },
+      "Statutory_or_Constitutional_Basis_for_the_Case": {
+        "extracted": []
+      },
+      "Trials": {
+        "extracted": []
+      },
+      "Type_of_Counsel": {
+        "extracted": []
+      },
+      "Whether_the_Settlement_is_Court-enforced_or_Not": {
+        "extracted": []
+      },
+      "Who_are_the_Parties": {
+        "extracted": [
+          {
+            "value": "Plaintiff: National Treasury Employees Union (NTEU), an unincorporated association representing employees in 37 federal departments and agencies",
+            "evidence": [
+              {
+                "source_document_id": "155313",
+                "start_sentence": 130,
+                "end_sentence": 136,
+                "start_offset": 4573,
+                "end_offset": 4920
+              }
+            ]
+          },
+          {
+            "value": "Plaintiff: National Federation of Federal Employees (NFFE), an affiliate of IAM and an unincorporated association representing approximately 110,000 federal employees",
+            "evidence": [
+              {
+                "source_document_id": "155313",
+                "start_sentence": 137,
+                "end_sentence": 141,
+                "start_offset": 4920,
+                "end_offset": 5151
+              }
+            ]
+          },
+          {
+            "value": "Plaintiff: International Association of Machinists (IAM), an unincorporated association representing about 600,000 members and 15,000 federal employees",
+            "evidence": [
+              {
+                "source_document_id": "155313",
+                "start_sentence": 143,
+                "end_sentence": 148,
+                "start_offset": 5227,
+                "end_offset": 5554
+              }
+            ]
+          },
+          {
+            "value": "Plaintiff: International Federation of Professional and Technical Employees (IFPTE), an unincorporated association representing federal employees",
+            "evidence": [
+              {
+                "source_document_id": "155313",
+                "start_sentence": 149,
+                "end_sentence": 150,
+                "start_offset": 5554,
+                "end_offset": 5633
+              }
+            ]
+          },
+          {
+            "value": "Defendant: Donald J. Trump, President of the United States",
+            "evidence": [
+              {
+                "source_document_id": "155859",
+                "start_sentence": 164,
+                "end_sentence": 165,
+                "start_offset": 6400,
+                "end_offset": 6481
+              }
+            ]
+          },
+          {
+            "value": "Defendant: Charles Ezell, Acting Director of the United States Office of Personnel Management (OPM)",
+            "evidence": [
+              {
+                "source_document_id": "155859",
+                "start_sentence": 171,
+                "end_sentence": 172,
+                "start_offset": 6753,
+                "end_offset": 6865
+              }
+            ]
+          },
+          {
+            "value": "Defendant: Douglas O’Donnell, Acting Commissioner of the Internal Revenue Service (IRS)",
+            "evidence": [
+              {
+                "source_document_id": "155859",
+                "start_sentence": 176,
+                "end_sentence": 177,
+                "start_offset": 7008,
+                "end_offset": 7108
+              }
+            ]
+          },
+          {
+            "value": "Defendant: Robert F. Kennedy Jr., Secretary of the Department of Health and Human Services (HHS)",
+            "evidence": [
+              {
+                "source_document_id": "155859",
+                "start_sentence": 185,
+                "end_sentence": 186,
+                "start_offset": 7421,
+                "end_offset": 7532
+              }
+            ]
+          },
+          {
+            "value": "Defendant: Russell Vought, Acting Director of the Consumer Financial Protection Bureau (CFPB)",
+            "evidence": [
+              {
+                "source_document_id": "155859",
+                "start_sentence": 192,
+                "end_sentence": 193,
+                "start_offset": 7733,
+                "end_offset": 7839
+              }
+            ]
+          },
+          {
+            "value": "Defendant: Randy Moore, Chief of the U.S. Forest Service within the U.S. Department of Agriculture",
+            "evidence": [
+              {
+                "source_document_id": "155859",
+                "start_sentence": 198,
+                "end_sentence": 199,
+                "start_offset": 8017,
+                "end_offset": 8128
+              }
+            ]
+          },
+          {
+            "value": "Defendant: Doug Collins, Secretary of the Department of Veterans Affairs (VA)",
+            "evidence": [
+              {
+                "source_document_id": "155859",
+                "start_sentence": 204,
+                "end_sentence": 205,
+                "start_offset": 8334,
+                "end_offset": 8424
+              }
+            ]
+          },
+          {
+            "value": "Defendant: Pete Hegseth, Secretary of the Department of Defense (DoD)",
+            "evidence": [
+              {
+                "source_document_id": "155859",
+                "start_sentence": 210,
+                "end_sentence": 211,
+                "start_offset": 8622,
+                "end_offset": 8704
+              }
+            ]
+          },
+          {
+            "value": "Defendant: Makenzie Lystrup, Director of Goddard Space Flight Center, National Aeronautics and Space Administration (NASA)",
+            "evidence": [
+              {
+                "source_document_id": "155859",
+                "start_sentence": 218,
+                "end_sentence": 219,
+                "start_offset": 9001,
+                "end_offset": 9129
+              }
+            ]
+          },
+          {
+            "value": "Defendant: Matthew J. Memoli, Acting Director of the National Institutes of Health (NIH)",
+            "evidence": [
+              {
+                "source_document_id": "155859",
+                "start_sentence": 225,
+                "end_sentence": 226,
+                "start_offset": 9341,
+                "end_offset": 9438
+              }
+            ]
+          }
+        ]
+      },
+      "Representation_Structure": {
+        "extracted": [
+          {
+            "value": "Plaintiffs represented by National Treasury Employees Union in-house counsel (General Counsel, Deputy General Counsel, etc).",
+            "evidence": [
+              {
+                "source_document_id": "155313",
+                "start_sentence": 758,
+                "end_sentence": 764,
+                "start_offset": 37378,
+                "end_offset": 37622
+              }
+            ]
+          },
+          {
+            "value": "Defendants represented by U.S. Department of Justice counsel (Office of General Counsel).",
+            "evidence": [
+              {
+                "source_document_id": "160610",
+                "start_sentence": 1488,
+                "end_sentence": 1489,
+                "start_offset": 73789,
+                "end_offset": 73834
+              }
+            ]
+          }
+        ]
+      },
+      "Arguments_and_Reasoning": {
+        "extracted": [
+          {
+            "value": "Plaintiff theory: The Unions allege that the Executive Branch, via Executive Order No. 14210, is directing federal agencies to undertake mass firings of hundreds of thousands of employees, including nonessential and probationary employees, and to pressure employees to resign via a deferred resignation program, thereby violating Congress’s constitutional separation of powers and the statutory reduction‑in‑force (RIF) procedures.",
+            "evidence": [
+              {
+                "source_document_id": "155859",
+                "start_sentence": 101,
+                "end_sentence": 110,
+                "start_offset": 2912,
+                "end_offset": 3631
+              }
+            ]
+          },
+          {
+            "value": "Amendment-added theory: The amended complaint, filed February 17, 2025, adds claims that the Executive Branch is terminating additional probationary employees at HHS, EPA, DOE, the Department of Agriculture, and the Food and Nutrition Service, as well as term employees at the CFPB, expanding the scope of alleged violations.",
+            "evidence": [
+              {
+                "source_document_id": "155856",
+                "start_sentence": 234,
+                "end_sentence": 238,
+                "start_offset": 11593,
+                "end_offset": 11905
+              }
+            ]
+          },
+          {
+            "value": "Defense theory: The government argues that the federal employee claims are precluded by the Federal Service Labor‑Management Relations Statute (FSLMRS) scheme, citing the Thunder Basin precedent that precludes court jurisdiction when claims are entirely within the statutory administrative review system.",
+            "evidence": [
+              {
+                "source_document_id": "155856",
+                "start_sentence": 345,
+                "end_sentence": 370,
+                "start_offset": 16940,
+                "end_offset": 17999
+              }
+            ]
+          },
+          {
+            "value": "Court treatment: The district court denied the unions’ temporary restraining order and preliminary injunction, holding that it likely lacks subject‑matter jurisdiction over the claims and must direct the unions to pursue their challenges through the FSLMRS scheme.",
+            "evidence": [
+              {
+                "source_document_id": "155856",
+                "start_sentence": 245,
+                "end_sentence": 280,
+                "start_offset": 12028,
+                "end_offset": 13856
+              }
+            ]
+          }
+        ]
+      },
+      "Amendments_and_Claim_or_Party_Changes": {
+        "extracted": [
+          {
+            "value": "On February 17, 2025, the National Treasury Employees Union and affiliated unions filed a First Amended Complaint adding claims of unlawful terminations of probationary employees at the Department of Health and Human Services, the Environmental Protection Agency, the Department of Energy, the Department of Agriculture, the Food and Nutrition Service, and the Consumer Financial Protection Bureau, thereby expanding the allegations against these agencies.",
+            "evidence": [
+              {
+                "source_document_id": "155856",
+                "start_sentence": 234,
+                "end_sentence": 242,
+                "start_offset": 11593,
+                "end_offset": 11983
+              }
+            ]
+          },
+          {
+            "value": "On June 6, 2025, the National Treasury Employees Union filed a Second Amended Complaint against all defendants, adding claims of separation of powers violations and expanding the relief sought.",
+            "evidence": [
+              {
+                "source_document_id": "163684",
+                "start_sentence": 718,
+                "end_sentence": 718,
+                "start_offset": 31945,
+                "end_offset": 32019
+              }
+            ]
+          },
+          {
+            "value": "On May 27, 2025, the International Union, United Automobile, Aerospace and Agricultural Implement Workers of America voluntarily dismissed itself from the action, reducing the defendant set.",
+            "evidence": [
+              {
+                "source_document_id": "60801",
+                "start_sentence": 89,
+                "end_sentence": 89,
+                "start_offset": 13819,
+                "end_offset": 14103
+              }
+            ]
+          }
+        ]
+      },
+      "Current_Procedural_Posture": {
+        "extracted": [
+          {
+            "value": "Dismissed – plaintiffs voluntarily dismissed the case on 05/27/2025; the case is closed and no further action is pending.",
+            "evidence": [
+              {
+                "source_document_id": "60801",
+                "start_sentence": 90,
+                "end_sentence": 90,
+                "start_offset": 14103,
+                "end_offset": 14487
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "checklist_definitions": {
+      "All_Reported_Opinions_Cited_with_Shortened_Bluebook_Citation": "extract every citation to a judicial opinion that includes a reporter or database citation (e.g., 123 F.3d 456; 789 U.S. 321; 2020 WL 4218003). Include the case name if it appears immediately before the citation (ignore signals like \"see,\" \"cf.,\" and commas); otherwise output the citation alone. Output one entry per opinion as \"Case Name, Reporter/Database Citation,\" using shortened Bluebook form if applicable. Strip pincites and parentheticals; if parallel cites appear, keep only the first. Exclude id./supra/infra, docket-only references, slip opinions without a reporter/database cite, and non-case sources (statutes, rules, articles).",
+      "Appeal": "identify whether any appeals are mentioned, including which parties filed the appeal and to which court and provide the extracted information. If applicable, clearly state the information using the following format: \"Appeal: [parties] appealed to [court].\" Try to be as completely as possible.",
+      "Cause_of_Action": "identify the cause of action, including whether it refers to a statute (e.g., 42 USC 1983) or a case (e.g., Ex Parte Young). Extract the crucial cause of action information as completely as possible.",
+      "Class_Action_or_Individual_Plaintiffs": "identify whether the case involves class action plaintiffs or individual plaintiffs. Clearly state the information using the following format: \"Plaintiffs: Class Action\" if it is a class action, or \"Plaintiffs: Individual, described as [description]\" if individual plaintiffs are involved.",
+      "Consolidated_Cases_Noted": "identify whether any consolidated cases are mentioned and extract the crucial consolidated cases information as completely as possible. Do not list the current case as its own related/consolidated matter.",
+      "Court_Rulings": "identify the court's decisions or orders in sequence. Capture the court level, date (if provided), and whether later rulings modify or reverse earlier ones. Focus on concise descriptions of outcomes (granted/denied) for key motions or issues, such as: granted/denied motions to dismiss, granted/denied summary judgment, issued preliminary injunctions or TROs, certified/denied class certification, or other significant rulings.",
+      "Issues_Decided": "capture the specific legal issues or questions the court addresses in each ruling, in chronological order. Frame each value as the issue being decided, including motion/stage context when present.",
+      "Court_and_Party_Reasoning": "capture the court's reasoning for each issue/ruling, including where the court adopts or rejects party arguments. Summarize tests or standards applied, key analogies/distinctions, and policy rationales. Note in the value if the reasoning is majority/per curiam and mention party arguments only as reflected or addressed by the court. Keep entries chronological per ruling.",
+      "Dissent_or_Separate_Views": "capture dissenting or concurring reasoning that differs from the majority. Prefix each value with \"Dissent:\" or \"Concurrence:\" and summarize the core rationale or disagreement, in chronological order.",
+      "Key_Rule_or_Test_Statements": "quote or closely summarize the sentences where the court states rules, tests, or standards applied. Prefer verbatim rule statements; avoid factual narrative. If tied to majority/dissent/concurrence, indicate that. Keep entries chronological with the rulings.",
+      "Date_of_Settlement": "extract settlement dates with the court level if provided, and note whether the settlement supersedes prior orders. If applicable, clearly state the information using the following format: \"[date]: [settlement].\"",
+      "Dates_of_All_Decrees": "identify dates of decrees and the issuing court. Extract all such information as completely as possible. If applicable, clearly state each item using the following format: \"[date]: [court]: [decree].\"",
+      "Disputes_Over_Settlement_Enforcement": "extract disputes over settlement enforcement, noting when they arise and whether they modify or challenge prior settlements.",
+      "Factual_Basis_of_Case": "extract the facts or evidence upon which the case is built, in the order they emerge. Note how the factual narrative changes or expands over time. This typically includes: 1. Details of the relevant events—what happened, when it happened, where it happened, and who was involved. 2. Evidence – physical evidence, documentary records, witness testimonies, etc., that support these facts. 3. Background information—context or explanatory facts that provide additional understanding.",
+      "Filing_Date": "extract the case filing date—when the lawsuit was first initiated. Extract the crucial information as completely as possible.",
+      "First_and_Last_name_of_Judge": "identify judges in the order they appear (initial assignment, reassignments, appellate panels). Note the court level with each name so later judges can be understood as replacing or superseding prior judges. Example output format: \"[court level]: [full name]\"; if only last name appears, output the last name with the level.",
+      "How_Long_Decrees_will_Last": "extract the duration of all decrees, noting issuance/modification dates when present. Extract crucial related information as completely as possible. If applicable, clearly state the information using the following format: \"[date]: [duration]: [decree].\"",
+      "How_Long_Settlement_will_Last": "extract the duration of all settlements information, noting the date and whether it supersedes prior orders. If applicable, clearly state the information using the following format: \"[date]: [duration]: [settlement].\"",
+      "Monitor_Reports": "identify references to monitoring activities or compliance reviews mentioned in the documents. Extract concise information about: (1) what is being monitored, (2) key findings or compliance status if mentioned, (3) dates of monitoring activities if available. Focus on summarizing the monitoring outcomes rather than extracting entire reports. Format as brief statements like: 'Monitor found [compliance/non-compliance] with [specific requirement] as of [date]'. Limit to the most significant monitoring findings only.",
+      "Name_of_the_Monitor": "identify whether a monitor was appointed and note the name of the monitor if mentioned.",
+      "Note_Important_Filings": "identify important filings or motions in the order they occur (TROs, PIs, motions to dismiss, motions for summary judgment, etc.). Include the filing court/level and date if provided so the sequence of filings is clear.",
+      "Related_Cases_Listed_by_Their_Case_Code_Number": "identify whether any related cases are listed by their case code number and extract the crucial consolidated cases information as completely as possible. Exclude the current case itself; do not echo its docket or caption or similar as related.",
+      "Remedy_Sought": "extract the remedy sought (e.g., declaratory judgment) information. Extract the crucial remedy sought information as completely as possible.",
+      "Significant_Terms_of_Decrees": "extract the significant terms of decrees information. Significant terms means the substance of the decree. In a decree, the judge orders the defendants to do something. The significant terms would be what the defendants are ordered/agree to do. Extract the crucial significant terms of decrees information as completely as possible.",
+      "Significant_Terms_of_Settlement": "extract the significant terms of settlements information. Significant terms means the substance of the settlement. In a settlement, the parties agree to do something. The significant terms would be what the parties agreed to do. Extract significant terms of settlements information as completely as possible.",
+      "Statutory_or_Constitutional_Basis_for_the_Case": "extract the statutory or constitutional basis for the case, including any relevant constitutional clauses and amendments if applicable. A case can either be based on a statute or a provision of the Constitution--i.e., a case will either claim that someone violated a statute, or violated the Constitution. For cases that have a constitutional basis, the documents should refer to the clause of the Constitution that was allegedly violated, as well as the amendment if applicable. For example it would say \"the plaintiffs alleged violations of the Fourteenth Amendment's Equal Protection Clause,\" or \"the plaintiffs alleged violations of the Commerce Clause.\"",
+      "Trials": "extract information about all trials mentioned in the documents as completely as possible. The trial information includes things like scheduling, proceedings, outcomes, and any related motions or rulings.",
+      "Type_of_Counsel": "identify the type of counsel mentioned (such as private, legal services, ACLU, etc.).",
+      "Whether_the_Settlement_is_Court-enforced_or_Not": "identify whether the settlement is court-enforced. If applicable, clearly state the result using the following format: \"[Yes/No].\"",
+      "Who_are_the_Parties": "identify the description of the parties involved. Provide details about each plaintiff and defendant, including any relevant positions or offices held if applicable. Extract each individual party as a separate entry in the extracted list. If there are multiple plaintiffs or multiple defendants, create a distinct entry for each person or entity. Each value should follow this format: \"Plaintiff: [description]\" or \"Defendant: [description]\". Try to be as complete as possible."
+    },
+    "focus_context": "Case scope:\n- Target case title: National Treasury Employees Union v. Trump\n\nUse this run to produce a precise, litigation-grade narrative summary for the target case only.\nPrioritize material procedural posture, dispositive rulings, and timeline-critical developments.\nAvoid drifting into background law or unrelated referenced matters unless they directly change the target case outcome.",
+    "timestamp": "2026-03-19T03:06:32.602505+00:00",
+    "token_usage": {
+      "model": "unsloth/gpt-oss-20b-BF16",
+      "total_steps": 55,
+      "total_tokens": 691196,
+      "total_system_prompt_tokens": 111996,
+      "total_user_prompt_tokens": 527913,
+      "total_completion_tokens": 51287,
+      "average_tokens_per_step": 12567.2,
+      "stats_file": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/agent_output/gpt-oss-20b-BF16/46110/summary_agent/stats.json"
+    },
+    "final_status": "completed",
+    "stop_reason": "Final stop accepted.",
+    "summary_state_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/agent_output/gpt-oss-20b-BF16/46110/summary_agent/summary_state.json"
+  },
+  "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/agent_output/gpt-oss-20b-BF16/46110/summary_agent/run_f0ccda1d.json",
+  "stats": {
+    "model": "unsloth/gpt-oss-20b-BF16",
+    "steps": 55,
+    "total_system_prompt_tokens": 111996,
+    "total_user_prompt_tokens": 527913,
+    "total_completion_tokens": 51287,
+    "per_step_details": [
+      {
+        "step": 1,
+        "system_tokens": 2074,
+        "user_tokens": 3853,
+        "completion_tokens": 42,
+        "total_prompt_tokens": 5927,
+        "is_system_cached": false
+      },
+      {
+        "step": 2,
+        "system_tokens": 2074,
+        "user_tokens": 5488,
+        "completion_tokens": 214,
+        "total_prompt_tokens": 7562,
+        "is_system_cached": true
+      },
+      {
+        "step": 3,
+        "system_tokens": 2074,
+        "user_tokens": 7117,
+        "completion_tokens": 461,
+        "total_prompt_tokens": 9191,
+        "is_system_cached": true
+      },
+      {
+        "step": 4,
+        "system_tokens": 2074,
+        "user_tokens": 6747,
+        "completion_tokens": 386,
+        "total_prompt_tokens": 8821,
+        "is_system_cached": true
+      },
+      {
+        "step": 5,
+        "system_tokens": 2074,
+        "user_tokens": 6979,
+        "completion_tokens": 1163,
+        "total_prompt_tokens": 9053,
+        "is_system_cached": true
+      },
+      {
+        "step": 6,
+        "system_tokens": 2074,
+        "user_tokens": 8207,
+        "completion_tokens": 569,
+        "total_prompt_tokens": 10281,
+        "is_system_cached": true
+      },
+      {
+        "step": 7,
+        "system_tokens": 2074,
+        "user_tokens": 8446,
+        "completion_tokens": 182,
+        "total_prompt_tokens": 10520,
+        "is_system_cached": true
+      },
+      {
+        "step": 8,
+        "system_tokens": 2074,
+        "user_tokens": 8387,
+        "completion_tokens": 262,
+        "total_prompt_tokens": 10461,
+        "is_system_cached": true
+      },
+      {
+        "step": 9,
+        "system_tokens": 2074,
+        "user_tokens": 8493,
+        "completion_tokens": 1019,
+        "total_prompt_tokens": 10567,
+        "is_system_cached": true
+      },
+      {
+        "step": 10,
+        "system_tokens": 2074,
+        "user_tokens": 11594,
+        "completion_tokens": 785,
+        "total_prompt_tokens": 13668,
+        "is_system_cached": true
+      },
+      {
+        "step": 11,
+        "system_tokens": 2074,
+        "user_tokens": 10697,
+        "completion_tokens": 452,
+        "total_prompt_tokens": 12771,
+        "is_system_cached": true
+      },
+      {
+        "step": 12,
+        "system_tokens": 2074,
+        "user_tokens": 10577,
+        "completion_tokens": 525,
+        "total_prompt_tokens": 12651,
+        "is_system_cached": true
+      },
+      {
+        "step": 13,
+        "system_tokens": 2074,
+        "user_tokens": 10041,
+        "completion_tokens": 908,
+        "total_prompt_tokens": 12115,
+        "is_system_cached": true
+      },
+      {
+        "step": 14,
+        "system_tokens": 2074,
+        "user_tokens": 9528,
+        "completion_tokens": 338,
+        "total_prompt_tokens": 11602,
+        "is_system_cached": true
+      },
+      {
+        "step": 15,
+        "system_tokens": 2074,
+        "user_tokens": 8553,
+        "completion_tokens": 437,
+        "total_prompt_tokens": 10627,
+        "is_system_cached": true
+      },
+      {
+        "step": 16,
+        "system_tokens": 2074,
+        "user_tokens": 7767,
+        "completion_tokens": 572,
+        "total_prompt_tokens": 9841,
+        "is_system_cached": true
+      },
+      {
+        "step": 17,
+        "system_tokens": 2074,
+        "user_tokens": 8178,
+        "completion_tokens": 251,
+        "total_prompt_tokens": 10252,
+        "is_system_cached": true
+      },
+      {
+        "step": 18,
+        "system_tokens": 2074,
+        "user_tokens": 8467,
+        "completion_tokens": 341,
+        "total_prompt_tokens": 10541,
+        "is_system_cached": true
+      },
+      {
+        "step": 19,
+        "system_tokens": 2074,
+        "user_tokens": 8302,
+        "completion_tokens": 2205,
+        "total_prompt_tokens": 10376,
+        "is_system_cached": true
+      },
+      {
+        "step": 20,
+        "system_tokens": 2074,
+        "user_tokens": 7965,
+        "completion_tokens": 1349,
+        "total_prompt_tokens": 10039,
+        "is_system_cached": true
+      },
+      {
+        "step": 21,
+        "system_tokens": 2074,
+        "user_tokens": 8151,
+        "completion_tokens": 1458,
+        "total_prompt_tokens": 10225,
+        "is_system_cached": true
+      },
+      {
+        "step": 22,
+        "system_tokens": 2074,
+        "user_tokens": 8548,
+        "completion_tokens": 257,
+        "total_prompt_tokens": 10622,
+        "is_system_cached": true
+      },
+      {
+        "step": 23,
+        "system_tokens": 2074,
+        "user_tokens": 8580,
+        "completion_tokens": 1187,
+        "total_prompt_tokens": 10654,
+        "is_system_cached": true
+      },
+      {
+        "step": 24,
+        "system_tokens": 2074,
+        "user_tokens": 8933,
+        "completion_tokens": 1994,
+        "total_prompt_tokens": 11007,
+        "is_system_cached": true
+      },
+      {
+        "step": 25,
+        "system_tokens": 2074,
+        "user_tokens": 9024,
+        "completion_tokens": 1646,
+        "total_prompt_tokens": 11098,
+        "is_system_cached": true
+      },
+      {
+        "step": 26,
+        "system_tokens": 2074,
+        "user_tokens": 9303,
+        "completion_tokens": 1591,
+        "total_prompt_tokens": 11377,
+        "is_system_cached": true
+      },
+      {
+        "step": 27,
+        "system_tokens": 2074,
+        "user_tokens": 9468,
+        "completion_tokens": 1890,
+        "total_prompt_tokens": 11542,
+        "is_system_cached": true
+      },
+      {
+        "step": 28,
+        "system_tokens": 2074,
+        "user_tokens": 9833,
+        "completion_tokens": 803,
+        "total_prompt_tokens": 11907,
+        "is_system_cached": true
+      },
+      {
+        "step": 29,
+        "system_tokens": 2074,
+        "user_tokens": 9968,
+        "completion_tokens": 1454,
+        "total_prompt_tokens": 12042,
+        "is_system_cached": true
+      },
+      {
+        "step": 30,
+        "system_tokens": 2074,
+        "user_tokens": 10098,
+        "completion_tokens": 1093,
+        "total_prompt_tokens": 12172,
+        "is_system_cached": true
+      },
+      {
+        "step": 32,
+        "system_tokens": 2074,
+        "user_tokens": 10810,
+        "completion_tokens": 828,
+        "total_prompt_tokens": 12884,
+        "is_system_cached": true
+      },
+      {
+        "step": 33,
+        "system_tokens": 2074,
+        "user_tokens": 10528,
+        "completion_tokens": 402,
+        "total_prompt_tokens": 12602,
+        "is_system_cached": true
+      },
+      {
+        "step": 34,
+        "system_tokens": 2074,
+        "user_tokens": 10729,
+        "completion_tokens": 1636,
+        "total_prompt_tokens": 12803,
+        "is_system_cached": true
+      },
+      {
+        "step": 35,
+        "system_tokens": 2074,
+        "user_tokens": 10597,
+        "completion_tokens": 941,
+        "total_prompt_tokens": 12671,
+        "is_system_cached": true
+      },
+      {
+        "step": 36,
+        "system_tokens": 2074,
+        "user_tokens": 11129,
+        "completion_tokens": 1329,
+        "total_prompt_tokens": 13203,
+        "is_system_cached": true
+      },
+      {
+        "step": 37,
+        "system_tokens": 2074,
+        "user_tokens": 10652,
+        "completion_tokens": 699,
+        "total_prompt_tokens": 12726,
+        "is_system_cached": true
+      },
+      {
+        "step": 38,
+        "system_tokens": 2074,
+        "user_tokens": 10756,
+        "completion_tokens": 931,
+        "total_prompt_tokens": 12830,
+        "is_system_cached": true
+      },
+      {
+        "step": 39,
+        "system_tokens": 2074,
+        "user_tokens": 11003,
+        "completion_tokens": 334,
+        "total_prompt_tokens": 13077,
+        "is_system_cached": true
+      },
+      {
+        "step": 40,
+        "system_tokens": 2074,
+        "user_tokens": 11211,
+        "completion_tokens": 1005,
+        "total_prompt_tokens": 13285,
+        "is_system_cached": true
+      },
+      {
+        "step": 41,
+        "system_tokens": 2074,
+        "user_tokens": 11058,
+        "completion_tokens": 689,
+        "total_prompt_tokens": 13132,
+        "is_system_cached": true
+      },
+      {
+        "step": 42,
+        "system_tokens": 2074,
+        "user_tokens": 11203,
+        "completion_tokens": 633,
+        "total_prompt_tokens": 13277,
+        "is_system_cached": true
+      },
+      {
+        "step": 43,
+        "system_tokens": 2074,
+        "user_tokens": 11335,
+        "completion_tokens": 3699,
+        "total_prompt_tokens": 13409,
+        "is_system_cached": true
+      },
+      {
+        "step": 44,
+        "system_tokens": 2074,
+        "user_tokens": 11319,
+        "completion_tokens": 696,
+        "total_prompt_tokens": 13393,
+        "is_system_cached": true
+      },
+      {
+        "step": 45,
+        "system_tokens": 2074,
+        "user_tokens": 11493,
+        "completion_tokens": 1306,
+        "total_prompt_tokens": 13567,
+        "is_system_cached": true
+      },
+      {
+        "step": 46,
+        "system_tokens": 2074,
+        "user_tokens": 11551,
+        "completion_tokens": 963,
+        "total_prompt_tokens": 13625,
+        "is_system_cached": true
+      },
+      {
+        "step": 47,
+        "system_tokens": 2074,
+        "user_tokens": 11612,
+        "completion_tokens": 307,
+        "total_prompt_tokens": 13686,
+        "is_system_cached": true
+      },
+      {
+        "step": 48,
+        "system_tokens": 2074,
+        "user_tokens": 11479,
+        "completion_tokens": 964,
+        "total_prompt_tokens": 13553,
+        "is_system_cached": true
+      },
+      {
+        "step": 49,
+        "system_tokens": 2074,
+        "user_tokens": 11528,
+        "completion_tokens": 1403,
+        "total_prompt_tokens": 13602,
+        "is_system_cached": true
+      },
+      {
+        "step": 50,
+        "system_tokens": 2074,
+        "user_tokens": 11559,
+        "completion_tokens": 474,
+        "total_prompt_tokens": 13633,
+        "is_system_cached": true
+      },
+      {
+        "step": 51,
+        "system_tokens": 2074,
+        "user_tokens": 11431,
+        "completion_tokens": 1119,
+        "total_prompt_tokens": 13505,
+        "is_system_cached": true
+      },
+      {
+        "step": 52,
+        "system_tokens": 2074,
+        "user_tokens": 11456,
+        "completion_tokens": 441,
+        "total_prompt_tokens": 13530,
+        "is_system_cached": true
+      },
+      {
+        "step": 53,
+        "system_tokens": 2074,
+        "user_tokens": 11760,
+        "completion_tokens": 2680,
+        "total_prompt_tokens": 13834,
+        "is_system_cached": true
+      },
+      {
+        "step": 54,
+        "system_tokens": 2074,
+        "user_tokens": 11840,
+        "completion_tokens": 280,
+        "total_prompt_tokens": 13914,
+        "is_system_cached": true
+      },
+      {
+        "step": 55,
+        "system_tokens": 2074,
+        "user_tokens": 12582,
+        "completion_tokens": 1694,
+        "total_prompt_tokens": 14656,
+        "is_system_cached": true
+      }
+    ]
+  },
+  "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_summary_agent_steps200.log",
+  "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/agent_logs/summary_agent_native_run-2576901.out",
+  "corpus_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/data/controller_run_20260319T025055Z_6dcb90725b/46110"
+}

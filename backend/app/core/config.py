@@ -17,11 +17,12 @@ class Settings(BaseSettings):
 
     cluster_run_mode: Literal["remote", "spoof"] = "remote"
     cluster_spoof_event_delay_seconds: float = 0.0
+    cluster_spoof_scenario_path: str = "dev/spoof_fixtures/scenario.json"
     cluster_spoof_extraction_fixture_dir: str = (
-        "../scratch/handoff/spoof_fixtures/extraction/run_20260317T222144Z_124c78addb"
+        "dev/spoof_fixtures/extraction/run_20260317T222144Z_124c78addb"
     )
     cluster_spoof_summary_fixture_dir: str = (
-        "../scratch/handoff/spoof_fixtures/summary/run_20260319T025055Z_6dcb90725b"
+        "dev/spoof_fixtures/summary/run_20260319T025055Z_6dcb90725b"
     )
 
     cluster_ssh_host: str = "sky1"

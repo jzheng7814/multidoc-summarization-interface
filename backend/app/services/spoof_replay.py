@@ -9,12 +9,16 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Seque
 ProgressCallback = Callable[[str, Dict[str, Any]], None]
 
 
-def resolve_spoof_fixture_dir(configured_path: str) -> Path:
+def resolve_spoof_path(configured_path: str) -> Path:
     path = Path(str(configured_path).strip())
     if path.is_absolute():
         return path
     backend_root = Path(__file__).resolve().parents[2]
     return (backend_root / path).resolve()
+
+
+def resolve_spoof_fixture_dir(configured_path: str) -> Path:
+    return resolve_spoof_path(configured_path)
 
 
 def validate_spoof_fixture_dir(configured_path: str, *, label: str, required_files: Sequence[str]) -> None:
@@ -90,19 +94,6 @@ def load_spoof_request_payload(fixture_dir: Path) -> Dict[str, Any]:
     if not isinstance(payload, dict):
         raise RuntimeError(f"Spoof fixture request.json must be a JSON object: {fixture_dir}")
     return payload
-
-
-def validate_fixture_corpus(corpus_id: str, request_payload: Mapping[str, Any], *, label: str) -> None:
-    input_payload = request_payload.get("input")
-    if not isinstance(input_payload, dict):
-        raise RuntimeError(f"{label} request payload is missing input object.")
-    fixture_corpus_id = str(input_payload.get("corpus_id") or "").strip()
-    if not fixture_corpus_id:
-        raise RuntimeError(f"{label} request payload is missing input.corpus_id.")
-    if fixture_corpus_id != str(corpus_id).strip():
-        raise RuntimeError(
-            f"{label} corpus_id mismatch. Requested '{corpus_id}', fixture contains '{fixture_corpus_id}'."
-        )
 
 
 def validate_fixture_document_ids(

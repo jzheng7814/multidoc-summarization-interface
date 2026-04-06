@@ -17,6 +17,7 @@ from app.schemas.documents import Document
 from app.schemas.summary import SummaryRequest
 from app.services.remote_stage import RemoteStageManager
 from app.services.spoof_replay import validate_spoof_fixture_dir
+from app.services.spoof_scenario import validate_spoof_scenario_path
 from app.services.summary_agent_payload import build_summary_agent_request_payload
 
 producer = get_event_producer(__name__)
@@ -334,6 +335,7 @@ _RUNNER = ClusterSummaryRunner()
 def validate_cluster_summary_runtime_prerequisites() -> None:
     settings = get_settings()
     if settings.cluster_run_mode == "spoof":
+        validate_spoof_scenario_path(settings.cluster_spoof_scenario_path)
         validate_spoof_fixture_dir(
             settings.cluster_spoof_summary_fixture_dir,
             label="Spoof summary",

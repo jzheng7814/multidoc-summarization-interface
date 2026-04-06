@@ -1,0 +1,28 @@
+{
+  "run_id": "run_20260319T025055Z_6dcb90725b",
+  "created_at": "2026-03-19T03:06:48.205321+00:00",
+  "request_id": "summary_agent_manual_46110_20260319T024154Z",
+  "job_id": "2576901",
+  "state": "COMPLETED",
+  "summary_stats": {
+    "paragraph_count": 1,
+    "character_count": 1572,
+    "non_empty": true
+  },
+  "artifacts": {
+    "events_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/events.ndjson",
+    "request_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/request.json",
+    "agent_request_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/agent_request.json",
+    "result_payload_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/result_payload.json",
+    "manifest_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/manifest.json",
+    "summary_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/summary.json",
+    "summary_state_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/agent_output/gpt-oss-20b-BF16/46110/summary_agent/summary_state.json",
+    "document_map_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/document_map.json",
+    "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/agent_output/gpt-oss-20b-BF16/46110/summary_agent/ledger.jsonl",
+    "stats_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/agent_output/gpt-oss-20b-BF16/46110/summary_agent/stats.json",
+    "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/agent_output/gpt-oss-20b-BF16/46110/summary_agent/run_f0ccda1d.json",
+    "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_summary_agent_steps200.log",
+    "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/agent_logs/summary_agent_native_run-2576901.out",
+    "output_dir": "/coc/pskynet6/jzheng390/gavel/src/summarize_documents/summary_agent/controller/runs/run_20260319T025055Z_6dcb90725b/agent_output/gpt-oss-20b-BF16/46110/summary_agent"
+  }
+}

@@ -1,0 +1,1327 @@
+{
+  "run_id": "run_20260317T222144Z_124c78addb",
+  "checklist_strategy": "individual",
+  "checklist_source": "inline_spec",
+  "checklist_items_count": 19,
+  "generated_checklist_configs": [
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/001_filing_date.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/002_who_are_the_parties.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/003_class_action_or_individual_plaintiffs.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/004_representation_structure.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/005_arguments_and_reasoning.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/006_remedy_sought.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/007_first_and_last_name_of_judge.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/008_consolidated_cases_noted.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/009_related_cases_listed_by_their_case_code_number.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/010_note_important_filings.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/011_amendments_and_claim_or_party_changes.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/012_court_rulings.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/013_trials.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/014_appeal.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/015_current_procedural_posture.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/016_decrees.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/017_settlements.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/018_monitoring.yaml",
+    "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/019_factual_basis_of_case.yaml"
+  ],
+  "case_id": "46110",
+  "model": "unsloth/gpt-oss-20b-BF16",
+  "max_steps": null,
+  "reasoning_effort": null,
+  "item_runtime_settings": [
+    {
+      "item_index": 1,
+      "key": "Filing_Date",
+      "max_steps": 15,
+      "reasoning_effort": "low"
+    },
+    {
+      "item_index": 2,
+      "key": "Who_are_the_Parties",
+      "max_steps": 160,
+      "reasoning_effort": "medium"
+    },
+    {
+      "item_index": 3,
+      "key": "Class_Action_or_Individual_Plaintiffs",
+      "max_steps": 20,
+      "reasoning_effort": "low"
+    },
+    {
+      "item_index": 4,
+      "key": "Representation_Structure",
+      "max_steps": 60,
+      "reasoning_effort": "medium"
+    },
+    {
+      "item_index": 5,
+      "key": "Arguments_and_Reasoning",
+      "max_steps": 220,
+      "reasoning_effort": "high"
+    },
+    {
+      "item_index": 6,
+      "key": "Remedy_Sought",
+      "max_steps": 70,
+      "reasoning_effort": "medium"
+    },
+    {
+      "item_index": 7,
+      "key": "First_and_Last_name_of_Judge",
+      "max_steps": 100,
+      "reasoning_effort": "medium"
+    },
+    {
+      "item_index": 8,
+      "key": "Consolidated_Cases_Noted",
+      "max_steps": 15,
+      "reasoning_effort": "low"
+    },
+    {
+      "item_index": 9,
+      "key": "Related_Cases_Listed_by_Their_Case_Code_Number",
+      "max_steps": 25,
+      "reasoning_effort": "low"
+    },
+    {
+      "item_index": 10,
+      "key": "Note_Important_Filings",
+      "max_steps": 260,
+      "reasoning_effort": "medium"
+    },
+    {
+      "item_index": 11,
+      "key": "Amendments_and_Claim_or_Party_Changes",
+      "max_steps": 140,
+      "reasoning_effort": "medium"
+    },
+    {
+      "item_index": 12,
+      "key": "Court_Rulings",
+      "max_steps": 220,
+      "reasoning_effort": "high"
+    },
+    {
+      "item_index": 13,
+      "key": "Trials",
+      "max_steps": 20,
+      "reasoning_effort": "low"
+    },
+    {
+      "item_index": 14,
+      "key": "Appeal",
+      "max_steps": 120,
+      "reasoning_effort": "medium"
+    },
+    {
+      "item_index": 15,
+      "key": "Current_Procedural_Posture",
+      "max_steps": 30,
+      "reasoning_effort": "low"
+    },
+    {
+      "item_index": 16,
+      "key": "Decrees",
+      "max_steps": 100,
+      "reasoning_effort": "medium"
+    },
+    {
+      "item_index": 17,
+      "key": "Settlements",
+      "max_steps": 20,
+      "reasoning_effort": "low"
+    },
+    {
+      "item_index": 18,
+      "key": "Monitoring",
+      "max_steps": 20,
+      "reasoning_effort": "low"
+    },
+    {
+      "item_index": 19,
+      "key": "Factual_Basis_of_Case",
+      "max_steps": 100,
+      "reasoning_effort": "medium"
+    }
+  ],
+  "resume": false,
+  "debug": false,
+  "max_concurrent": 1,
+  "focus_context": "This run supports legal case summarization and human review over a multi-document corpus centered on one target case.\n\nPurpose\n- Build a checklist that is accurate enough for downstream summary generation and easy for a human reviewer to verify from the cited evidence.\n- Optimize for strong, self-contained values and canonical supporting evidence.\n- The human reviewer should mostly need to delete, trim, or correct unsupported content, not reopen documents to discover major facts the extraction missed.\n\nScope discipline\n- Extract facts about the target case itself unless a checklist item explicitly asks for relationships, citations, or external matters.\n- Other cases, quoted precedent, string citations, background authorities, and parallel litigation are external references, not target-case facts.\n- Treat another case as related only when the local text explicitly states the relationship to the target case.\n- Treat an appeal as part of the target case only when the record explicitly ties the appellate event to this case.\n- Do not infer judges, rulings, decrees, class status, or procedural posture for the target case from other cases.\n\nSource priority\n- Prefer the most authoritative local source for each item.\n- Use complaint and operative pleading captions, party sections, prayers for relief, signature blocks, and amended pleadings for parties, class status, representation structure, remedies, factual allegations, and claim or party changes.\n- Use the actual order, opinion, notice of appeal, appellate disposition, decree, trial record, or docket text for this case for rulings, appeals, decrees, trials, settlements, monitoring, and current procedural posture.\n- For current procedural posture, later supported materials control earlier ones.\n- When the underlying pleading or order is available, prefer it over short docket text for substantive claim or party changes.\n\nValue quality\n- Write each value as a concise, self-contained synthesis that remains useful without the evidence text.\n- Do not output bare labels, bare citations, or thin docket paraphrases when a more informative supported value is possible.\n- Prefer fewer, stronger, summary-usable values over many weak fragments.\n- When new evidence enriches, narrows, or corrects an existing entity, event, or proposition, consolidate and update instead of appending duplicates.\n\nEvidence quality\n- Cite evidence that directly supports every material clause of the value.\n- Prefer canonical spans that let a reviewer confirm the value quickly.\n- If one span does not support the full value, use multiple spans or split the value into smaller supported values.\n- Do not rely on a span that supports only a case number, title fragment, or generic legal standard when the value makes a broader claim.\n\nPitfalls to avoid\n- Do not confuse the target case with cited precedent or adjacent litigation involving similar parties, agencies, policies, or dates.\n- Do not use quoted language from another case to classify this case.\n- Do not confuse filing dates with entered dates or later procedural dates.\n- Do not infer substantive claim changes, party changes, or requested relief solely from a short docket description when the underlying filing or order is available.\n- Do not treat motion hearings, scheduling notices, or telephonic access instructions as trial events.\n- Do not encode uncertainty as Not Applicable or N/A unless the record affirmatively establishes non-applicability and the checklist item explicitly calls for that outcome.\n\nCompleteness standard\n- Before stopping on an important item, check the canonical sources most likely to contain the answer.\n- Prefer capturing the major summary-significant developments of the target case over enumerating minor procedural noise.\n- If a later pleading, ruling, or docket event materially changes parties, claims, requested relief, or posture, capture that change explicitly.\n- When a bucket is relation-heavy or easy to contaminate, leave it empty rather than filling it with unsupported inferences from external cases.",
+  "controller_timing": {
+    "started_at": "2026-03-17T22:21:45.175734+00:00",
+    "finished_at": "2026-03-18T00:57:15.702210+00:00",
+    "elapsed_seconds": 9330.526
+  },
+  "jobs_total": 19,
+  "jobs_completed": 19,
+  "jobs_failed": 0,
+  "jobs": [
+    {
+      "config_name": "001_filing_date",
+      "checklist_config": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/001_filing_date.yaml",
+      "job_id": "2574121",
+      "max_steps": 15,
+      "reasoning_effort": "low",
+      "state": "COMPLETED",
+      "timed_out": false,
+      "elapsed_seconds": 200.25,
+      "completion_stats": {
+        "filled": 1,
+        "empty": 0,
+        "total": 1
+      },
+      "token_usage": {
+        "steps": 12,
+        "total_system_prompt_tokens": 10109,
+        "total_user_prompt_tokens": 62643,
+        "total_completion_tokens": 1067
+      },
+      "output_dir": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/001_filing_date",
+      "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/001_filing_date/checklist.json",
+      "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/001_filing_date/ledger.jsonl",
+      "stats_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/001_filing_date/stats.json",
+      "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/001_filing_date/run_3a2231bf.json",
+      "derived_state_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/001_filing_date/derived_state.json",
+      "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/legal_agent_test_run-2574121.out",
+      "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_individual_001_filing_date_steps15.log"
+    },
+    {
+      "config_name": "002_who_are_the_parties",
+      "checklist_config": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/002_who_are_the_parties.yaml",
+      "job_id": "2574123",
+      "max_steps": 160,
+      "reasoning_effort": "medium",
+      "state": "COMPLETED",
+      "timed_out": false,
+      "elapsed_seconds": 604.935,
+      "completion_stats": {
+        "filled": 1,
+        "empty": 0,
+        "total": 1
+      },
+      "token_usage": {
+        "steps": 79,
+        "total_system_prompt_tokens": 72618,
+        "total_user_prompt_tokens": 907423,
+        "total_completion_tokens": 44153
+      },
+      "output_dir": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/002_who_are_the_parties",
+      "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/002_who_are_the_parties/checklist.json",
+      "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/002_who_are_the_parties/ledger.jsonl",
+      "stats_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/002_who_are_the_parties/stats.json",
+      "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/002_who_are_the_parties/run_c90b0277.json",
+      "derived_state_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/002_who_are_the_parties/derived_state.json",
+      "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/legal_agent_test_run-2574123.out",
+      "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_individual_002_who_are_the_parties_steps160.log"
+    },
+    {
+      "config_name": "003_class_action_or_individual_plaintiffs",
+      "checklist_config": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/003_class_action_or_individual_plaintiffs.yaml",
+      "job_id": "2574127",
+      "max_steps": 20,
+      "reasoning_effort": "low",
+      "state": "COMPLETED",
+      "timed_out": false,
+      "elapsed_seconds": 138.754,
+      "completion_stats": {
+        "filled": 0,
+        "empty": 1,
+        "total": 1
+      },
+      "token_usage": {
+        "steps": 20,
+        "total_system_prompt_tokens": 18580,
+        "total_user_prompt_tokens": 100899,
+        "total_completion_tokens": 2129
+      },
+      "output_dir": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/003_class_action_or_individual_plaintiffs",
+      "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/003_class_action_or_individual_plaintiffs/checklist.json",
+      "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/003_class_action_or_individual_plaintiffs/ledger.jsonl",
+      "stats_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/003_class_action_or_individual_plaintiffs/stats.json",
+      "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/003_class_action_or_individual_plaintiffs/run_5b15cdf2.json",
+      "derived_state_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/003_class_action_or_individual_plaintiffs/derived_state.json",
+      "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/legal_agent_test_run-2574127.out",
+      "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_individual_003_class_action_or_individual_plaintiffs_steps20.log"
+    },
+    {
+      "config_name": "004_representation_structure",
+      "checklist_config": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/004_representation_structure.yaml",
+      "job_id": "2574128",
+      "max_steps": 60,
+      "reasoning_effort": "medium",
+      "state": "COMPLETED",
+      "timed_out": false,
+      "elapsed_seconds": 284.897,
+      "completion_stats": {
+        "filled": 1,
+        "empty": 0,
+        "total": 1
+      },
+      "token_usage": {
+        "steps": 60,
+        "total_system_prompt_tokens": 56280,
+        "total_user_prompt_tokens": 443542,
+        "total_completion_tokens": 15877
+      },
+      "output_dir": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/004_representation_structure",
+      "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/004_representation_structure/checklist.json",
+      "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/004_representation_structure/ledger.jsonl",
+      "stats_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/004_representation_structure/stats.json",
+      "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/004_representation_structure/run_d6f46dda.json",
+      "derived_state_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/004_representation_structure/derived_state.json",
+      "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/legal_agent_test_run-2574128.out",
+      "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_individual_004_representation_structure_steps60.log"
+    },
+    {
+      "config_name": "005_arguments_and_reasoning",
+      "checklist_config": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/005_arguments_and_reasoning.yaml",
+      "job_id": "2574132",
+      "max_steps": 220,
+      "reasoning_effort": "high",
+      "state": "COMPLETED",
+      "timed_out": false,
+      "elapsed_seconds": 1048.113,
+      "completion_stats": {
+        "filled": 1,
+        "empty": 0,
+        "total": 1
+      },
+      "token_usage": {
+        "steps": 99,
+        "total_system_prompt_tokens": 103880,
+        "total_user_prompt_tokens": 1232197,
+        "total_completion_tokens": 100522
+      },
+      "output_dir": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/005_arguments_and_reasoning",
+      "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/005_arguments_and_reasoning/checklist.json",
+      "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/005_arguments_and_reasoning/ledger.jsonl",
+      "stats_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/005_arguments_and_reasoning/stats.json",
+      "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/005_arguments_and_reasoning/run_67b8cba5.json",
+      "derived_state_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/005_arguments_and_reasoning/derived_state.json",
+      "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/legal_agent_test_run-2574132.out",
+      "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_individual_005_arguments_and_reasoning_steps220.log"
+    },
+    {
+      "config_name": "006_remedy_sought",
+      "checklist_config": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/006_remedy_sought.yaml",
+      "job_id": "2574147",
+      "max_steps": 70,
+      "reasoning_effort": "medium",
+      "state": "COMPLETED",
+      "timed_out": false,
+      "elapsed_seconds": 169.181,
+      "completion_stats": {
+        "filled": 1,
+        "empty": 0,
+        "total": 1
+      },
+      "token_usage": {
+        "steps": 28,
+        "total_system_prompt_tokens": 24921,
+        "total_user_prompt_tokens": 154420,
+        "total_completion_tokens": 7379
+      },
+      "output_dir": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/006_remedy_sought",
+      "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/006_remedy_sought/checklist.json",
+      "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/006_remedy_sought/ledger.jsonl",
+      "stats_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/006_remedy_sought/stats.json",
+      "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/006_remedy_sought/run_01b305af.json",
+      "derived_state_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/006_remedy_sought/derived_state.json",
+      "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/legal_agent_test_run-2574147.out",
+      "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_individual_006_remedy_sought_steps70.log"
+    },
+    {
+      "config_name": "007_first_and_last_name_of_judge",
+      "checklist_config": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/007_first_and_last_name_of_judge.yaml",
+      "job_id": "2574150",
+      "max_steps": 100,
+      "reasoning_effort": "medium",
+      "state": "COMPLETED",
+      "timed_out": false,
+      "elapsed_seconds": 230.352,
+      "completion_stats": {
+        "filled": 1,
+        "empty": 0,
+        "total": 1
+      },
+      "token_usage": {
+        "steps": 26,
+        "total_system_prompt_tokens": 23400,
+        "total_user_prompt_tokens": 202765,
+        "total_completion_tokens": 14019
+      },
+      "output_dir": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/007_first_and_last_name_of_judge",
+      "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/007_first_and_last_name_of_judge/checklist.json",
+      "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/007_first_and_last_name_of_judge/ledger.jsonl",
+      "stats_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/007_first_and_last_name_of_judge/stats.json",
+      "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/007_first_and_last_name_of_judge/run_10289c79.json",
+      "derived_state_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/007_first_and_last_name_of_judge/derived_state.json",
+      "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/legal_agent_test_run-2574150.out",
+      "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_individual_007_first_and_last_name_of_judge_steps100.log"
+    },
+    {
+      "config_name": "008_consolidated_cases_noted",
+      "checklist_config": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/008_consolidated_cases_noted.yaml",
+      "job_id": "2574153",
+      "max_steps": 15,
+      "reasoning_effort": "low",
+      "state": "COMPLETED",
+      "timed_out": false,
+      "elapsed_seconds": 110.352,
+      "completion_stats": {
+        "filled": 0,
+        "empty": 1,
+        "total": 1
+      },
+      "token_usage": {
+        "steps": 15,
+        "total_system_prompt_tokens": 13440,
+        "total_user_prompt_tokens": 55635,
+        "total_completion_tokens": 1306
+      },
+      "output_dir": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/008_consolidated_cases_noted",
+      "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/008_consolidated_cases_noted/checklist.json",
+      "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/008_consolidated_cases_noted/ledger.jsonl",
+      "stats_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/008_consolidated_cases_noted/stats.json",
+      "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/008_consolidated_cases_noted/run_0fd4f92c.json",
+      "derived_state_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/008_consolidated_cases_noted/derived_state.json",
+      "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/legal_agent_test_run-2574153.out",
+      "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_individual_008_consolidated_cases_noted_steps15.log"
+    },
+    {
+      "config_name": "009_related_cases_listed_by_their_case_code_number",
+      "checklist_config": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/009_related_cases_listed_by_their_case_code_number.yaml",
+      "job_id": "2574154",
+      "max_steps": 25,
+      "reasoning_effort": "low",
+      "state": "COMPLETED",
+      "timed_out": false,
+      "elapsed_seconds": 204.172,
+      "completion_stats": {
+        "filled": 1,
+        "empty": 0,
+        "total": 1
+      },
+      "token_usage": {
+        "steps": 25,
+        "total_system_prompt_tokens": 22296,
+        "total_user_prompt_tokens": 312472,
+        "total_completion_tokens": 5708
+      },
+      "output_dir": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/009_related_cases_listed_by_their_case_code_number",
+      "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/009_related_cases_listed_by_their_case_code_number/checklist.json",
+      "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/009_related_cases_listed_by_their_case_code_number/ledger.jsonl",
+      "stats_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/009_related_cases_listed_by_their_case_code_number/stats.json",
+      "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/009_related_cases_listed_by_their_case_code_number/run_536ff487.json",
+      "derived_state_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/009_related_cases_listed_by_their_case_code_number/derived_state.json",
+      "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/legal_agent_test_run-2574154.out",
+      "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_individual_009_related_cases_listed_by_their_case_code_number_steps25.log"
+    },
+    {
+      "config_name": "010_note_important_filings",
+      "checklist_config": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/010_note_important_filings.yaml",
+      "job_id": "2574158",
+      "max_steps": 260,
+      "reasoning_effort": "medium",
+      "state": "COMPLETED",
+      "timed_out": false,
+      "elapsed_seconds": 1529.904,
+      "completion_stats": {
+        "filled": 1,
+        "empty": 0,
+        "total": 1
+      },
+      "token_usage": {
+        "steps": 198,
+        "total_system_prompt_tokens": 183998,
+        "total_user_prompt_tokens": 3602986,
+        "total_completion_tokens": 104404
+      },
+      "output_dir": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/010_note_important_filings",
+      "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/010_note_important_filings/checklist.json",
+      "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/010_note_important_filings/ledger.jsonl",
+      "stats_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/010_note_important_filings/stats.json",
+      "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/010_note_important_filings/run_e115a0ca.json",
+      "derived_state_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/010_note_important_filings/derived_state.json",
+      "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/legal_agent_test_run-2574158.out",
+      "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_individual_010_note_important_filings_steps260.log"
+    },
+    {
+      "config_name": "011_amendments_and_claim_or_party_changes",
+      "checklist_config": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/011_amendments_and_claim_or_party_changes.yaml",
+      "job_id": "2574324",
+      "max_steps": 140,
+      "reasoning_effort": "medium",
+      "state": "COMPLETED",
+      "timed_out": false,
+      "elapsed_seconds": 851.747,
+      "completion_stats": {
+        "filled": 1,
+        "empty": 0,
+        "total": 1
+      },
+      "token_usage": {
+        "steps": 140,
+        "total_system_prompt_tokens": 133996,
+        "total_user_prompt_tokens": 2019240,
+        "total_completion_tokens": 76751
+      },
+      "output_dir": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/011_amendments_and_claim_or_party_changes",
+      "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/011_amendments_and_claim_or_party_changes/checklist.json",
+      "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/011_amendments_and_claim_or_party_changes/ledger.jsonl",
+      "stats_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/011_amendments_and_claim_or_party_changes/stats.json",
+      "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260318T011737Z_f97fc0d55e/agent_output/gpt-oss-20b-BF16/46110/individual/001_amendments_and_claim_or_party_changes/run_e1464c5c.json",
+      "derived_state_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/011_amendments_and_claim_or_party_changes/derived_state.json",
+      "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/legal_agent_native_run-2574324.out",
+      "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_individual_001_amendments_and_claim_or_party_changes_steps140.log"
+    },
+    {
+      "config_name": "012_court_rulings",
+      "checklist_config": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/012_court_rulings.yaml",
+      "job_id": "2574224",
+      "max_steps": 220,
+      "reasoning_effort": "high",
+      "state": "COMPLETED",
+      "timed_out": false,
+      "elapsed_seconds": 2874.293,
+      "completion_stats": {
+        "filled": 1,
+        "empty": 0,
+        "total": 1
+      },
+      "token_usage": {
+        "steps": 220,
+        "total_system_prompt_tokens": 207240,
+        "total_user_prompt_tokens": 4757287,
+        "total_completion_tokens": 249565
+      },
+      "output_dir": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/012_court_rulings",
+      "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/012_court_rulings/checklist.json",
+      "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/012_court_rulings/ledger.jsonl",
+      "stats_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/012_court_rulings/stats.json",
+      "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/012_court_rulings/run_f1ffd306.json",
+      "derived_state_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/012_court_rulings/derived_state.json",
+      "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/legal_agent_test_run-2574224.out",
+      "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_individual_012_court_rulings_steps220.log"
+    },
+    {
+      "config_name": "013_trials",
+      "checklist_config": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/013_trials.yaml",
+      "job_id": "2574257",
+      "max_steps": 20,
+      "reasoning_effort": "low",
+      "state": "COMPLETED",
+      "timed_out": false,
+      "elapsed_seconds": 138.634,
+      "completion_stats": {
+        "filled": 0,
+        "empty": 1,
+        "total": 1
+      },
+      "token_usage": {
+        "steps": 11,
+        "total_system_prompt_tokens": 8860,
+        "total_user_prompt_tokens": 48272,
+        "total_completion_tokens": 1233
+      },
+      "output_dir": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/013_trials",
+      "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/013_trials/checklist.json",
+      "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/013_trials/ledger.jsonl",
+      "stats_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/013_trials/stats.json",
+      "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/013_trials/run_f9b0ad54.json",
+      "derived_state_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/013_trials/derived_state.json",
+      "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/legal_agent_test_run-2574257.out",
+      "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_individual_013_trials_steps20.log"
+    },
+    {
+      "config_name": "014_appeal",
+      "checklist_config": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/014_appeal.yaml",
+      "job_id": "2574258",
+      "max_steps": 120,
+      "reasoning_effort": "medium",
+      "state": "COMPLETED",
+      "timed_out": false,
+      "elapsed_seconds": 267.262,
+      "completion_stats": {
+        "filled": 0,
+        "empty": 1,
+        "total": 1
+      },
+      "token_usage": {
+        "steps": 46,
+        "total_system_prompt_tokens": 41985,
+        "total_user_prompt_tokens": 393217,
+        "total_completion_tokens": 13426
+      },
+      "output_dir": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/014_appeal",
+      "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/014_appeal/checklist.json",
+      "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/014_appeal/ledger.jsonl",
+      "stats_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/014_appeal/stats.json",
+      "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/014_appeal/run_8ced8e4a.json",
+      "derived_state_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/014_appeal/derived_state.json",
+      "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/legal_agent_test_run-2574258.out",
+      "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_individual_014_appeal_steps120.log"
+    },
+    {
+      "config_name": "015_current_procedural_posture",
+      "checklist_config": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/015_current_procedural_posture.yaml",
+      "job_id": "2574261",
+      "max_steps": 30,
+      "reasoning_effort": "low",
+      "state": "COMPLETED",
+      "timed_out": false,
+      "elapsed_seconds": 134.857,
+      "completion_stats": {
+        "filled": 1,
+        "empty": 0,
+        "total": 1
+      },
+      "token_usage": {
+        "steps": 11,
+        "total_system_prompt_tokens": 9350,
+        "total_user_prompt_tokens": 148512,
+        "total_completion_tokens": 2237
+      },
+      "output_dir": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/015_current_procedural_posture",
+      "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/015_current_procedural_posture/checklist.json",
+      "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/015_current_procedural_posture/ledger.jsonl",
+      "stats_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/015_current_procedural_posture/stats.json",
+      "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/015_current_procedural_posture/run_df9187ad.json",
+      "derived_state_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/015_current_procedural_posture/derived_state.json",
+      "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/legal_agent_test_run-2574261.out",
+      "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_individual_015_current_procedural_posture_steps30.log"
+    },
+    {
+      "config_name": "016_decrees",
+      "checklist_config": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/016_decrees.yaml",
+      "job_id": "2574264",
+      "max_steps": 100,
+      "reasoning_effort": "medium",
+      "state": "COMPLETED",
+      "timed_out": false,
+      "elapsed_seconds": 261.218,
+      "completion_stats": {
+        "filled": 0,
+        "empty": 1,
+        "total": 1
+      },
+      "token_usage": {
+        "steps": 40,
+        "total_system_prompt_tokens": 36270,
+        "total_user_prompt_tokens": 396775,
+        "total_completion_tokens": 11478
+      },
+      "output_dir": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/016_decrees",
+      "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/016_decrees/checklist.json",
+      "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/016_decrees/ledger.jsonl",
+      "stats_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/016_decrees/stats.json",
+      "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/016_decrees/run_9dd9e700.json",
+      "derived_state_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/016_decrees/derived_state.json",
+      "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/legal_agent_test_run-2574264.out",
+      "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_individual_016_decrees_steps100.log"
+    },
+    {
+      "config_name": "017_settlements",
+      "checklist_config": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/017_settlements.yaml",
+      "job_id": "2574293",
+      "max_steps": 20,
+      "reasoning_effort": "low",
+      "state": "COMPLETED",
+      "timed_out": false,
+      "elapsed_seconds": 128.514,
+      "completion_stats": {
+        "filled": 0,
+        "empty": 1,
+        "total": 1
+      },
+      "token_usage": {
+        "steps": 20,
+        "total_system_prompt_tokens": 18580,
+        "total_user_prompt_tokens": 78880,
+        "total_completion_tokens": 1484
+      },
+      "output_dir": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/017_settlements",
+      "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/017_settlements/checklist.json",
+      "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/017_settlements/ledger.jsonl",
+      "stats_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/017_settlements/stats.json",
+      "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/017_settlements/run_5b47f52f.json",
+      "derived_state_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/017_settlements/derived_state.json",
+      "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/legal_agent_test_run-2574293.out",
+      "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_individual_017_settlements_steps20.log"
+    },
+    {
+      "config_name": "018_monitoring",
+      "checklist_config": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/018_monitoring.yaml",
+      "job_id": "2574296",
+      "max_steps": 20,
+      "reasoning_effort": "low",
+      "state": "COMPLETED",
+      "timed_out": false,
+      "elapsed_seconds": 116.496,
+      "completion_stats": {
+        "filled": 0,
+        "empty": 1,
+        "total": 1
+      },
+      "token_usage": {
+        "steps": 20,
+        "total_system_prompt_tokens": 18400,
+        "total_user_prompt_tokens": 94054,
+        "total_completion_tokens": 1682
+      },
+      "output_dir": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/018_monitoring",
+      "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/018_monitoring/checklist.json",
+      "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/018_monitoring/ledger.jsonl",
+      "stats_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/018_monitoring/stats.json",
+      "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/018_monitoring/run_a820c7af.json",
+      "derived_state_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/018_monitoring/derived_state.json",
+      "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/legal_agent_test_run-2574296.out",
+      "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_individual_018_monitoring_steps20.log"
+    },
+    {
+      "config_name": "019_factual_basis_of_case",
+      "checklist_config": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/generated_checklists/individual/019_factual_basis_of_case.yaml",
+      "job_id": "2574299",
+      "max_steps": 100,
+      "reasoning_effort": "medium",
+      "state": "COMPLETED",
+      "timed_out": false,
+      "elapsed_seconds": 248.837,
+      "completion_stats": {
+        "filled": 1,
+        "empty": 0,
+        "total": 1
+      },
+      "token_usage": {
+        "steps": 40,
+        "total_system_prompt_tokens": 36114,
+        "total_user_prompt_tokens": 310184,
+        "total_completion_tokens": 14355
+      },
+      "output_dir": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/019_factual_basis_of_case",
+      "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/019_factual_basis_of_case/checklist.json",
+      "ledger_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/019_factual_basis_of_case/ledger.jsonl",
+      "stats_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/019_factual_basis_of_case/stats.json",
+      "run_summary_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/019_factual_basis_of_case/run_1870b4fe.json",
+      "derived_state_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/agent_output/gpt-oss-20b-BF16/46110/individual/019_factual_basis_of_case/derived_state.json",
+      "slurm_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/legal_agent_test_run-2574299.out",
+      "agent_log_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/agent_logs/gpt-oss-20b-BF16/46110/46110_individual_019_factual_basis_of_case_steps100.log"
+    }
+  ],
+  "checklist": {
+    "Filing_Date": {
+      "extracted": [
+        {
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 0,
+              "end_offset": 18
+            }
+          ],
+          "value": "2025-02-12"
+        }
+      ],
+      "key": "Filing_Date",
+      "last_updated": "2026-03-17T18:25:35.251356-04:00"
+    },
+    "Who_are_the_Parties": {
+      "extracted": [
+        {
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 4573,
+              "end_offset": 4920
+            }
+          ],
+          "value": "Plaintiff: National Treasury Employees Union (NTEU), an unincorporated association representing employees in 37 federal departments and agencies"
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 4920,
+              "end_offset": 5151
+            }
+          ],
+          "value": "Plaintiff: National Federation of Federal Employees (NFFE), an affiliate of IAM and an unincorporated association representing approximately 110,000 federal employees"
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 5227,
+              "end_offset": 5554
+            }
+          ],
+          "value": "Plaintiff: International Association of Machinists (IAM), an unincorporated association representing about 600,000 members and 15,000 federal employees"
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 5554,
+              "end_offset": 5633
+            }
+          ],
+          "value": "Plaintiff: International Federation of Professional and Technical Employees (IFPTE), an unincorporated association representing federal employees"
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 6400,
+              "end_offset": 6481
+            }
+          ],
+          "value": "Defendant: Donald J. Trump, President of the United States"
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 6753,
+              "end_offset": 6865
+            }
+          ],
+          "value": "Defendant: Charles Ezell, Acting Director of the United States Office of Personnel Management (OPM)"
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 7008,
+              "end_offset": 7108
+            }
+          ],
+          "value": "Defendant: Douglas O’Donnell, Acting Commissioner of the Internal Revenue Service (IRS)"
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 7421,
+              "end_offset": 7532
+            }
+          ],
+          "value": "Defendant: Robert F. Kennedy Jr., Secretary of the Department of Health and Human Services (HHS)"
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 7733,
+              "end_offset": 7839
+            }
+          ],
+          "value": "Defendant: Russell Vought, Acting Director of the Consumer Financial Protection Bureau (CFPB)"
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 8017,
+              "end_offset": 8128
+            }
+          ],
+          "value": "Defendant: Randy Moore, Chief of the U.S. Forest Service within the U.S. Department of Agriculture"
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 8334,
+              "end_offset": 8424
+            }
+          ],
+          "value": "Defendant: Doug Collins, Secretary of the Department of Veterans Affairs (VA)"
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 8622,
+              "end_offset": 8704
+            }
+          ],
+          "value": "Defendant: Pete Hegseth, Secretary of the Department of Defense (DoD)"
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 9001,
+              "end_offset": 9129
+            }
+          ],
+          "value": "Defendant: Makenzie Lystrup, Director of Goddard Space Flight Center, National Aeronautics and Space Administration (NASA)"
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 9341,
+              "end_offset": 9438
+            }
+          ],
+          "value": "Defendant: Matthew J. Memoli, Acting Director of the National Institutes of Health (NIH)"
+        }
+      ],
+      "key": "Who_are_the_Parties",
+      "last_updated": "2026-03-17T18:35:33.199334-04:00"
+    },
+    "Class_Action_or_Individual_Plaintiffs": {
+      "extracted": [],
+      "key": "Class_Action_or_Individual_Plaintiffs",
+      "last_updated": "2026-03-17T18:36:23.041582-04:00"
+    },
+    "Representation_Structure": {
+      "extracted": [
+        {
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 37378,
+              "end_offset": 37622
+            }
+          ],
+          "value": "Plaintiffs represented by National Treasury Employees Union in-house counsel (General Counsel, Deputy General Counsel, etc)."
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "160610",
+              "start_offset": 73789,
+              "end_offset": 73834
+            },
+            {
+              "source_document_id": "163685",
+              "start_offset": 1476,
+              "end_offset": 1503
+            }
+          ],
+          "value": "Defendants represented by U.S. Department of Justice counsel (Office of General Counsel)."
+        }
+      ],
+      "key": "Representation_Structure",
+      "last_updated": "2026-03-17T18:41:57.630088-04:00"
+    },
+    "Arguments_and_Reasoning": {
+      "extracted": [
+        {
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 2912,
+              "end_offset": 3631
+            },
+            {
+              "source_document_id": "155859",
+              "start_offset": 4156,
+              "end_offset": 4246
+            },
+            {
+              "source_document_id": "155859",
+              "start_offset": 4340,
+              "end_offset": 4439
+            }
+          ],
+          "value": "Plaintiff theory: The Unions allege that the Executive Branch, via Executive Order No. 14210, is directing federal agencies to undertake mass firings of hundreds of thousands of employees, including nonessential and probationary employees, and to pressure employees to resign via a deferred resignation program, thereby violating Congress’s constitutional separation of powers and the statutory reduction‑in‑force (RIF) procedures."
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155856",
+              "start_offset": 11593,
+              "end_offset": 11905
+            }
+          ],
+          "value": "Amendment-added theory: The amended complaint, filed February 17, 2025, adds claims that the Executive Branch is terminating additional probationary employees at HHS, EPA, DOE, the Department of Agriculture, and the Food and Nutrition Service, as well as term employees at the CFPB, expanding the scope of alleged violations."
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155856",
+              "start_offset": 16940,
+              "end_offset": 17999
+            }
+          ],
+          "value": "Defense theory: The government argues that the federal employee claims are precluded by the Federal Service Labor‑Management Relations Statute (FSLMRS) scheme, citing the Thunder Basin precedent that precludes court jurisdiction when claims are entirely within the statutory administrative review system."
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155856",
+              "start_offset": 12028,
+              "end_offset": 13856
+            }
+          ],
+          "value": "Court treatment: The district court denied the unions’ temporary restraining order and preliminary injunction, holding that it likely lacks subject‑matter jurisdiction over the claims and must direct the unions to pursue their challenges through the FSLMRS scheme."
+        }
+      ],
+      "key": "Arguments_and_Reasoning",
+      "last_updated": "2026-03-17T18:46:49.679829-04:00"
+    },
+    "Remedy_Sought": {
+      "extracted": [
+        {
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 35865,
+              "end_offset": 36493
+            },
+            {
+              "source_document_id": "155859",
+              "start_offset": 37352,
+              "end_offset": 38365
+            }
+          ],
+          "value": "Plaintiffs seek a declaration that the mass firing of nonessential, probationary, and other employees and OPM’s deferred resignation program are unlawful; injunctive relief preventing OPM from extending, expanding, or replicating its deferred resignation program; injunctive relief preventing OPM from violating the RIF statute and regulations, including requirements related to the establishment of competitive areas; an order that defendants pay reasonable attorneys’ fees and costs; and an order for such other and further relief as the court deems just and proper."
+        }
+      ],
+      "key": "Remedy_Sought",
+      "last_updated": "2026-03-17T19:02:56.520307-04:00"
+    },
+    "First_and_Last_name_of_Judge": {
+      "extracted": [
+        {
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_offset": 8137,
+              "end_offset": 8189
+            },
+            {
+              "source_document_id": "155856",
+              "start_offset": 31818,
+              "end_offset": 31879
+            }
+          ],
+          "value": "Judge Christopher R. Cooper, United States District Court for the District of Columbia, signed the memorandum opinion and order on February 20, 2025."
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155856",
+              "start_offset": 6063,
+              "end_offset": 6151
+            },
+            {
+              "source_document_id": "155856",
+              "start_offset": 6249,
+              "end_offset": 6345
+            }
+          ],
+          "value": "Judge George A. O’Toole, Jr., United States District Court for the District of Columbia, entered a temporary restraining order on February 6, 2025, and dissolved it on February 12, 2025."
+        }
+      ],
+      "key": "First_and_Last_name_of_Judge",
+      "last_updated": "2026-03-17T19:06:58.471058-04:00"
+    },
+    "Consolidated_Cases_Noted": {
+      "extracted": [],
+      "key": "Consolidated_Cases_Noted",
+      "last_updated": "2026-03-17T19:07:30.659573-04:00"
+    },
+    "Related_Cases_Listed_by_Their_Case_Code_Number": {
+      "extracted": [
+        {
+          "evidence": [
+            {
+              "source_document_id": "155860",
+              "start_offset": 13167,
+              "end_offset": 13208
+            }
+          ],
+          "value": "AFGE v. Ezell, No. 25-cv-10276 – cited as precedent on the same policy challenge involving probationary employees."
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "160610",
+              "start_offset": 47252,
+              "end_offset": 47293
+            }
+          ],
+          "value": "AFGE v. Trump, No. 25-cv-03698-SI – cited as precedent on the same policy challenge involving probationary employees."
+        }
+      ],
+      "key": "Related_Cases_Listed_by_Their_Case_Code_Number",
+      "last_updated": "2026-03-17T19:12:08.078264-04:00"
+    },
+    "Note_Important_Filings": {
+      "extracted": [
+        {
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 0,
+              "end_offset": 671
+            }
+          ],
+          "value": "Original Complaint filed by the National Treasury Employees Union on 2025-02-12, seeking declaratory and injunctive relief against a list of federal employee employers."
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155857",
+              "start_offset": 0,
+              "end_offset": 1070
+            }
+          ],
+          "value": "Motion for Temporary Restraining Order filed by the National Treasury Employees Union on 2025-02-14, requesting an immediate restraining order and a preliminary injunction to preserve the status quo."
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155859",
+              "start_offset": 0,
+              "end_offset": 692
+            }
+          ],
+          "value": "Amended Complaint filed by the National Treasury Employees Union on 2025-02-17, updating the original complaint with additional claims and parties."
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_offset": 12504,
+              "end_offset": 13185
+            }
+          ],
+          "value": "Motion to Dismiss filed by defendants on 2025-05-15, arguing lack of jurisdiction and failure to state a claim in the original complaint."
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_offset": 13185,
+              "end_offset": 13500
+            }
+          ],
+          "value": "Motion to Amend/Correct Amended Complaint filed by the National Treasury Employees Union on 2025-05-27, correcting errors in the Amended Complaint and adding new allegations."
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_offset": 14794,
+              "end_offset": 15026
+            }
+          ],
+          "value": "Second Amended Complaint filed by the National Treasury Employees Union on 2025-06-06, incorporating the amendments and bringing additional parties into the litigation."
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_offset": 13819,
+              "end_offset": 14487
+            }
+          ],
+          "value": "Notice of Voluntary Dismissal by INTERNATIONAL UNION, UNITED AUTOMOBILE, AEROSPACE AND AGRICULTURAL IMPLEMENT WORKERS OF AMERICA filed on 2025-05-27, removing those parties from the lawsuit."
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_offset": 27509,
+              "end_offset": 27658
+            }
+          ],
+          "value": "Minute Order granting Motion for Leave to File Supplemental Declaration on 2025-02-20, allowing the plaintiff to file supplemental declaration."
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_offset": 13500,
+              "end_offset": 13738
+            }
+          ],
+          "value": "Consent Motion for Extension of Time to File Response/Reply to Motion to Dismiss filed on 2025-05-27, granting defendants additional time to respond."
+        }
+      ],
+      "key": "Note_Important_Filings",
+      "last_updated": "2026-03-17T19:37:40.650774-04:00"
+    },
+    "Amendments_and_Claim_or_Party_Changes": {
+      "extracted": [
+        {
+          "evidence": [
+            {
+              "source_document_id": "155856",
+              "start_offset": 11593,
+              "end_offset": 11983
+            }
+          ],
+          "value": "On February 17, 2025, the National Treasury Employees Union and affiliated unions filed a First Amended Complaint adding claims of unlawful terminations of probationary employees at the Department of Health and Human Services, the Environmental Protection Agency, the Department of Energy, the Department of Agriculture, the Food and Nutrition Service, and the Consumer Financial Protection Bureau, thereby expanding the allegations against these agencies."
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "163684",
+              "start_offset": 31945,
+              "end_offset": 32019
+            }
+          ],
+          "value": "On June 6, 2025, the National Treasury Employees Union filed a Second Amended Complaint against all defendants, adding claims of separation of powers violations and expanding the relief sought."
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_offset": 13819,
+              "end_offset": 14103
+            }
+          ],
+          "value": "On May 27, 2025, the International Union, United Automobile, Aerospace and Agricultural Implement Workers of America voluntarily dismissed itself from the action, reducing the defendant set."
+        }
+      ],
+      "key": "Amendments_and_Claim_or_Party_Changes",
+      "last_updated": "2026-03-17T21:32:51.998363-04:00"
+    },
+    "Court_Rulings": {
+      "extracted": [
+        {
+          "evidence": [
+            {
+              "source_document_id": "155856",
+              "start_offset": 6058,
+              "end_offset": 6445
+            }
+          ],
+          "value": "United States District Court for the District of Columbia, Judge George A. O’Toole, Jr., denied the plaintiffs’ motion for a temporary restraining order and preliminary injunction on February 12, 2025, finding they lacked standing and subject‑matter jurisdiction."
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "160610",
+              "start_offset": 0,
+              "end_offset": 170
+            },
+            {
+              "source_document_id": "160610",
+              "start_offset": 33006,
+              "end_offset": 33095
+            },
+            {
+              "source_document_id": "160610",
+              "start_offset": 73130,
+              "end_offset": 73247
+            }
+          ],
+          "value": "United States District Court for the District of Columbia granted defendants’ motion to dismiss the case and dismissed the case entirely on May 15, 2025, and set May 15, 2025 as the deadline to answer defendants’ motion to dismiss."
+        }
+      ],
+      "key": "Court_Rulings",
+      "last_updated": "2026-03-17T20:35:19.916809-04:00"
+    },
+    "Trials": {
+      "extracted": [],
+      "key": "Trials",
+      "last_updated": "2026-03-17T20:36:20.448852-04:00"
+    },
+    "Appeal": {
+      "extracted": [],
+      "key": "Appeal",
+      "last_updated": "2026-03-17T20:38:11.300629-04:00"
+    },
+    "Current_Procedural_Posture": {
+      "extracted": [
+        {
+          "evidence": [
+            {
+              "source_document_id": "60801",
+              "start_offset": 14103,
+              "end_offset": 14487
+            },
+            {
+              "source_document_id": "60801",
+              "start_offset": 17862,
+              "end_offset": 18320
+            }
+          ],
+          "value": "Dismissed – plaintiffs voluntarily dismissed the case on 05/27/2025; the case is closed and no further action is pending."
+        }
+      ],
+      "key": "Current_Procedural_Posture",
+      "last_updated": "2026-03-17T20:44:18.089909-04:00"
+    },
+    "Decrees": {
+      "extracted": [],
+      "key": "Decrees",
+      "last_updated": "2026-03-17T20:44:52.962303-04:00"
+    },
+    "Settlements": {
+      "extracted": [],
+      "key": "Settlements",
+      "last_updated": "2026-03-17T20:49:36.908632-04:00"
+    },
+    "Monitoring": {
+      "extracted": [],
+      "key": "Monitoring",
+      "last_updated": "2026-03-17T20:51:24.819180-04:00"
+    },
+    "Factual_Basis_of_Case": {
+      "extracted": [
+        {
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 3448,
+              "end_offset": 3883
+            }
+          ],
+          "value": "Unions representing hundreds of thousands of federal employees bring this action to protect workers from the Executive Branch’s attempts to dismantle the federal government through mass firings of nonessential employees and those in probationary status, and from a pressure campaign encouraging resignation via a deferred resignation program."
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 4292,
+              "end_offset": 4410
+            },
+            {
+              "source_document_id": "155313",
+              "start_offset": 6447,
+              "end_offset": 6678
+            }
+          ],
+          "value": "Executive Order No. 14210, issued February 11, 2025, directs federal agencies to promptly undertake mass firings through reduction‑in‑force (RIF) processes, which the complaint alleges will violate Congress’s RIF protocol."
+        },
+        {
+          "evidence": [
+            {
+              "source_document_id": "155313",
+              "start_offset": 6804,
+              "end_offset": 6947
+            }
+          ],
+          "value": "The Office of Personnel Management, under Acting Director Charles Ezell, will implement and guide the federal agencies’ mass firing of employees and administer the deferred resignation program."
+        }
+      ],
+      "key": "Factual_Basis_of_Case",
+      "last_updated": "2026-03-17T20:56:48.631445-04:00"
+    }
+  },
+  "completion_stats": {
+    "filled": 12,
+    "empty": 7,
+    "total": 19
+  },
+  "checklist_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/checklist.json",
+  "checklist_ndjson_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/checklist.ndjson",
+  "document_map_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/controller/runs/run_20260317T222144Z_124c78addb/document_map.json",
+  "corpus_path": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/data/controller_run_20260317T222144Z_124c78addb/46110",
+  "offset_basis": {
+    "type": "character_offsets",
+    "index_base": 0,
+    "range_semantics": "half_open",
+    "text_source": "/coc/pskynet6/jzheng390/gavel/src/extract_checklist_from_documents/gavel_agent/data/controller_run_20260317T222144Z_124c78addb/46110"
+  },
+  "conversion_error": null
+}

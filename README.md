@@ -100,6 +100,7 @@ Edit `backend/.env` to match the one-time remote setup.
 | Variable | Purpose |
 |----------|---------|
 | `MULTI_DOCUMENT_CLUSTER_RUN_MODE` | `remote` for real cluster jobs, `spoof` for fixture-backed replay |
+| `MULTI_DOCUMENT_CLUSTER_SPOOF_SCENARIO_PATH` | Canonical spoof scenario file used when `MULTI_DOCUMENT_CLUSTER_RUN_MODE=spoof` |
 | `MULTI_DOCUMENT_CLUSTER_SSH_HOST` | SSH host for the SLURM head node |
 | `MULTI_DOCUMENT_CLUSTER_REMOTE_STAGE_ROOT` | Root directory where the backend creates per-run staged snapshots |
 | `MULTI_DOCUMENT_CLUSTER_REMOTE_PYTHON_PATH` | Absolute path to the persistent remote Python interpreter |
@@ -141,7 +142,7 @@ The frontend defaults to `http://localhost:5173`, and the backend defaults to `h
 
 ## Development Modes
 ### Spoof mode
-Spoof mode replays recorded extraction and summary fixtures without dispatching real cluster jobs.
+Spoof mode replays canonical extraction and summary fixtures without dispatching real cluster jobs.
 
 ```bash
 MULTI_DOCUMENT_CLUSTER_RUN_MODE=spoof

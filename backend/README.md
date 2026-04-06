@@ -164,14 +164,20 @@ The remote execution flow is:
 The extraction and summary controllers both run from the same staged snapshot for a given backend run.
 
 ### Spoof Replay
-Spoof mode is implemented in `app/services/spoof_replay.py`.
+Spoof mode is implemented in:
+- `app/services/spoof_replay.py`
+- `app/services/spoof_scenario.py`
+- `dev/spoof_fixtures/`
 
-Spoof mode does three things:
-- validates that the configured fixture directory exists and has the required files
-- validates that the requested `corpus_id` and document ids match the fixture request payload
-- replays recorded NDJSON events through the same progress callbacks used by live runs
+Spoof mode uses one canonical fixture-backed scenario:
+- title
+- documents
+- extraction config
+- summary config
+- extraction replay artifacts
+- summary replay artifacts
 
-That means the frontend sees realistic progress/state transitions even when no real cluster work is happening. Useful when attempting to make UI changes that you don't want to have trigger live runs.
+Setup-page and review-page edits from the frontend are intentionally ignored in spoof mode. The backend always behaves as though the run inputs were the canonical spoof scenario, while still replaying realistic controller events for waiting-page UI work.
 
 ### Default Resource Loaders
 Backend-owned defaults live in:
@@ -292,6 +298,7 @@ Important note:
 |----------|---------|
 | `MULTI_DOCUMENT_CLUSTER_RUN_MODE` | Selects the active execution adapter. Use `remote` for real SLURM-backed runs and `spoof` for fixture replay. |
 | `MULTI_DOCUMENT_CLUSTER_SPOOF_EVENT_DELAY_SECONDS` | Optional artificial delay inserted between replayed spoof events to slow the UI down to a human-readable pace. |
+| `MULTI_DOCUMENT_CLUSTER_SPOOF_SCENARIO_PATH` | Canonical spoof scenario file that seeds title, documents, extraction config, and summary config for every spoof-mode run. |
 | `MULTI_DOCUMENT_CLUSTER_SPOOF_EXTRACTION_FIXTURE_DIR` | Directory containing the extraction spoof fixture files used when run mode is `spoof`. |
 | `MULTI_DOCUMENT_CLUSTER_SPOOF_SUMMARY_FIXTURE_DIR` | Directory containing the summary spoof fixture files used when run mode is `spoof`. |
 
